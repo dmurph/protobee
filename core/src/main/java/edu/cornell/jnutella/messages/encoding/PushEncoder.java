@@ -1,7 +1,5 @@
 package edu.cornell.jnutella.messages.encoding;
 
-import java.io.UnsupportedEncodingException;
-
 import org.jboss.netty.buffer.ChannelBuffer;
 
 import com.google.common.base.Preconditions;
@@ -9,28 +7,28 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.messages.MessageBody;
 import edu.cornell.jnutella.messages.MessageHeader;
-import edu.cornell.jnutella.messages.QueryBody;
+import edu.cornell.jnutella.messages.PushBody;
 import edu.cornell.jnutella.messages.encoding.GGEPEncoder.EncoderInput;
 import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
 
-@ForMessageType(MessageHeader.F_QUERY)
-public class QueryEncoder implements MessageBodyEncoder {
+@ForMessageType(MessageHeader.F_PUSH)
+public class PushEncoder implements MessageBodyEncoder {
   private final GGEPEncoder ggepEncoder;
-
+  
   @Inject
-  public QueryEncoder(GGEPEncoder ggepEncoder) {
+  public PushEncoder(GGEPEncoder ggepEncoder) {
     this.ggepEncoder = ggepEncoder;
   }
 
-  public void encode(ChannelBuffer buffer, QueryBody toEncode) throws EncodingException {
-    ByteUtils.short2leb((short) toEncode.getMinSpeed(), buffer);
-    try {
-      buffer.writeBytes(toEncode.getQuery().getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new EncodingException("Cannot get UTF-8 bytes from "+toEncode.getQuery());
-    }
-    buffer.writeByte(0);
+  public void encode(ChannelBuffer buffer, PushBody toEncode) throws EncodingException{
+    Preconditions.checkArgument(toEncode.getServantID().getBytes().length == 16);
+    buffer.writeBytes(toEncode.getServantID().getBytes());
+    buffer.writerIndex(16);
+    
+    ByteUtils.int2leb((int) toEncode.getIndex(), buffer);
+    buffer.writeBytes(toEncode.getAddress().getAddress(), 0, 4);
+    ByteUtils.short2leb((short) toEncode.getPort(), buffer);
     
     if (toEncode.getGgep() != null) {
       EncoderInput ei = new EncoderInput(toEncode.getGgep(), false);
@@ -40,7 +38,7 @@ public class QueryEncoder implements MessageBodyEncoder {
 
   @Override
   public void encode(ChannelBuffer channel, MessageBody toEncode) throws EncodingException {
-    Preconditions.checkArgument(toEncode instanceof QueryBody, "Not a Query body.");
-    encode(channel, (QueryBody) toEncode);
+    Preconditions.checkArgument(toEncode instanceof PushBody, "Not a Push body.");
+    encode(channel, (PushBody) toEncode);
   }
 }

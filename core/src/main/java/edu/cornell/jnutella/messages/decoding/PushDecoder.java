@@ -13,53 +13,60 @@ import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.messages.MessageHeader;
-import edu.cornell.jnutella.messages.PongBody;
+import edu.cornell.jnutella.messages.PushBody;
 import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
+import edu.cornell.jnutella.util.GUID;
+import edu.cornell.jnutella.util.HexConverter;
 
-@ForMessageType(MessageHeader.F_PING_REPLY)
-public class PongDecoder implements MessageBodyDecoder<PongBody> {
+@ForMessageType(MessageHeader.F_PUSH)
+public class PushDecoder implements MessageBodyDecoder<PushBody> {
   private final MessageBodyFactory bodyFactory;
   private final GGEPDecoder ggepDecoder;
 
   @InjectLogger
   private Logger log;
-  
+
   @Inject
-  public PongDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder) {
+  public PushDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder) {
     this.bodyFactory = bodyFactory;
     this.ggepDecoder = ggepDecoder;
   }
 
   @Override
-  public PongBody decode(ChannelBuffer buffer) throws DecodingException {
-    Preconditions.checkState(buffer.readableBytes() >= 14);
-
-    int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
+  public PushBody decode(ChannelBuffer buffer) throws DecodingException {
+    Preconditions.checkState(buffer.readableBytes() >= 26);
+    
+    byte[] sid = new byte[16];
+    for (int i = 0; i < 16; i++){
+      sid[i] = buffer.readByte();
+    }
+    GUID servantID = new GUID(HexConverter.toHexString( sid ));
+    
+    long index = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
+    InetAddress address;
     
     int a = ByteUtils.ubyte2int(buffer.readByte());
     int b = ByteUtils.ubyte2int(buffer.readByte());
     int c = ByteUtils.ubyte2int(buffer.readByte());
     int d = ByteUtils.ubyte2int(buffer.readByte());
     String ip = (a + "." + b + "." + c + "." + d);
-    
-    long fileCount = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
-    long fileSizeInKB = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
-    InetAddress address;
 
     try {
       address = InetAddress.getByName(ip);
     } catch (UnknownHostException e) {
-      log.error("Host " + ip + " is unknown in Pong.");
-      throw new DecodingException("Host " + ip + " is unknown in Pong.");
+      log.error("Host " + ip + " is unknown in Push.");
+      throw new DecodingException("Host " + ip + " is unknown in Push.");
     }
+    
+    int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
 
     if (!buffer.readable()) {
-      return bodyFactory.createPongMessage(address, port, fileCount, fileSizeInKB, null);
+      return bodyFactory.createPushMessage(servantID, index, address, port, null);
     }
 
     GGEP ggep = ggepDecoder.decode(buffer);
     Preconditions.checkNotNull(ggep, "GGEP is null.");
-    return bodyFactory.createPongMessage(address, port, fileCount, fileSizeInKB, ggep);
+    return bodyFactory.createPushMessage(servantID, index, address, port, ggep);
   }
 }
