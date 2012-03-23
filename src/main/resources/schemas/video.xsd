@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema targetNamespace="http://www.limewire.com/schemas/xerces/video.xsd">
+
+	<element name="video" type="videoType" />
+
+	<complexType name="videoType">
+
+		<element name="Title" type="string" minOccurs="0" maxOccurs="1" />
+
+		<element name="Director" type="string" minOccurs="0"
+			maxOccurs="1" />
+
+		<element name="Producer" type="string" minOccurs="0"
+			maxOccurs="2" />
+
+		<element name="Studio" type="short" minOccurs="0" maxOccurs="1" />
+
+		<element name="Stars" type="string" minOccurs="0" maxOccurs="3" />
+
+		<element name="Type" minOccurs="0" maxOccurs="1">
+
+			<simpleType base="string">
+
+				<enumeration value="Music Video" />
+
+				<enumeration value="Commercial" />
+
+				<enumeration value="Trailer" />
+
+				<enumeration value="Movie Clip" />
+
+				<enumeration value="Video Clip" />
+
+				<enumeration value="VHS Movie" />
+
+				<enumeration value="DVD Movie" />
+
+				<enumeration value="Other" />
+
+			</simpleType>
+
+		</element>
+
+		<element name="Minutes" type="decimal" minOccurs="0"
+			maxOccurs="1" />
+
+		<element name="Size" minOccurs="0" maxOccurs="1">
+
+			<complexType>
+
+				<element name="Pixel Height" type="int" />
+
+				<element name="Pixel Width" type="int" />
+
+			</complexType>
+
+		</element>
+
+		<element name="Year" type="year" minOccurs="0" maxOccurs="1" />
+
+		<element name="Langauge" type="language" minOccurs="0"
+			maxOccurs="1" />
+
+		<element name="Subtitles" type="language" minOccurs="0"
+			maxOccurs="3" />
+
+		<element name="SHA1" type="int" minOccurs="0" maxOccurs="1" />
+
+		<element name="Rating" minOccurs="0" maxOccurs="1">
+
+			<simpleType base="string">
+
+				<enumeration value="G" />
+
+				<enumeration value="PG" />
+
+				<enumeration value="PG-13" />
+
+				<enumeration value="R" />
+
+				<enumeration value="NC-17" />
+
+				<enumeration value="NR" />
+
+			</simpleType>
+
+		</element>
+
+		<element name="Availability" type="string" minOccurs="0"
+			maxOccurs="1" />
+
+		<element name="Price" type="string" minOccurs="0" maxOccurs="1" />
+
+		<element name="Shipping" type="string" minOccurs="0"
+			maxOccurs="1" />
+
+		<element name="Link" type="uriReference" minOccurs="0"
+			maxOccurs="1" />
+
+		<element name="Comments" minOccurs="0" maxOccurs="1">
+
+			<simpleType base="string">
+
+				<maxInclusive value="100" />
+
+			</simpleType>
+
+		</element>
+
+	</complexType>
+
+</schema>

@@ -1,0 +1,127 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<schema targetNamespace="http://www.limewire.com/schemas/xerces/book.xsd">
+
+  <element name="book" type="bookType"/>
+
+  <complexType name="bookType">
+
+    <all>
+
+      <element name="Title" type="string"/>
+
+      <element name="Edition" type="short"/>
+
+      <element name="Author" type="string"/>
+
+      <element name="Publisher" type="string"/>
+
+      <element name="Genre">
+
+        <simpleType base="string">
+
+          <enumeration value="Computers, Information, and Reference"/>
+
+          <enumeration value="Philosophy and Psychology"/>
+
+          <enumeration value="Religion"/>
+
+          <enumeration value="Social Sciences"/>
+
+          <enumeration value="Language"/>
+
+          <enumeration value="Science"/>
+
+          <enumeration value="Technology"/>
+
+          <enumeration value="Arts and Recreation"/>
+
+          <enumeration value="History and Geography"/>
+
+          <enumeration value="General Fiction"/>
+
+          <enumeration value="Classics"/>
+
+          <enumeration value="Crime"/>
+
+          <enumeration value="Science Fiction"/>
+
+          <enumeration value="Poetry"/>
+
+          <enumeration value="Children and Teens"/>
+
+          <enumeration value="Other"/>
+
+        </simpleType>
+
+      </element>
+
+      <element name="Subject" type="string"/>
+
+      <element name="Pages" type="int"/>
+
+      <element name="Year" type="year"/>
+
+      <element name="Language" type="language"/>
+
+      <element name="SHA1" type="int"/>
+
+      <element name="ISBN">
+
+        <simpleType base="int">
+
+          <pattern value="\d{10}"/>
+
+        </simpleType>
+
+      </element>
+
+      <element name="Dimensions">
+
+        <complexType>
+
+          <element name="Length" type="decimal"/>
+
+          <element name="Width" type="decimal"/>
+
+          <element name="Height" type="decimal"/>
+
+        </complexType>
+
+      </element>
+
+      <element name="Back">
+
+        <simpleType base="string">
+
+          <enumeration value="Hardback"/>
+
+          <enumeration value="Paperback"/>
+
+        </simpleType>
+
+      </element>
+
+      <element name="Availability" type="string"/>
+
+      <element name="Price" type="string"/>
+
+      <element name="Shipping" type="string"/>
+
+      <element name="Link" type="uriReference"/>
+
+      <element name="Comments">
+
+        <simpleType base="string">
+
+          <maxInclusive value="100"/>
+
+        </simpleType>
+
+      </element>
+
+    </all>
+
+  </complexType>
+
+</schema>
