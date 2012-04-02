@@ -10,7 +10,7 @@ import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 
-public class JnutellaScopes {
+public class GnutellaScopes {
 
   /**
    * A threadlocal scope map for session scopes.

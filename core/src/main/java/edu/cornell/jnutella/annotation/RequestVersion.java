@@ -1,0 +1,32 @@
+package edu.cornell.jnutella.annotation;
+
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
+
+@Documented
+@Target({ ElementType.TYPE })
+@Retention(RetentionPolicy.RUNTIME)
+public @interface RequestVersion {
+	/**
+	 * The minimum version allowed for this module, inclusive
+	 */
+	String minVersion();
+
+	/**
+	 * The maximum version allowed for this module, inclusive
+	 */
+	String maxVersion();
+
+	/**
+	 * The requested capability
+	 */
+	String capability();
+
+	/**
+	 * The behavior of the version request.
+	 */
+	RequestVersionBehavior behavior() default RequestVersionBehavior.ACTIVE;
+}
