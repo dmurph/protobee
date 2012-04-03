@@ -11,6 +11,9 @@ import java.util.zip.DeflaterOutputStream;
 import java.util.zip.Inflater;
 import java.util.zip.InflaterInputStream;
 
+import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBufferInputStream;
+
 import com.google.inject.Singleton;
 
 @Singleton
@@ -63,6 +66,32 @@ public class IOUtils {
     try {
       inf = new Inflater();
       in = new InflaterInputStream(new ByteArrayInputStream(data), inf);
+      ByteArrayOutputStream out = new ByteArrayOutputStream();
+      byte[] buf = new byte[64];
+      while (true) {
+        int read = in.read(buf, 0, buf.length);
+        if (read == -1) break;
+        out.write(buf, 0, read);
+      }
+      return out.toByteArray();
+    } catch (OutOfMemoryError oome) {
+      throw new IOException(oome.getMessage());
+    } finally {
+      if (in != null) {
+        in.close();
+      }
+      if (inf != null) {
+        inf.end();
+      }
+    }
+  }
+
+  public byte[] inflate(ChannelBuffer buffer, int length) throws IOException {
+    InputStream in = null;
+    Inflater inf = null;
+    try {
+      inf = new Inflater();
+      in = new InflaterInputStream(new ChannelBufferInputStream(buffer, length));
       ByteArrayOutputStream out = new ByteArrayOutputStream();
       byte[] buf = new byte[64];
       while (true) {

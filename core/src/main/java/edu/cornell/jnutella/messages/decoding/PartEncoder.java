@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.messages.encoding;
+package edu.cornell.jnutella.messages.decoding;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 

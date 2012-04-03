@@ -6,8 +6,8 @@ import org.jboss.netty.channel.Channels;
 
 import com.google.inject.Inject;
 
-import edu.cornell.jnutella.messages.encoding.PartDecoder;
-import edu.cornell.jnutella.messages.encoding.PartEncoder;
+import edu.cornell.jnutella.messages.decoding.PartDecoder;
+import edu.cornell.jnutella.messages.decoding.PartEncoder;
 
 public class GnutellaPipelineFactory implements ChannelPipelineFactory {
 

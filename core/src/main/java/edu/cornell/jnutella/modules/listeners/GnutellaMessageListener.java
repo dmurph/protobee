@@ -1,14 +1,14 @@
 package edu.cornell.jnutella.modules.listeners;
 
-import edu.cornell.jnutella.messages.GnutellaMessage;
+import edu.cornell.jnutella.messages.MessageHeader;
 
 public interface GnutellaMessageListener {
 
-  void sending(GnutellaMessage message);
+  void sending(MessageHeader message);
 
-  void sent(GnutellaMessage message);
+  void sent(MessageHeader message);
 
-  void receiving(GnutellaMessage message);
+  void receiving(MessageHeader message);
 
-  void received(GnutellaMessage message);
+  void received(MessageHeader message);
 }

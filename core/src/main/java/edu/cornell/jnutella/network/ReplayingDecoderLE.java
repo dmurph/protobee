@@ -6,16 +6,24 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBufferFactory;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
-import org.jboss.netty.handler.codec.frame.FrameDecoder;
+import org.jboss.netty.handler.codec.replay.ReplayingDecoder;
 
-public abstract class FrameDecoderLE extends FrameDecoder {
+public abstract class ReplayingDecoderLE<T extends Enum<T>> extends ReplayingDecoder<T> {
 
-  public FrameDecoderLE() {
+  public ReplayingDecoderLE() {
     super();
   }
 
-  public FrameDecoderLE(boolean unfold) {
+  public ReplayingDecoderLE(boolean unfold) {
     super(unfold);
+  }
+
+  public ReplayingDecoderLE(T initialState, boolean unfold) {
+    super(initialState, unfold);
+  }
+
+  public ReplayingDecoderLE(T initialState) {
+    super(initialState);
   }
 
   @Override
@@ -24,5 +32,4 @@ public abstract class FrameDecoderLE extends FrameDecoder {
     return ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, Math.max(minimumCapacity, 256),
         factory);
   }
-
 }

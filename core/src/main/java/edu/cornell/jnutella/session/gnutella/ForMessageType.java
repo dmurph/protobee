@@ -10,7 +10,7 @@ import com.google.inject.BindingAnnotation;
 
 @Documented
 @BindingAnnotation
-@Target({ElementType.TYPE, ElementType.PARAMETER})
+@Target({ElementType.TYPE, ElementType.PARAMETER, ElementType.METHOD, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 public @interface ForMessageType {
   byte value();
