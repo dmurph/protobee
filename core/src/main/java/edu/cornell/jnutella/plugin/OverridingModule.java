@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.guice;
+package edu.cornell.jnutella.plugin;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -6,15 +6,12 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
-import com.google.inject.ScopeAnnotation;
-
 /**
- * Apply this to implementation classes when you want one instance per protocol session.
+ * Signifies that the plugin module should be part of the 'overriding' set of guice modules.
  * 
  * @author Daniel
  */
 @Documented
-@Target({ElementType.TYPE, ElementType.METHOD})
+@Target({ElementType.TYPE})
 @Retention(RetentionPolicy.RUNTIME)
-@ScopeAnnotation
-public @interface SessionScoped {}
+public @interface OverridingModule {}

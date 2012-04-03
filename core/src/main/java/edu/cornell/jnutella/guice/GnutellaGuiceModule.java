@@ -4,8 +4,11 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Key;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.multibindings.Multibinder;
+import com.google.inject.util.Modules;
 
 import edu.cornell.jnutella.guice.netty.NettyModule;
+import edu.cornell.jnutella.messages.decoding.DecodingModule;
+import edu.cornell.jnutella.network.NetworkModule;
 import edu.cornell.jnutella.protocol.BasicProtocolHeader;
 import edu.cornell.jnutella.protocol.CompatibilityHeader;
 import edu.cornell.jnutella.protocol.Protocol;
@@ -16,12 +19,14 @@ public class GnutellaGuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    install(new NettyModule());
+    install(new NetworkModule());
+    install(new DecodingModule());
 
     bindListener(Matchers.any(), new Slf4jTypeListener());
 
 
     bindScope(SessionScoped.class, GnutellaScopes.SESSION);
+
 
 
     Multibinder<Protocol> protocolBinder = Multibinder.newSetBinder(binder(), Protocol.class);

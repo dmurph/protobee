@@ -12,7 +12,7 @@ import edu.cornell.jnutella.annotation.Gnutella;
 import edu.cornell.jnutella.messages.MessageHeader;
 import edu.cornell.jnutella.session.gnutella.ForMessageTypes;
 
-public class EncodingModule extends AbstractModule {
+public class DecodingModule extends AbstractModule {
 
   @Override
   protected void configure() {
