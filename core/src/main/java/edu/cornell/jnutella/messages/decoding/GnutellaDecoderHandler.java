@@ -99,8 +99,9 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
       } else {
         buffer.resetReaderIndex();
       }
-      return null;
-    } else {
+    } 
+    
+    if (header != null) {
       if (buffer.readableBytes() < header.getPayloadLength()) {
         return null;
       }
@@ -113,5 +114,6 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
       GnutellaMessage message = new GnutellaMessage(header, body);
       return message;
     }
+    return null;
   }
 }

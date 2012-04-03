@@ -43,6 +43,7 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
     // update the reader index so netty doesn't yell at us
     buffer.readerIndex(buffer.readableBytes());
     if (!data.contains("\r\n")) {
+      buffer.resetReaderIndex();
       return null;
     }
     String header = data.substring(0, data.indexOf("\r\n"));
