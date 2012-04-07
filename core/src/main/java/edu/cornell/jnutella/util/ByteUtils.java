@@ -5,6 +5,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 
+import org.jboss.netty.buffer.ChannelBuffer;
+
 public class ByteUtils {
   /**
    * Returns the reverse of x.
@@ -380,6 +382,13 @@ public class ByteUtils {
     os.write((byte) (x >> 8));
     os.write((byte) (x >> 16));
     os.write((byte) (x >> 24));
+  }
+
+  public static void int2leb(final int x, final ChannelBuffer buffer) {
+    buffer.writeByte((byte) x);
+    buffer.writeByte((byte) (x >> 8));
+    buffer.writeByte((byte) (x >> 16));
+    buffer.writeByte((byte) (x >> 24));
   }
 
   /**

@@ -30,7 +30,7 @@ public class GGEPDecoder implements PartDecoder<GGEP> {
   }
 
   @Override
-  public GGEP decode(ChannelBuffer buffer) {
+  public GGEP decode(ChannelBuffer buffer) throws DecodingException {
 
     try {
       if (buffer.readableBytes() < 4) {
@@ -89,15 +89,15 @@ public class GGEPDecoder implements PartDecoder<GGEP> {
               throw new BadGGEPBlockException("Bad compressed data");
             }
           }
-          
-          if(data == null) {
+
+          if (data == null) {
             data = new byte[dataLength];
             buffer.readBytes(data);
           }
 
           extensionData = data;
         }
-        
+
         if (compressed)
           properties.put(extensionHeader, new NeedsCompression(extensionData));
         else
@@ -106,8 +106,7 @@ public class GGEPDecoder implements PartDecoder<GGEP> {
       return new GGEP(properties);
     } catch (BadGGEPBlockException e) {
       log.error("Bad ggep block");
-      // TODO throw exception?
-      return null;
+      throw new DecodingException(e);
     }
   }
 

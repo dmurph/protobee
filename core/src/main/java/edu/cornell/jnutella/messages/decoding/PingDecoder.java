@@ -1,11 +1,10 @@
 package edu.cornell.jnutella.messages.decoding;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
-import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.messages.MessageHeader;
@@ -14,9 +13,6 @@ import edu.cornell.jnutella.session.gnutella.ForMessageType;
 
 @ForMessageType(MessageHeader.F_PING)
 public class PingDecoder implements MessageBodyDecoder<PingMessage> {
-
-  @InjectLogger
-  private Logger log;
   private final MessageBodyFactory bodyFactory;
   private final GGEPDecoder ggepDecoder;
 
@@ -27,16 +23,13 @@ public class PingDecoder implements MessageBodyDecoder<PingMessage> {
   }
 
   @Override
-  public PingMessage decode(ChannelBuffer buffer) {
+  public PingMessage decode(ChannelBuffer buffer) throws DecodingException {
     if (!buffer.readable()) {
       // we are empty, no ggep
       return bodyFactory.createPingMessage(new GGEP());
     }
     GGEP ggep = ggepDecoder.decode(buffer);
-    if (ggep == null) {
-      log.error("Could not decode ggep.  Giving back empty ggep.");
-      return bodyFactory.createPingMessage(new GGEP());
-    }
+    Preconditions.checkNotNull(ggep, "ggep is null");
     return bodyFactory.createPingMessage(ggep);
   }
 }

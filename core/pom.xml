@@ -8,11 +8,4 @@
   </parent>
   <artifactId>jnutella-core</artifactId>
   <name>jnutella-core</name>
-  <dependencies>
-  	<dependency>
-  		<groupId>com.google.inject.extensions</groupId>
-  		<artifactId>guice-assistedinject</artifactId>
-  		<version>3.0</version>
-  	</dependency>
-  </dependencies>
 </project>

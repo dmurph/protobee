@@ -1,15 +1,15 @@
 package edu.cornell.jnutella.guice;
 
+import org.jboss.netty.logging.InternalLoggerFactory;
+import org.jboss.netty.logging.Slf4JLoggerFactory;
+
 import com.google.inject.AbstractModule;
-import com.google.inject.Key;
 import com.google.inject.matcher.Matchers;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.util.Modules;
 
-import edu.cornell.jnutella.guice.netty.NettyModule;
 import edu.cornell.jnutella.messages.decoding.DecodingModule;
+import edu.cornell.jnutella.messages.encoding.EncodingModule;
 import edu.cornell.jnutella.network.NetworkModule;
-import edu.cornell.jnutella.protocol.BasicProtocolHeader;
 import edu.cornell.jnutella.protocol.CompatibilityHeader;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolHeader;
@@ -19,8 +19,10 @@ public class GnutellaGuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
+    InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
     install(new NetworkModule());
     install(new DecodingModule());
+    install(new EncodingModule());
 
     bindListener(Matchers.any(), new Slf4jTypeListener());
 

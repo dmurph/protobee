@@ -2,6 +2,8 @@ package edu.cornell.jnutella.messages;
 
 
 public class MessageHeader {
+  
+  public static final int MESSAGE_HEADER_LENGTH = 23;
 
   public static final byte F_PING = (byte) 0x0;
 

@@ -1,14 +1,23 @@
 package edu.cornell.jnutella.extension;
 
 /**
- * Thrown when a GGEP block is hopeless corrupt, making it impossible to extract
- * any of the extensions.  
+ * Thrown when a GGEP block is hopeless corrupt, making it impossible to extract any of the
+ * extensions.
  */
 public class BadGGEPBlockException extends Exception {
-    public BadGGEPBlockException() { 
-    }
+  private static final long serialVersionUID = 1L;
 
-    public BadGGEPBlockException(String msg) { 
-        super(msg);
-    }
+  public BadGGEPBlockException() {}
+
+  public BadGGEPBlockException(String msg) {
+    super(msg);
+  }
+
+  public BadGGEPBlockException(String msg, Throwable cause) {
+    super(msg, cause);
+  }
+
+  public BadGGEPBlockException(Throwable cause) {
+    super(cause);
+  }
 }

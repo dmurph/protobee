@@ -2,7 +2,6 @@ package edu.cornell.jnutella.messages;
 
 import org.slf4j.Logger;
 
-import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
