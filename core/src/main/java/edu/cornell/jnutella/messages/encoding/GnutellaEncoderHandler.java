@@ -119,6 +119,8 @@ public class GnutellaEncoderHandler extends SimpleChannelDownstreamHandler {
     headerEncoder.encode(messageBuffer, message.getHeader());
     encoder.encode(messageBuffer, message.getBody());
 
-    Channels.write(ctx, e.getFuture(), messageBuffer);
+    SocketAddress address = null; // TODO populate this from a component
+    
+    Channels.write(ctx, e.getFuture(), messageBuffer, address);
   }
 }

@@ -1,17 +1,15 @@
 package edu.cornell.jnutella.extension;
 
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 
+import com.google.common.base.Preconditions;
+
 import edu.cornell.jnutella.util.ByteUtils;
 import edu.cornell.jnutella.util.NameValue;
-
 
 
 /**
@@ -42,9 +40,6 @@ public class GGEP {
    */
   private final Map<String, Object> properties = new TreeMap<String, Object>();
 
-  /** True if COBS encoding is required. */
-  private boolean useCOBS;
-
   /**
    * Cached hash code value to avoid calculating the hash code from the map each time.
    */
@@ -53,234 +48,25 @@ public class GGEP {
 
   // ////////////////// Encoding/Decoding (Map <==> byte[]) ///////////////////
 
-  /**
-   * Creates a new empty GGEP block. Typically this is used for outgoing messages and mutated before
-   * encoding.
-   * 
-   * @param useCOBS false if nulls are allowed in extension values;true if this should activate COBS
-   *        encoding if necessary to remove null bytes.
-   */
-  public GGEP(boolean useCOBS) {
-    this.useCOBS = useCOBS;
-  }
+
+  public GGEP() {}
 
   public GGEP(Map<String, Object> properties) {
+    Preconditions.checkNotNull(properties);
     this.properties.putAll(properties);
   }
-  
-  /** Creates a new empty GGEP block that does not needs COBS encoding. */
-  public GGEP() {
-    this(false);
-  }
 
-  /**
-   * Constructs a new GGEP message with the given bytes & offset.
-   */
-  public GGEP(byte[] data, int offset) throws BadGGEPBlockException {
-    this(data, offset, null);
-  }
-
-  /**
-   * Constructs a GGEP instance based on the GGEP block beginning at messageBytes[beginOffset].
-   * 
-   * @param messageBytes The bytes of the message.
-   * @param beginOffset The begin index of the GGEP prefix.
-   * @param endOffset If you want to get the offset where the GGEP block ends (more precisely, one
-   *        above the ending index), then send me a int[1]. I'll put the endOffset in endOffset[0].
-   *        If you don't care, null will do....
-   * @exception BadGGEPBlockException Thrown if the block could not be parsed correctly.
-   */
-  public GGEP(byte[] messageBytes, final int beginOffset, int[] endOffset)
-      throws BadGGEPBlockException {
-    useCOBS = false;
-    //
-    // if (messageBytes.length - beginOffset < 4) throw new BadGGEPBlockException();
-    //
-    // // all GGEP blocks start with this prefix....
-    // if (messageBytes[beginOffset] != GGEP_PREFIX_MAGIC_NUMBER) throw new BadGGEPBlockException();
-    //
-    // boolean tUseCOBS = false;
-    // boolean onLastExtension = false;
-    // int currIndex = beginOffset + 1;
-    // while (!onLastExtension) {
-    //
-    // // process extension header flags
-    // // bit order is interpreted as 76543210
-    // try {
-    // sanityCheck(messageBytes[currIndex]);
-    // } catch (ArrayIndexOutOfBoundsException malformedInput) {
-    // throw new BadGGEPBlockException();
-    // }
-    // onLastExtension = isLastExtension(messageBytes[currIndex]);
-    // boolean encoded = isEncoded(messageBytes[currIndex]);
-    // boolean compressed = isCompressed(messageBytes[currIndex]);
-    // int headerLen = deriveHeaderLength(messageBytes[currIndex]);
-    //
-    // // get the extension header
-    // currIndex++;
-    // String extensionHeader = null;
-    // try {
-    // extensionHeader = new String(messageBytes, currIndex, headerLen);
-    // } catch (StringIndexOutOfBoundsException inputIsMalformed) {
-    // throw new BadGGEPBlockException();
-    // }
-    //
-    // // get the data length
-    // currIndex += headerLen;
-    // int[] toIncrement = new int[1];
-    // final int dataLength = deriveDataLength(messageBytes, currIndex, toIncrement);
-    //
-    // byte[] extensionData = null;
-    //
-    // currIndex += toIncrement[0];
-    // if (dataLength > 0) {
-    // // ok, data is present, get it....
-    //
-    // byte[] data = new byte[dataLength];
-    // try {
-    // System.arraycopy(messageBytes, currIndex, data, 0, dataLength);
-    // } catch (ArrayIndexOutOfBoundsException malformedInput) {
-    // throw new BadGGEPBlockException();
-    // }
-    //
-    // if (encoded) {
-    // tUseCOBS = true;
-    // try {
-    // data = GGEP.cobsDecode(data);
-    // } catch (IOException badCobsEncoding) {
-    // throw new BadGGEPBlockException("Bad COBS Encoding");
-    // }
-    // }
-    //
-    // if (compressed) {
-    // try {
-    // data = IOUtils.inflate(data);
-    // } catch (IOException badData) {
-    // throw new BadGGEPBlockException("Bad compressed data");
-    // }
-    // }
-    //
-    // extensionData = data;
-    //
-    // currIndex += dataLength;
-    // }
-    //
-    // // ok, everything checks out, just slap it in the hashmapper...
-    // if (compressed)
-    // _props.put(extensionHeader, new NeedsCompression(extensionData));
-    // else
-    // _props.put(extensionHeader, extensionData);
-    //
-    // }
-    //
-    // if ((endOffset != null) && (endOffset.length > 0)) endOffset[0] = currIndex;
-    //
-    // useCOBS = tUseCOBS;
-  }
 
   /**
    * Merges the other's GGEP with this' GGEP.
    */
   public void merge(GGEP other) {
+    Preconditions.checkNotNull(other);
     properties.putAll(other.properties);
   }
-
   
-
-  
-
-  /**
-   * Writes this GGEP instance as a properly formatted GGEP Block.
-   * 
-   * @param out This GGEP instance is written to out.
-   * @exception IOException Thrown if had error writing to out.
-   */
-  public void write(OutputStream out) throws IOException {
-//    if (getHeaders().size() > 0) {
-//      // start with the magic prefix
-//      out.write(GGEP_PREFIX_MAGIC_NUMBER);
-//
-//      Iterator<String> headers = getHeaders().iterator();
-//      // for each header, write the GGEP header and data
-//      while (headers.hasNext()) {
-//        String currHeader = headers.next();
-//        byte[] currData = get(currHeader);
-//        int dataLen = 0;
-//        boolean shouldEncode = shouldCOBSEncode(currData);
-//        boolean shouldCompress = shouldCompress(currHeader);
-//        if (currData != null) {
-//          if (shouldCompress) {
-//            currData = IOUtils.deflate(currData);
-//            if (currData.length > MAX_VALUE_SIZE_IN_BYTES)
-//              throw new IllegalArgumentException("value for [" + currHeader
-//                  + "] too large after compression");
-//          }
-//          if (shouldEncode) currData = GGEP.cobsEncode(currData);
-//          dataLen = currData.length;
-//        }
-//        writeHeader(currHeader, dataLen, !headers.hasNext(), out, shouldEncode, shouldCompress);
-//        if (dataLen > 0) out.write(currData);
-//      }
-//    }
-  }
-
-  /**
-   * Returns the GGEP as a byte array
-   * 
-   * @return an empty array if GGEP is empty
-   */
-  public byte[] toByteArray() {
-    ByteArrayOutputStream out = new ByteArrayOutputStream();
-    try {
-      write(out);
-    } catch (IOException e) {
-      // ErrorService.error(e);
-    }
-    return out.toByteArray();
-  }
-
-  private final boolean shouldCOBSEncode(byte[] data) {
-    // if nulls are allowed from construction time and if nulls are present
-    // in the data...
-    return (useCOBS && containsNull(data));
-  }
-
-  private final boolean shouldCompress(String header) {
-    return (properties.get(header) instanceof NeedsCompression);
-  }
-
-  private void writeHeader(String header, final int dataLen, boolean isLast, OutputStream out,
-      boolean isEncoded, boolean isCompressed) throws IOException {
-
-    // 1. WRITE THE HEADER FLAGS
-    int flags = 0x00;
-    if (isLast) flags |= 0x80;
-    if (isEncoded) flags |= 0x40;
-    if (isCompressed) flags |= 0x20;
-    flags |= header.getBytes().length;
-    out.write(flags);
-
-    // 2. WRITE THE HEADER
-    out.write(header.getBytes());
-
-    // 3. WRITE THE DATA LEN
-    // possibly 3 bytes
-    int toWrite;
-    int begin = dataLen & 0x3F000;
-    if (dataLen > 0x00000fff) {
-      begin = begin >> 12; // relevant bytes at the bottom now...
-      toWrite = 0x80 | begin;
-      out.write(toWrite);
-    }
-    int middle = dataLen & 0xFC0;
-    if (dataLen > 0x0000003f) {
-      middle = middle >> 6; // relevant bytes at the bottom now...
-      toWrite = 0x80 | middle;
-      out.write(toWrite);
-    }
-    int end = dataLen & 0x3F; // shut off everything except last 6 bits...
-    toWrite = 0x40 | end;
-    out.write(toWrite);
+  public int getNumKeys() {
+    return properties.size();
   }
 
   /**
@@ -290,7 +76,7 @@ public class GGEP {
    */
   public int getHeaderOverhead(String key) {
     byte[] data = get(key);
-    if (data == null) throw new IllegalArgumentException("no data for key: " + key);
+    Preconditions.checkNotNull(data, "no data for key " + key);
 
     return 1 + // flags
         key.length() + // header
@@ -331,7 +117,7 @@ public class GGEP {
    */
   public void putCompressed(String key, byte[] value) throws IllegalArgumentException {
     validateKey(key);
-    if (value == null) throw new IllegalArgumentException("null value for key: " + key);
+    Preconditions.checkNotNull(value, "Null value for key " + key);
     // validateValue(value); // done when writing. TODO: do here?
     properties.put(key, new NeedsCompression(value));
   }
@@ -504,6 +290,10 @@ public class GGEP {
       return (byte[]) value;
   }
 
+  public boolean isCompressed(String key) {
+    return properties.get(key) instanceof NeedsCompression;
+  }
+
   private void validateKey(String key) throws IllegalArgumentException {
     byte[] bytes = key.getBytes();
     if (key.equals("") || (bytes.length > MAX_KEY_SIZE_IN_BYTES) || containsNull(bytes))
@@ -563,84 +353,9 @@ public class GGEP {
     return hashCode;
   }
 
-  /*
-   * COBS implementation.... For implementation details, please see:
-   * http://www.acm.org/sigcomm/sigcomm97/papers/p062.pdf
-   */
-
-  /**
-   * Decode a COBS-encoded byte array. The non-allowable byte value is 0. PRE: src is not null.
-   * POST: the return array will be a cobs decoded version of src. namely,
-   * cobsDecode(cobsEncode(src)) == src.
-   * 
-   * @return the original COBS decoded string
-   */
-  static byte[] cobsDecode(byte[] src) throws IOException {
-    final int srcLen = src.length;
-    int currIndex = 0;
-    int code = 0;
-    ByteArrayOutputStream sink = new ByteArrayOutputStream();
-
-    while (currIndex < srcLen) {
-      code = ByteUtils.ubyte2int(src[currIndex++]);
-      if ((currIndex + (code - 2)) >= srcLen) throw new IOException();
-      for (int i = 1; i < code; i++) {
-        sink.write(src[currIndex++]);
-      }
-      if (currIndex < srcLen) // don't write this last one, it isn't used
-        if (code < 0xFF) sink.write(0);
-    }
-
-    return sink.toByteArray();
-  }
-
-  static int cobsFinishBlock(int code, ByteArrayOutputStream sink, byte[] src, int begin, int end) {
-    sink.write(code);
-    if (begin > -1) sink.write(src, begin, (end - begin) + 1);
-    return (byte) 0x01;
-  }
-
-  /**
-   * Encode a byte array with COBS. The non-allowable byte value is 0. PRE: src is not null. POST:
-   * the return array will be a cobs encoded version of src. namely, cobsDecode(cobsEncode(src)) ==
-   * src.
-   * 
-   * @return a COBS encoded version of src.
-   */
-  static byte[] cobsEncode(byte[] src) {
-    final int srcLen = src.length;
-    int code = 1;
-    int currIndex = 0;
-    // COBS encoding adds no more than one byte of overhead for every 254
-    // bytes of packet data
-    final int maxEncodingLen = src.length + ((src.length + 1) / 254) + 1;
-    ByteArrayOutputStream sink = new ByteArrayOutputStream(maxEncodingLen);
-    int writeStartIndex = -1;
-
-    while (currIndex < srcLen) {
-      if (src[currIndex] == 0) {
-        // currIndex was incremented so take 1 less
-        code = GGEP.cobsFinishBlock(code, sink, src, writeStartIndex, (currIndex - 1));
-        writeStartIndex = -1;
-      } else {
-        if (writeStartIndex < 0) writeStartIndex = currIndex;
-        code++;
-        if (code == 0xFF) {
-          code = GGEP.cobsFinishBlock(code, sink, src, writeStartIndex, currIndex);
-          writeStartIndex = -1;
-        }
-      }
-      currIndex++;
-    }
-
-    // currIndex was incremented so take 1 less
-    GGEP.cobsFinishBlock(code, sink, src, writeStartIndex, (currIndex - 1));
-    return sink.toByteArray();
-  }
-
   /**
    * Marker class that wraps a byte[] value, if that value is going to require compression upon
-   * write.
+   * write. TODO: don't use this, and instead keep a set of keys that are flagged for compression
    */
   public static class NeedsCompression {
     final byte[] data;

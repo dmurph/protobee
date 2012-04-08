@@ -10,7 +10,7 @@ import edu.cornell.jnutella.extension.BadGGEPPropertyException;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.GGEPKeys;
 
-public class PingMessage implements MessageBody {
+public class PingBody implements MessageBody {
 
   /** Mask for where leaf/ultrapeer requests are. */
   public static final byte SCP_ULTRAPEER_OR_LEAF_MASK = 0x1;
@@ -30,11 +30,11 @@ public class PingMessage implements MessageBody {
   private Logger log;
 
   @AssistedInject
-  public PingMessage(@Assisted GGEP ggepBlock) {
+  public PingBody(@Assisted GGEP ggepBlock) {
     this.ggepBlock = ggepBlock;
   }
 
-  public GGEP getGgepBlock() {
+  public GGEP getGgep() {
     return ggepBlock;
   }
 

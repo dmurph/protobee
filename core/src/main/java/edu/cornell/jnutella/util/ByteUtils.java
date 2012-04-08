@@ -29,6 +29,16 @@ public class ByteUtils {
     return ret;
   }
 
+  public static boolean isBitSet(short shortIn, int bitPos) {
+    int bitValue = 1 << bitPos;
+    return (shortIn & bitValue) != 0;
+  }
+
+  public static short setBit(short shortIn, int bitPos) {
+    short mask = (short) (1 << bitPos);
+    return (short) (shortIn | mask);
+  }
+
   /**
    * Little-endian bytes to short.
    * 
