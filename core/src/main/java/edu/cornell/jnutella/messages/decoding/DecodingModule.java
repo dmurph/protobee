@@ -24,13 +24,22 @@ public class DecodingModule extends AbstractModule {
 
     // bind body decoders
     bind(MessageBodyDecoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_PING)).to(
-        PingDecoder.class);
+      PingDecoder.class);
+    bind(MessageBodyDecoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_PING_REPLY)).to(
+      PongDecoder.class);
+    bind(MessageBodyDecoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_QUERY)).to(
+      QueryDecoder.class);
+    bind(MessageBodyDecoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_PUSH)).to(
+      PushDecoder.class);
 
     // add body decoders to set {};
     Multibinder<MessageBodyDecoder> gnutellaDecoders =
         Multibinder.newSetBinder(binder(), MessageBodyDecoder.class, Gnutella.class);
 
     gnutellaDecoders.addBinding().to( 
-        Key.get(MessageBodyDecoder.class, ForMessageTypes.with(MessageHeader.F_PING)));
+      Key.get(MessageBodyDecoder.class, ForMessageTypes.with(MessageHeader.F_PING)));
+    Key.get(MessageBodyDecoder.class, ForMessageTypes.with(MessageHeader.F_PING_REPLY));
+    Key.get(MessageBodyDecoder.class, ForMessageTypes.with(MessageHeader.F_QUERY));
+    Key.get(MessageBodyDecoder.class, ForMessageTypes.with(MessageHeader.F_PUSH));
   }
 }

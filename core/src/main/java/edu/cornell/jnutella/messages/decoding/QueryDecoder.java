@@ -32,7 +32,8 @@ public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
 
   @Override
   public QueryBody decode(ChannelBuffer buffer) throws DecodingException {
-    Preconditions.checkState(buffer.readable());
+    Preconditions.checkState(buffer.readableBytes() >= 3);
+    
     short minSpeed = (ByteUtils.leb2short(buffer));
     int startIndex = buffer.readerIndex();
     byte currByte = 0x1;

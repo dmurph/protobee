@@ -34,18 +34,14 @@ public class PongDecoder implements MessageBodyDecoder<PongBody> {
 
   @Override
   public PongBody decode(ChannelBuffer buffer) throws DecodingException {
-    if (!buffer.readable()) {
-      log.error("Pong buffer is not readable.");
-      throw new DecodingException("Pong buffer is not readable.");
-    }
+    Preconditions.checkState(buffer.readableBytes() >= 14);
 
     int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
-
+    
     int a = ByteUtils.ubyte2int(buffer.readByte());
     int b = ByteUtils.ubyte2int(buffer.readByte());
     int c = ByteUtils.ubyte2int(buffer.readByte());
     int d = ByteUtils.ubyte2int(buffer.readByte());
-
     String ip = (a + "." + b + "." + c + "." + d);
     
     long fileCount = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
@@ -55,8 +51,8 @@ public class PongDecoder implements MessageBodyDecoder<PongBody> {
     try {
       address = InetAddress.getByName(ip);
     } catch (UnknownHostException e) {
-      log.error("Host " + ip + " is unknown.");
-      throw new DecodingException("Host " + ip + " is unknown.");
+      log.error("Host " + ip + " is unknown in Pong.");
+      throw new DecodingException("Host " + ip + " is unknown in Pong.");
     }
 
     if (!buffer.readable()) {
@@ -68,16 +64,3 @@ public class PongDecoder implements MessageBodyDecoder<PongBody> {
     return bodyFactory.createPongMessage(address, port, fileCount, fileSizeInKB, ggep);
   }
 }
-
-// pong structure
-// 0-1 Port number. The port number on which the responding
-// host can accept incoming connections.
-// 2-5 IP Address. The IP address of the responding host.
-// Note: This field is in big-endian format.
-// 6-9 Number of shared files. The number of files that the
-// servent with the given IP address and port is sharing
-// on the network.
-// 10-13 Number of kilobytes shared. The number of kilobytes
-// of data that the servent with the given IP address and
-// port is sharing on the network.
-// 14- OPTIONAL GGEP extension block. (see Section 2.3)
