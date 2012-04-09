@@ -1,20 +1,24 @@
 package edu.cornell.jnutella.session;
 
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-
 import org.jboss.netty.channel.Channel;
 
+import edu.cornell.jnutella.protocol.Protocol;
+
 public abstract class SessionModel {
-  
+
   private final Channel channel;
-  
-  public SessionModel(Channel channel) {
+  private final Protocol protocol;
+
+  public SessionModel(Channel channel, Protocol protocol) {
     this.channel = channel;
+    this.protocol = protocol;
   }
-  
+
   public Channel getChannel() {
     return channel;
+  }
+
+  public Protocol getProtocol() {
+    return protocol;
   }
 }

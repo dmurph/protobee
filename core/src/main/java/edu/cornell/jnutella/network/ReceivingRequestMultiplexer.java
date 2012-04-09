@@ -14,8 +14,11 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
+import edu.cornell.jnutella.ConnectionKey;
 import edu.cornell.jnutella.ConnectionManager;
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.protocol.Protocol;
+import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.SessionModel;
 
 /**
@@ -30,22 +33,26 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
   private final Object loggerLock = new Object();
 
   private final ConnectionManager connectionManager;
-  private final Object managerLock = new Object();
 
-  private final Map<String, ProtocolConfigProvider> protocolProviders;
+  private final Map<Protocol, ProtocolConfig> protocols;
   private final Object providersLock = new Object();
 
   @Inject
   public ReceivingRequestMultiplexer(ConnectionManager connectionMananger,
-      Set<ProtocolConfigProvider> channelHandlerProviders) {
+      Set<ProtocolConfig> protocolConfigs) {
     this.connectionManager = connectionMananger;
 
-    ImmutableMap.Builder<String, ProtocolConfigProvider> builder = ImmutableMap.builder();
+    ImmutableMap.Builder<Protocol, ProtocolConfig> builder = ImmutableMap.builder();
 
-    for (ProtocolConfigProvider provider : channelHandlerProviders) {
-      builder.put(provider.getProtocol().getHeaderRegex(), provider);
+    for (ProtocolConfig config : protocolConfigs) {
+      Protocol protocolDef = config.getClass().getAnnotation(Protocol.class);
+      if (protocolDef == null) {
+        logger.error("Protocol config '" + config + "' does not have Protocol annotation");
+        throw new IllegalArgumentException("Protocol config missing Protocol annotation");
+      }
+      builder.put(protocolDef, config);
     }
-    protocolProviders = builder.build();
+    protocols = builder.build();
   }
 
   @Override
@@ -63,10 +70,10 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
 
     boolean found = false;
     // iteration should be threadsafe, because we're immutable
-    for (String key : protocolProviders.keySet()) {
-      if (header.matches(key)) {
+    for (Protocol key : protocols.keySet()) {
+      if (header.matches(key.headerRegex())) {
         found = true;
-        initializeChannel(ctx, channel, protocolProviders.get(key));
+        initializeChannel(ctx, channel, key, protocols.get(key));
         break;
       }
     }
@@ -84,14 +91,14 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
     return newBuffer;
   }
 
-  private void initializeChannel(ChannelHandlerContext ctx, Channel channel,
-      ProtocolConfigProvider protocolProvider) {
-    ChannelHandler[] handlers;
+  private void initializeChannel(ChannelHandlerContext ctx, Channel channel, Protocol protocol,
+      ProtocolConfig protocolProvider) {
+    Iterable<ChannelHandler> handlers;
     SessionModel model;
 
     synchronized (providersLock) {
       handlers = protocolProvider.createChannelHandlers();
-      model = protocolProvider.createSessionModel();
+      model = protocolProvider.createSessionModel(channel, protocol);
     }
 
     ChannelPipeline pipeline = ctx.getPipeline();
@@ -100,8 +107,7 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
     }
     pipeline.remove(this);
 
-    synchronized (managerLock) {
-      connectionManager.addSessionModel(channel.getRemoteAddress(), model);
-    }
+    connectionManager.addSession(
+        new ConnectionKey(channel.getLocalAddress(), channel.getRemoteAddress()), model);
   }
 }

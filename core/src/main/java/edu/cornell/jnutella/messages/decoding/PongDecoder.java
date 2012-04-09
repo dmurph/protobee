@@ -16,7 +16,6 @@ import edu.cornell.jnutella.messages.MessageHeader;
 import edu.cornell.jnutella.messages.PongBody;
 import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
-import edu.cornell.jnutella.util.IOUtils;
 
 @ForMessageType(MessageHeader.F_PING_REPLY)
 public class PongDecoder implements MessageBodyDecoder<PongBody> {

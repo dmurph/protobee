@@ -29,8 +29,6 @@ public class DecodingModule extends AbstractModule {
       PongDecoder.class);
     bind(MessageBodyDecoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_QUERY)).to(
       QueryDecoder.class);
-    bind(MessageBodyDecoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_PUSH)).to(
-      PushDecoder.class);
 
     // add body decoders to set {};
     Multibinder<MessageBodyDecoder> gnutellaDecoders =

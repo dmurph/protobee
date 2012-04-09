@@ -3,8 +3,9 @@ package edu.cornell.jnutella.util;
 import java.util.Locale;
 
 /**
- * Represents a URN according to RFC 2141 http://www.ietf.org/rfc/rfc2141.txt All URNs have the
- * following syntax (phrases enclosed in quotes are REQUIRED):<br>
+ * Represents a URN according to RFC 2141 http://www.ietf.org/rfc/rfc2141.txt
+ * 
+ * All URNs have the following syntax (phrases enclosed in quotes are REQUIRED):<br>
  * <URN> ::= "urn:" <NID> ":" <NSS>
  */
 public class URN {

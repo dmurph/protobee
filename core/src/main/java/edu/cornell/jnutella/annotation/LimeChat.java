@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import com.google.inject.BindingAnnotation;
 
 /**
- * Binding annotation that signifies the injected object requested is for the gnutella protocol
+ * Binding annotation that signifies the inject object requested is for the chat protocol
  * implementation
  * 
  * @author Daniel
@@ -18,6 +18,6 @@ import com.google.inject.BindingAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.PARAMETER})
 @BindingAnnotation
-public @interface Gnutella {
+public @interface LimeChat {
 
 }

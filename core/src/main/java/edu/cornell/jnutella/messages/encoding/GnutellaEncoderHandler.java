@@ -1,12 +1,12 @@
 package edu.cornell.jnutella.messages.encoding;
 
-import java.net.SocketAddress;
 import java.nio.ByteOrder;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
+import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.Channels;
@@ -20,11 +20,13 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
+import edu.cornell.jnutella.ConnectionKey;
 import edu.cornell.jnutella.ConnectionManager;
 import edu.cornell.jnutella.annotation.Gnutella;
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.messages.MessageHeader;
+import edu.cornell.jnutella.session.SessionModel;
 import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.session.gnutella.GnutellaSessionModel;
 
@@ -71,16 +73,17 @@ public class GnutellaEncoderHandler extends SimpleChannelDownstreamHandler {
 
   @Override
   public void handleDownstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
-    SocketAddress address = e.getChannel().getRemoteAddress();
-    GnutellaSessionModel session;
-    if (connectionManager.hasSessionModel(address)) {
-      session =
-          (GnutellaSessionModel) connectionManager.getSessionModel(e.getChannel()
-              .getRemoteAddress());
-    } else {
-      session = new GnutellaSessionModel(e.getChannel());
-      connectionManager.addSessionModel(address, session);
+    Channel channel = e.getChannel();
+    SessionModel model =
+        connectionManager.getSession(new ConnectionKey(channel.getLocalAddress(), channel
+            .getRemoteAddress()));
+
+    if (!(model instanceof GnutellaSessionModel)) {
+      log.error("Not Gnutella session model: " + model);
+      throw new IllegalStateException("Not Gnutella session model: " + model);
     }
+
+    GnutellaSessionModel session = (GnutellaSessionModel) model;
 
     switch (session.getState()) {
       case HANDSHAKE_0:
@@ -119,8 +122,6 @@ public class GnutellaEncoderHandler extends SimpleChannelDownstreamHandler {
     headerEncoder.encode(messageBuffer, message.getHeader());
     encoder.encode(messageBuffer, message.getBody());
 
-    SocketAddress address = null; // TODO populate this from a component
-    
-    Channels.write(ctx, e.getFuture(), messageBuffer, address);
+    Channels.write(ctx, e.getFuture(), messageBuffer);
   }
 }

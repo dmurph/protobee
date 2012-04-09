@@ -1,10 +1,38 @@
 package edu.cornell.jnutella.protocol;
 
-public interface Protocol {
+import java.lang.annotation.Documented;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-  public String getName();
+/**
+ * Defines a protocol to use in the jnutella framework
+ * 
+ * @author Daniel
+ */
+@Documented
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.RUNTIME)
+public @interface Protocol {
+  /**
+   * The name of the protocol, used in the header
+   * 
+   * @return
+   */
+  String name();
 
-  public String getVersion();
+  /**
+   * The version of the protocol, used to make the header
+   * 
+   * @return
+   */
+  String version();
 
-  public String getHeaderRegex();
+  /**
+   * Regex string used to match each protocol to corresponding headers
+   * 
+   * @return
+   */
+  String headerRegex();
 }
