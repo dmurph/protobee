@@ -1,5 +1,7 @@
 package edu.cornell.jnutella.messages;
 
+import javax.annotation.Nullable;
+
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
@@ -56,10 +58,14 @@ public class QueryBody implements MessageBody {
   private final GGEP ggep;
 
   @AssistedInject
-  public QueryBody(@Assisted short minSpeed, @Assisted String query, @Assisted GGEP ggep) {
+  public QueryBody(@Assisted short minSpeed, @Assisted String query, @Nullable @Assisted GGEP ggep) {
     this.minSpeed = minSpeed;
     this.query = query;
     this.ggep = ggep;
+  }
+  
+  public short getMinSpeed(){
+    return minSpeed;
   }
 
   public String getQuery() {
@@ -68,6 +74,32 @@ public class QueryBody implements MessageBody {
 
   public GGEP getGgep() {
     return ggep;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
+    result = prime * result + minSpeed;
+    result = prime * result + ((query == null) ? 0 : query.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    QueryBody other = (QueryBody) obj;
+    if (ggep == null) {
+      if (other.ggep != null) return false;
+    } else if (!ggep.equals(other.ggep)) return false;
+    if (minSpeed != other.minSpeed) return false;
+    if (query == null) {
+      if (other.query != null) return false;
+    } else if (!query.equals(other.query)) return false;
+    return true;
   }
 
   public boolean isMinSpeedBitBased() {

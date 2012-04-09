@@ -12,7 +12,7 @@ import edu.cornell.jnutella.messages.encoding.GGEPEncoder.EncoderInput;
 import edu.cornell.jnutella.session.gnutella.ForMessageType;
 
 @ForMessageType(MessageHeader.F_PING)
-public class PingEncoder implements MessageBodyEncoder<PingBody> {
+public class PingEncoder implements MessageBodyEncoder {
 
   private final GGEPEncoder ggepEncoder;
 
@@ -29,7 +29,7 @@ public class PingEncoder implements MessageBodyEncoder<PingBody> {
   }
 
   @Override
-  public void encode(ChannelBuffer channel, MessageBody toEncode) throws EncodingException {
+  public void encode(ChannelBuffer channel, MessageBody toEncode) {
     Preconditions.checkArgument(toEncode instanceof PingBody, "Not a ping body");
     encode(channel, (PingBody) toEncode);
   }

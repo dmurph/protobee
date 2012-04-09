@@ -1,13 +1,14 @@
 package edu.cornell.jnutella.messages.decoding;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
+import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
+import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.messages.MessageHeader;
@@ -20,6 +21,9 @@ public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
   private final MessageBodyFactory bodyFactory;
   private final GGEPDecoder ggepDecoder;
 
+  @InjectLogger
+  private Logger log;
+  
   @Inject
   public QueryDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder) {
     this.bodyFactory = bodyFactory;
@@ -28,48 +32,34 @@ public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
 
   @Override
   public QueryBody decode(ChannelBuffer buffer) throws DecodingException {
-    if (!buffer.readable()) {
-      throw new DecodingException("Query buffer is not readable");
+    Preconditions.checkState(buffer.readable());
+    short minSpeed = (ByteUtils.leb2short(buffer));
+    int startIndex = buffer.readerIndex();
+    byte currByte = 0x1;
+    while (buffer.readable()){
+      currByte = buffer.readByte();
+      if (currByte == 0x0){
+        break;
+      }
     }
-
-    int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
-
-    int a = ByteUtils.ubyte2int(buffer.readByte());
-    int b = ByteUtils.ubyte2int(buffer.readByte());
-    int c = ByteUtils.ubyte2int(buffer.readByte());
-    int d = ByteUtils.ubyte2int(buffer.readByte());
-
-    String ip = (a + "." + b + "." + c + "." + d);
     
-    long fileCount = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
-    long fileSizeInKB = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
-    InetAddress address;
-
-    try {
-      address = InetAddress.getByName(ip);
-    } catch (UnknownHostException e) {
-      throw new DecodingException("Host " + ip + " is unknown.");
+    if(currByte != 0x0) {
+      log.error("Reached end of buffer with no 0 byte in query");
+      throw new DecodingException("Reached end of buffer with no 0 byte in query");
     }
-
+    
+    int endIndex = buffer.readerIndex();
+    String query = buffer.toString(startIndex, endIndex-startIndex-1, Charset.forName("UTF-8"));
+    
+    // TODO check query length
+    // if (query.length() > MAX_QUERY_LENGTH){ }
+    
     if (!buffer.readable()) {
-      return bodyFactory.createQueryMessage(address, port, fileCount, fileSizeInKB, null);
+      return bodyFactory.createQueryMessage(minSpeed, query, null);
     }
 
     GGEP ggep = ggepDecoder.decode(buffer);
     Preconditions.checkNotNull(ggep, "GGEP is null.");
-    return bodyFactory.createQueryMessage(address, port, fileCount, fileSizeInKB, ggep);
+    return bodyFactory.createQueryMessage(minSpeed, query, ggep);
   }
 }
-
-// Query structure
-// 0-1 Port number. The port number on which the responding
-// host can accept incoming connections.
-// 2-5 IP Address. The IP address of the responding host.
-// Note: This field is in big-endian format.
-// 6-9 Number of shared files. The number of files that the
-// servent with the given IP address and port is sharing
-// on the network.
-// 10-13 Number of kilobytes shared. The number of kilobytes
-// of data that the servent with the given IP address and
-// port is sharing on the network.
-// 14- OPTIONAL GGEP extension block. (see Section 2.3)

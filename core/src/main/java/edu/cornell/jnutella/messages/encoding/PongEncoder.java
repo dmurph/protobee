@@ -13,7 +13,7 @@ import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
 
 @ForMessageType(MessageHeader.F_PING_REPLY)
-public class PongEncoder implements MessageBodyEncoder<PongBody> {
+public class PongEncoder implements MessageBodyEncoder {
   private final GGEPEncoder ggepEncoder;
 
   @Inject
@@ -21,7 +21,7 @@ public class PongEncoder implements MessageBodyEncoder<PongBody> {
     this.ggepEncoder = ggepEncoder;
   }
 
-  public void encode(ChannelBuffer buffer, PongBody toEncode) throws EncodingException {
+  public void encode(ChannelBuffer buffer, PongBody toEncode) {
     ByteUtils.short2leb((short) toEncode.getPort(), buffer);
     buffer.writeBytes(toEncode.getAddress().getAddress(), 0, 4);
     ByteUtils.int2leb((int) toEncode.getFileCount(), buffer);
@@ -34,8 +34,9 @@ public class PongEncoder implements MessageBodyEncoder<PongBody> {
   }
 
   @Override
-  public void encode(ChannelBuffer channel, MessageBody toEncode) throws EncodingException {
+  public void encode(ChannelBuffer channel, MessageBody toEncode) {
     Preconditions.checkArgument(toEncode instanceof PongBody, "Not a pong body.");
     encode(channel, (PongBody) toEncode);
   }
+  
 }

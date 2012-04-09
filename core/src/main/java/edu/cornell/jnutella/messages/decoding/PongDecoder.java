@@ -4,22 +4,28 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
+import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.messages.MessageHeader;
 import edu.cornell.jnutella.messages.PongBody;
 import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
+import edu.cornell.jnutella.util.IOUtils;
 
 @ForMessageType(MessageHeader.F_PING_REPLY)
 public class PongDecoder implements MessageBodyDecoder<PongBody> {
   private final MessageBodyFactory bodyFactory;
   private final GGEPDecoder ggepDecoder;
 
+  @InjectLogger
+  private Logger log;
+  
   @Inject
   public PongDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder) {
     this.bodyFactory = bodyFactory;
@@ -29,7 +35,8 @@ public class PongDecoder implements MessageBodyDecoder<PongBody> {
   @Override
   public PongBody decode(ChannelBuffer buffer) throws DecodingException {
     if (!buffer.readable()) {
-      throw new DecodingException("Pong buffer is not readable");
+      log.error("Pong buffer is not readable.");
+      throw new DecodingException("Pong buffer is not readable.");
     }
 
     int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
@@ -48,6 +55,7 @@ public class PongDecoder implements MessageBodyDecoder<PongBody> {
     try {
       address = InetAddress.getByName(ip);
     } catch (UnknownHostException e) {
+      log.error("Host " + ip + " is unknown.");
       throw new DecodingException("Host " + ip + " is unknown.");
     }
 
