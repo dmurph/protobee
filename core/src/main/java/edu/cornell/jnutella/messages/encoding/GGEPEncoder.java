@@ -47,7 +47,7 @@ public class GGEPEncoder implements PartEncoder<GGEPEncoder.EncoderInput> {
    * @exception IOException Thrown if had error writing to channel.
    */
   @Override
-  public void encode(ChannelBuffer channel, EncoderInput toEncode) throws EncodingException {
+  public void encode(ChannelBuffer channel, EncoderInput toEncode) {
     GGEP ggep = toEncode.getGgep();
     Set<String> headers = ggep.getHeaders();
 

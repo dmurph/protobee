@@ -2,9 +2,10 @@ package edu.cornell.jnutella.messages;
 
 import java.net.InetAddress;
 
+import javax.annotation.Nullable;
+
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
-import com.google.inject.name.Named;
 
 import edu.cornell.jnutella.extension.GGEP;
 
@@ -17,9 +18,9 @@ public class PongBody implements MessageBody {
   private final GGEP ggep;
 
   @AssistedInject
-  public PongBody(@Assisted InetAddress address, @Assisted @Named("port") int port,
-      @Assisted @Named("fileCount") long fileCount,
-      @Assisted @Named("fileSizeInKB") long fileSizeInKB, @Assisted GGEP ggep) {
+  public PongBody(@Assisted InetAddress address, @Assisted int port,
+      @Assisted("fileCount") long fileCount,
+      @Assisted("fileSizeInKB") long fileSizeInKB, @Nullable @Assisted("ggep") GGEP ggep) {
     this.port = port;
     this.address = address;
     this.fileCount = fileCount;
@@ -45,5 +46,35 @@ public class PongBody implements MessageBody {
 
   public GGEP getGgep() {
     return ggep;
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((address == null) ? 0 : address.hashCode());
+    result = prime * result + (int) (fileCount ^ (fileCount >>> 32));
+    result = prime * result + (int) (fileSizeInKB ^ (fileSizeInKB >>> 32));
+    result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
+    result = prime * result + port;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    PongBody other = (PongBody) obj;
+    if (address == null) {
+      if (other.address != null) return false;
+    } else if (!address.equals(other.address)) return false;
+    if (fileCount != other.fileCount) return false;
+    if (fileSizeInKB != other.fileSizeInKB) return false;
+    if (ggep == null) {
+      if (other.ggep != null) return false;
+    } else if (!ggep.equals(other.ggep)) return false;
+    if (port != other.port) return false;
+    return true;
   }
 }

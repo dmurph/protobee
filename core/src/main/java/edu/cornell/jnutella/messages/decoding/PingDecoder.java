@@ -26,7 +26,7 @@ public class PingDecoder implements MessageBodyDecoder<PingBody> {
   public PingBody decode(ChannelBuffer buffer) throws DecodingException {
     if (!buffer.readable()) {
       // we are empty, no ggep
-      return bodyFactory.createPingMessage(new GGEP());
+      return bodyFactory.createPingMessage(null);
     }
     GGEP ggep = ggepDecoder.decode(buffer);
     Preconditions.checkNotNull(ggep, "ggep is null");

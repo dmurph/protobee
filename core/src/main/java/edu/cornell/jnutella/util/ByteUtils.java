@@ -51,6 +51,12 @@ public class ByteUtils {
     return (short) ((x[offset] & 0xFF) | (x[offset + 1] << 8));
   }
 
+  public static short leb2short(ChannelBuffer buffer) {
+    byte a = buffer.readByte();
+    byte b = buffer.readByte();
+    return (short) ((a & 0xFF) | (b << 8));
+  }
+
   /**
    * Big-endian bytes to short.
    * 
@@ -89,6 +95,22 @@ public class ByteUtils {
     return (x[offset] & 0xFF) | ((x[offset + 1] & 0xFF) << 8) | ((x[offset + 2] & 0xFF) << 16)
         | (x[offset + 3] << 24);
   }
+
+  public static int leb2int(ChannelBuffer buffer) {
+    byte a = buffer.readByte();
+    byte b = buffer.readByte();
+    byte c = buffer.readByte();
+    byte d = buffer.readByte();
+
+    return (a & 0xFF) | ((b & 0xFF) << 8) | ((c & 0xFF) << 16) | (d << 24);
+  }
+
+  //
+  // public static short leb2short(ChannelBuffer buffer) {
+  // byte b = buffer.readByte();
+  // return (short) ((b & 0xFF) | (b << 8));
+  // }
+
 
   /**
    * Big-endian bytes to int.
@@ -234,12 +256,32 @@ public class ByteUtils {
     }
   }
 
+
+
   /**
    * Short to little-endian bytes: writes x to buf[offset .. ].
    */
   public static void short2leb(final short x, final byte[] buf, final int offset) {
     buf[offset] = (byte) x;
     buf[offset + 1] = (byte) (x >> 8);
+  }
+
+  /**
+   * Short to little-endian bytes: writes x to buf[offset .. ].
+   */
+  public static void short2leb(final short x, ChannelBuffer buffer) {
+    buffer.writeByte((byte) x);
+    buffer.writeByte((byte) (x >> 8));
+  }
+
+  /**
+   * Long to little-endian bytes: writes x to buf[offset .. ].
+   */
+  public static void long2leb(final long x, ChannelBuffer buffer) {
+    buffer.writeByte((byte) x);
+    buffer.writeByte((byte) (x >> 8));
+    buffer.writeByte((byte) (x >> 16));
+    buffer.writeByte((byte) (x >> 24));
   }
 
   /**
@@ -274,6 +316,13 @@ public class ByteUtils {
     buf[offset + 1] = (byte) (x >> 8);
     buf[offset + 2] = (byte) (x >> 16);
     buf[offset + 3] = (byte) (x >> 24);
+  }
+
+  public static void int2leb(final int x, final ChannelBuffer buffer) {
+    buffer.writeByte((byte) x);
+    buffer.writeByte((byte) (x >> 8));
+    buffer.writeByte((byte) (x >> 16));
+    buffer.writeByte((byte) (x >> 24));
   }
 
   /**
@@ -346,8 +395,6 @@ public class ByteUtils {
     buf[offset + 3] = (byte) x;
   }
 
-
-
   /**
    * Int to big-endian bytes: writing only the up to n bytes.
    * 
@@ -384,6 +431,43 @@ public class ByteUtils {
     }
   }
 
+  public static void int2beb(final int x, ChannelBuffer channel, final int n) {
+    switch (n) {
+      case 1:
+        channel.writeByte((byte) x);
+        // out.write((byte) x);
+        break;
+      case 2:
+        channel.writeByte((byte) (x >> 8));
+        channel.writeByte(x);
+
+        // out.write((byte) (x >> 8));
+        // out.write((byte) x);
+        break;
+      case 3:
+        channel.writeByte((byte) (x >> 16));
+        channel.writeByte((byte) (x >> 8));
+        channel.writeByte((byte) x);
+        // out.write((byte) (x >> 16));
+        // out.write((byte) (x >> 8));
+        // out.write((byte) x);
+        break;
+      case 4:
+        channel.writeByte((byte) (x >> 24));
+        channel.writeByte((byte) (x >> 16));
+        channel.writeByte((byte) (x >> 8));
+        channel.writeByte((byte) x);
+
+        // out.write((byte) (x >> 24));
+        // out.write((byte) (x >> 16));
+        // out.write((byte) (x >> 8));
+        // out.write((byte) x);
+        break;
+      default:
+        throw new IllegalArgumentException("invalid n: " + n);
+    }
+  }
+
   /**
    * Int to little-endian bytes: writes x to given stream.
    */
@@ -394,12 +478,7 @@ public class ByteUtils {
     os.write((byte) (x >> 24));
   }
 
-  public static void int2leb(final int x, final ChannelBuffer buffer) {
-    buffer.writeByte((byte) x);
-    buffer.writeByte((byte) (x >> 8));
-    buffer.writeByte((byte) (x >> 16));
-    buffer.writeByte((byte) (x >> 24));
-  }
+
 
   /**
    * Int to big-endian bytes: writes x to given stream.
@@ -410,6 +489,8 @@ public class ByteUtils {
     os.write((byte) (x >> 8));
     os.write((byte) x);
   }
+
+
 
   /**
    * Returns the minimum number of bytes needed to encode x in little-endian format, assuming x is
@@ -486,6 +567,8 @@ public class ByteUtils {
     if (x <= 0xFFFFFF) return new byte[] {(byte) (x >> 16), (byte) (x >> 8), (byte) x};
     return new byte[] {(byte) (x >> 24), (byte) (x >> 16), (byte) (x >> 8), (byte) x};
   }
+
+
 
   /**
    * Interprets the value of x as an unsigned byte, and returns it as integer. For example,

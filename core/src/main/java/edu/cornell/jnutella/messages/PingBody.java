@@ -1,5 +1,7 @@
 package edu.cornell.jnutella.messages;
 
+import javax.annotation.Nullable;
+
 import org.slf4j.Logger;
 
 import com.google.inject.assistedinject.Assisted;
@@ -30,7 +32,7 @@ public class PingBody implements MessageBody {
   private Logger log;
 
   @AssistedInject
-  public PingBody(@Assisted GGEP ggepBlock) {
+  public PingBody(@Nullable @Assisted("ggep") GGEP ggepBlock) {
     this.ggepBlock = ggepBlock;
   }
 
@@ -101,5 +103,25 @@ public class PingBody implements MessageBody {
    */
   public boolean requestsDHTIPP() {
     return ggepBlock.hasKey(GGEPKeys.GGEP_HEADER_DHT_IPPORTS);
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + ((ggepBlock == null) ? 0 : ggepBlock.hashCode());
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    PingBody other = (PingBody) obj;
+    if (ggepBlock == null) {
+      if (other.ggepBlock != null) return false;
+    } else if (!ggepBlock.equals(other.ggepBlock)) return false;
+    return true;
   }
 }
