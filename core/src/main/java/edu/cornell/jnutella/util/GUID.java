@@ -4,7 +4,7 @@ import java.util.Arrays;
 import java.util.Comparator;
 import java.util.Random;
 
-import edu.cornell.jnutella.messages.decoding.DecodingException;
+import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
 
 /**
  * <p><u>G</u>lobaly <u>U</u>nique <u>ID</u>entifier.</p>

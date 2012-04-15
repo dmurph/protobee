@@ -1,6 +1,6 @@
 package edu.cornell.jnutella.modules.listeners;
 
-import edu.cornell.jnutella.messages.MessageHeader;
+import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 
 public interface GnutellaMessageListener {
 

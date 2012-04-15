@@ -9,11 +9,11 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.Multibinder;
 
+import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;
+import edu.cornell.jnutella.gnutella.messages.encoding.EncodingModule;
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.guice.GnutellaScopes;
 import edu.cornell.jnutella.guice.SessionScoped;
-import edu.cornell.jnutella.messages.decoding.DecodingModule;
-import edu.cornell.jnutella.messages.encoding.EncodingModule;
 import edu.cornell.jnutella.network.NetworkModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
