@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.protocol;
+package edu.cornell.jnutella.gnutella;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -10,4 +10,4 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.PARAMETER, ElementType.FIELD})
 @Retention(RetentionPolicy.RUNTIME)
 @BindingAnnotation
-public @interface CompatibilityHeader {}
+public @interface VenderHeader {}

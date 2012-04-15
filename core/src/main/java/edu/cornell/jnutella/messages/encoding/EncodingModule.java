@@ -5,9 +5,9 @@ import com.google.inject.Key;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
-import edu.cornell.jnutella.annotation.Gnutella;
+import edu.cornell.jnutella.gnutella.Gnutella;
+import edu.cornell.jnutella.gnutella.session.ForMessageTypes;
 import edu.cornell.jnutella.messages.MessageHeader;
-import edu.cornell.jnutella.session.gnutella.ForMessageTypes;
 
 public class EncodingModule extends AbstractModule {
 

@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.session.gnutella;
+package edu.cornell.jnutella.gnutella.session;
 
 import org.jboss.netty.channel.Channel;
 
@@ -9,6 +9,10 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.session.SessionModel;
 
 public class GnutellaSessionModel extends SessionModel {
+
+  public static interface Factory {
+    GnutellaSessionModel createSessionModel(Channel channel, Protocol protocol);
+  }
 
   private GnutellaSessionState state;
 

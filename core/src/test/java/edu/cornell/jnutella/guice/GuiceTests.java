@@ -1,22 +1,20 @@
 package edu.cornell.jnutella.guice;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Set;
 
 import org.junit.Test;
-import static org.junit.Assert.*;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.Multibinder;
-import com.google.inject.name.Names;
 import com.google.inject.util.Modules;
 
-import edu.cornell.jnutella.session.gnutella.ForMessageTypes;
+import edu.cornell.jnutella.gnutella.session.ForMessageTypes;
 
 public class GuiceTests {
 
