@@ -16,7 +16,7 @@ import com.google.common.collect.Multimap;
 import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
-import edu.cornell.jnutella.messages.GnutellaMessage;
+import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.util.Clock;
 
 public class SachrifcFlowControl extends SimpleChannelDownstreamHandler

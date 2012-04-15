@@ -1,7 +1,7 @@
 package edu.cornell.jnutella.util;
 
-import edu.cornell.jnutella.messages.decoding.DecodingException;
-import edu.cornell.jnutella.messages.encoding.EncodingException;
+import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
+import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 
 /*
  *  PHEX - The pure-java Gnutella-servent.

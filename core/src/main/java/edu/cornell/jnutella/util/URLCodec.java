@@ -23,8 +23,8 @@ import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.util.BitSet;
 
-import edu.cornell.jnutella.messages.decoding.DecodingException;
-import edu.cornell.jnutella.messages.encoding.EncodingException;
+import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
+import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 
 //import org.apache.commons.codec.BinaryDecoder;
 //import org.apache.commons.codec.BinaryEncoder;
