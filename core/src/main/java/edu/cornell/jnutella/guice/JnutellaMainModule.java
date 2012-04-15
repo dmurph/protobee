@@ -10,17 +10,17 @@ import com.google.inject.matcher.Matchers;
 import edu.cornell.jnutella.gnutella.GnutellaModule;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
 
-public class JnutellaGuiceModule extends AbstractModule {
+public class JnutellaMainModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
-    bindListener(Matchers.any(), new Slf4jTypeListener());
-
     install(new GnutellaModule());
+    install(new LogModule());
+
+    InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
     bind(NetworkIdentityManager.class).in(Singleton.class);
-    
+
   }
 
 }
