@@ -16,6 +16,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.matcher.Matchers;
 
+import edu.cornell.jnutella.guice.LogModule;
 import edu.cornell.jnutella.guice.Slf4jTypeListener;
 
 public class HeaderMergerTest {
@@ -27,16 +28,16 @@ public class HeaderMergerTest {
             new CompatabilityHeaderImpl("A", "0.1", "0.4"),
             new CompatabilityHeaderImpl("B", "0.1", "0.1"),
             new CompatabilityHeaderImpl("B", "0.1", "0.5"),
-            new CompatabilityHeaderImpl("C", "4", "8"), new CompatabilityHeaderImpl("C", "2", "9"),};
+            new CompatabilityHeaderImpl("C", "4", "8"), new CompatabilityHeaderImpl("C", "2", "9"),
+            new CompatabilityHeaderImpl("C", "1", "+"),
+            new CompatabilityHeaderImpl("D", "10", "+"),};
 
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
     Headers header = new HeadersImpl(required, requested);
 
-    Injector inj = Guice.createInjector(new AbstractModule() {
-      @Override
-      protected void configure() {}
-    });
+    Injector inj = Guice.createInjector(new LogModule());
+
 
     CompatabilityHeaderMerger merger = inj.getInstance(CompatabilityHeaderMerger.class);
 
@@ -47,6 +48,7 @@ public class HeaderMergerTest {
     verify(mockMessage, times(1)).addHeader(eq("A"), eq("0.4"));
     verify(mockMessage, times(1)).addHeader(eq("B"), eq("0.1"));
     verify(mockMessage, times(1)).addHeader(eq("C"), eq("8"));
+    verify(mockMessage, times(1)).addHeader(eq("D"), eq("10"));
   }
 
   @Test
@@ -56,19 +58,14 @@ public class HeaderMergerTest {
             new CompatabilityHeaderImpl("A", "0.1", "0.4"),
             new CompatabilityHeaderImpl("B", "0.1", "0.1"),
             new CompatabilityHeaderImpl("B", "0.1", "0.5"),
-            new CompatabilityHeaderImpl("C", "4", "8"), new CompatabilityHeaderImpl("C", "2", "9"),};
+            new CompatabilityHeaderImpl("C", "4", "8"), new CompatabilityHeaderImpl("C", "2", "9"),
+            new CompatabilityHeaderImpl("F", "1", "+"),};
 
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
     Headers header = new HeadersImpl(required, requested);
 
-    Injector inj = Guice.createInjector(new AbstractModule() {
-      @Override
-      protected void configure() {
-
-        bindListener(Matchers.any(), new Slf4jTypeListener());
-      }
-    });
+    Injector inj = Guice.createInjector(new LogModule());
 
     CompatabilityHeaderMerger merger = inj.getInstance(CompatabilityHeaderMerger.class);
 
@@ -78,6 +75,7 @@ public class HeaderMergerTest {
     headers.add(new MyEntry("A", "0.2"));
     headers.add(new MyEntry("B", "0.8"));
     headers.add(new MyEntry("D", "0.8"));
+    headers.add(new MyEntry("F", "1.8"));
     when(mockMessage.getHeaders()).thenReturn(headers);
     merger.addHeaders(header);
 
@@ -85,11 +83,13 @@ public class HeaderMergerTest {
 
     assertTrue(agreed.containsKey("A"));
     assertTrue(agreed.containsKey("B"));
+    assertTrue(agreed.containsKey("F"));
     assertFalse(agreed.containsKey("C"));
     assertFalse(agreed.containsKey("D"));
 
     assertEquals("0.2", agreed.get("A"));
     assertEquals("0.1", agreed.get("B"));
+    assertEquals("1.8", agreed.get("F"));
   }
 
   private static class MyEntry implements Entry<String, String> {

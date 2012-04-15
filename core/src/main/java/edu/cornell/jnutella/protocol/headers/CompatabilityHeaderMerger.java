@@ -59,6 +59,8 @@ public class CompatabilityHeaderMerger {
       if (max.equals("+")) {
         max = version.minVersion;
       }
+      log.debug("Merged required header '" + name + "' to range " + version
+          + ", with decided version: " + max);
       message.addHeader(name, max);
     }
     for (String name : requestedVersions.keySet()) {
@@ -90,6 +92,8 @@ public class CompatabilityHeaderMerger {
       if (max.equals("+")) {
         max = version.minVersion;
       }
+      log.debug("Merged requested header '" + name + "' to range " + version
+          + ", with decided version: " + max);
       message.addHeader(name, max);
     }
   }
@@ -127,12 +131,12 @@ public class CompatabilityHeaderMerger {
         }
         continue;
       }
-      log.debug("comparing versions: " + compHeader.maxVersion() + ", " + version);
       if (comp.compare(compHeader.maxVersion(), version) < 0) {
         version = compHeader.maxVersion();
       }
     }
 
+    log.debug("Agreed version for header '" + name + "': " + version);
     out.put(name, version);
   }
 
@@ -166,6 +170,10 @@ public class CompatabilityHeaderMerger {
       this.maxVersion = maxVersion;
     }
 
+    @Override
+    public String toString() {
+      return minVersion + "-" + maxVersion;
+    }
 
     @Override
     public int hashCode() {
