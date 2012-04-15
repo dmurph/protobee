@@ -1,7 +1,13 @@
 package edu.cornell.jnutella.protocol.headers;
 
-import static org.junit.Assert.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.when;
 
 import java.util.List;
 import java.util.Map;
@@ -11,13 +17,10 @@ import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.junit.Test;
 
 import com.google.common.collect.Lists;
-import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.matcher.Matchers;
 
 import edu.cornell.jnutella.guice.LogModule;
-import edu.cornell.jnutella.guice.Slf4jTypeListener;
 
 public class HeaderMergerTest {
 
