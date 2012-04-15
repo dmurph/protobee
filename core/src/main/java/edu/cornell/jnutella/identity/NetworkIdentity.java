@@ -4,8 +4,10 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -20,24 +22,22 @@ public class NetworkIdentity {
   @InjectLogger
   private Logger log;
   private final Map<Protocol, ProtocolIdentityModel> protocolModels;
+  private final Map<Protocol, ProtocolConfig> protocolConfigs;
 
   private final Set<Object> tags = Sets.newHashSet();
 
   @Inject
-  public NetworkIdentity(Set<ProtocolConfig> protocols) {
+  public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap) {
+    protocolConfigs = configMap;
 
     ImmutableMap.Builder<Protocol, ProtocolIdentityModel> builder = ImmutableMap.builder();
 
-    for (ProtocolConfig protocolConfig : protocols) {
-      ProtocolIdentityModel identityModel = protocolConfig.createIdentityModel();
-      Protocol protocol = protocolConfig.getClass().getAnnotation(Protocol.class);
-      if (protocol == null) {
-        log.error("Protocol config not annotated with protocol: " + protocolConfig);
-        throw new IllegalArgumentException("Protocol config not annotated with protocol: "
-            + protocolConfig);
-      }
+    for (Protocol protocol : configMap.keySet()) {
+      ProtocolConfig config = configMap.get(protocol);
+      ProtocolIdentityModel identityModel = config.createIdentityModel();
       if (identityModel == null) {
-        log.debug("Protocol doesn't have identity model: " + protocol);
+        log.warn("No model for protocol: " + protocol);
+        continue;
       }
       builder.put(protocol, identityModel);
     }
@@ -46,6 +46,24 @@ public class NetworkIdentity {
 
   public ProtocolIdentityModel getModel(Protocol protocol) {
     return protocolModels.get(protocol);
+  }
+
+  public void clearCurrentSession(Protocol protocol) {
+    protocolModels.get(protocol).clearCurrentSession();
+  }
+
+  public boolean hasCurrentSession(Protocol protocol) {
+    return protocolModels.get(protocol).hasCurrentSession();
+  }
+
+  public void createNewSession(Channel channel, Protocol protocol) {
+    Preconditions.checkArgument(protocolModels.containsKey(protocol), "No model for protocol "
+        + protocol);
+    ProtocolIdentityModel model = protocolModels.get(protocol);
+    if (model.hasCurrentSession()) {
+      log.warn("Protocol " + protocol + " already has a current session.");
+    }
+    model.setCurrentSessionModel(protocolConfigs.get(protocol).createSessionModel(channel, this));
   }
 
   /**
@@ -72,5 +90,10 @@ public class NetworkIdentity {
   @Override
   public final int hashCode() {
     return super.hashCode();
+  }
+
+  @Override
+  public String toString() {
+    return "{ tags: " + tags.toString() + ", protocolModels: " + protocolModels + "}";
   }
 }

@@ -14,14 +14,18 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
-import edu.cornell.jnutella.ConnectionKey;
-import edu.cornell.jnutella.ConnectionManager;
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.identity.NetworkIdentity;
+import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.session.SessionModel;
 
 /**
+ * Multiplexer for receiving arbitrary network connections. After matching a protocol, this class
+ * will get or create a network identity, associate the remote connection with the chosen protocol
+ * for that identity, and create a new session. If the identity is there and there is a current
+ * session, then it will log the error and close the connection.
+ * 
  * This class will be a singleton, so it must be threadsafe.
  * 
  * @author Daniel
@@ -32,15 +36,15 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
   private Logger logger;
   private final Object loggerLock = new Object();
 
-  private final ConnectionManager connectionManager;
+  private final NetworkIdentityManager identityManager;
 
   private final Map<Protocol, ProtocolConfig> protocols;
   private final Object providersLock = new Object();
 
   @Inject
-  public ReceivingRequestMultiplexer(ConnectionManager connectionMananger,
-      Set<ProtocolConfig> protocolConfigs) {
-    this.connectionManager = connectionMananger;
+  public ReceivingRequestMultiplexer(Set<ProtocolConfig> protocolConfigs,
+      NetworkIdentityManager identityManager) {
+    this.identityManager = identityManager;
 
     ImmutableMap.Builder<Protocol, ProtocolConfig> builder = ImmutableMap.builder();
 
@@ -94,11 +98,23 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
   private void initializeChannel(ChannelHandlerContext ctx, Channel channel, Protocol protocol,
       ProtocolConfig protocolProvider) {
     Iterable<ChannelHandler> handlers;
-    SessionModel model;
 
     synchronized (providersLock) {
       handlers = protocolProvider.createChannelHandlers();
-      model = protocolProvider.createSessionModel(channel, protocol);
+      NetworkIdentity identity;
+      if (identityManager.hasNetworkIdentity(channel.getRemoteAddress())) {
+        identity = identityManager.getNewtorkIdentity(channel.getRemoteAddress());
+        if (identity.hasCurrentSession(protocol)) {
+          logger.error("Protocol " + protocol + " already has a session running for identity "
+              + identity + ", closing channel.");
+          channel.close();
+          return;
+        }
+      } else {
+        identity = identityManager.createNetworkIdentity();
+      }
+      identityManager.setNetworkAddress(identity, protocol, channel.getRemoteAddress());
+      identity.createNewSession(channel, protocol);
     }
 
     ChannelPipeline pipeline = ctx.getPipeline();
@@ -106,8 +122,5 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
       pipeline.addLast(channelHandler.toString(), channelHandler);
     }
     pipeline.remove(this);
-
-    connectionManager.addSession(
-        new ConnectionKey(channel.getLocalAddress(), channel.getRemoteAddress()), model);
   }
 }

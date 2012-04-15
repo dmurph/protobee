@@ -7,6 +7,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
+import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
@@ -18,6 +19,7 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   private final Provider<Iterable<ChannelHandler>> channelsProvider;
   private final GnutellaSessionModel.Factory sessionModuleProvider;
   private final Provider<GnutellaIdentityModel> identityModelProvider;
+  private final Protocol protocol;
 
   @Inject
   public GnutellaProtocolConfig(@Gnutella Provider<Iterable<ChannelHandler>> channelsProvider,
@@ -26,11 +28,12 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
     this.channelsProvider = channelsProvider;
     this.sessionModuleProvider = sessionModuleProvider;
     this.identityModelProvider = identityModelProvider;
+    this.protocol = this.getClass().getAnnotation(Protocol.class);
   }
 
   @Override
-  public SessionModel createSessionModel(Channel channel, Protocol protocol) {
-    return sessionModuleProvider.createSessionModel(channel, protocol);
+  public SessionModel createSessionModel(Channel channel, NetworkIdentity identity) {
+    return sessionModuleProvider.createSessionModel(channel, protocol, identity);
   }
 
   @Override
@@ -41,5 +44,10 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   @Override
   public ProtocolIdentityModel createIdentityModel() {
     return identityModelProvider.get();
+  }
+
+  @Override
+  public Protocol get() {
+    return protocol;
   }
 }

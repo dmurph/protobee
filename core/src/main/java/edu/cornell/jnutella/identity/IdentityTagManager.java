@@ -1,4 +1,4 @@
-package edu.cornell.jnutella;
+package edu.cornell.jnutella.identity;
 
 import java.util.Set;
 

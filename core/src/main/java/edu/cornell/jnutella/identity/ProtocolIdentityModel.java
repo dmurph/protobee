@@ -2,6 +2,8 @@ package edu.cornell.jnutella.identity;
 
 import java.net.SocketAddress;
 
+import edu.cornell.jnutella.session.SessionModel;
+
 public interface ProtocolIdentityModel {
   /**
    * Sets the network address for this protocol for this identity
@@ -16,4 +18,10 @@ public interface ProtocolIdentityModel {
    * @return
    */
   SocketAddress getNetworkAddress();
+  
+  void clearCurrentSession();
+  
+  boolean hasCurrentSession();
+  
+  void setCurrentSessionModel(SessionModel model);
 }
