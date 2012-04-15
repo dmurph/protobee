@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.session.gnutella;
+package edu.cornell.jnutella.gnutella.session;
 
 import java.io.Serializable;
 import java.lang.annotation.Annotation;

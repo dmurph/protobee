@@ -22,13 +22,13 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.ConnectionKey;
 import edu.cornell.jnutella.ConnectionManager;
-import edu.cornell.jnutella.annotation.Gnutella;
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.gnutella.Gnutella;
+import edu.cornell.jnutella.gnutella.session.ForMessageType;
+import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.messages.MessageHeader;
 import edu.cornell.jnutella.session.SessionModel;
-import edu.cornell.jnutella.session.gnutella.ForMessageType;
-import edu.cornell.jnutella.session.gnutella.GnutellaSessionModel;
 
 public class GnutellaEncoderHandler extends SimpleChannelDownstreamHandler {
 

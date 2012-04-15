@@ -9,7 +9,7 @@ import com.google.inject.Injector;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import edu.cornell.jnutella.guice.GnutellaGuiceModule;
+import edu.cornell.jnutella.guice.JnutellaGuiceModule;
 import edu.cornell.jnutella.guice.netty.ExecutorModule;
 
 public abstract class AbstractTest {
@@ -19,12 +19,12 @@ public abstract class AbstractTest {
   @Before
   public void setup() {
     injector =
-        Guice.createInjector(new GnutellaGuiceModule(),
+        Guice.createInjector(new JnutellaGuiceModule(),
             new ExecutorModule(Executors.newCachedThreadPool(), Executors.newCachedThreadPool()));
   }
 
   public Injector getInjector(Module overridingModule) {
-    return Guice.createInjector(Modules.override(new GnutellaGuiceModule(),
+    return Guice.createInjector(Modules.override(new JnutellaGuiceModule(),
         new ExecutorModule(Executors.newCachedThreadPool(), Executors.newCachedThreadPool())).with(
         overridingModule));
   }

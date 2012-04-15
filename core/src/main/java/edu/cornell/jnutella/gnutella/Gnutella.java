@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.annotation;
+package edu.cornell.jnutella.gnutella;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -16,7 +16,7 @@ import com.google.inject.BindingAnnotation;
  */
 @Documented
 @Retention(RetentionPolicy.RUNTIME)
-@Target({ElementType.FIELD, ElementType.PARAMETER})
+@Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @BindingAnnotation
 public @interface Gnutella {
 

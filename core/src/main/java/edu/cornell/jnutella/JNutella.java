@@ -13,7 +13,7 @@ import com.google.inject.Inject;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
-import edu.cornell.jnutella.guice.GnutellaGuiceModule;
+import edu.cornell.jnutella.guice.JnutellaGuiceModule;
 import edu.cornell.jnutella.guice.netty.ExecutorModule;
 import edu.cornell.jnutella.network.ReceivingRequestMultiplexer;
 import edu.cornell.jnutella.plugin.OverridingModule;
@@ -66,7 +66,7 @@ public class JNutella {
     List<Module> overridingModules = Lists.newArrayList();
 
     modules.add(new ExecutorModule(bossExecutor, workerExecutor));
-    modules.add(new GnutellaGuiceModule());
+    modules.add(new JnutellaGuiceModule());
 
     ServiceLoader<PluginGuiceModule> pluginModules = ServiceLoader.load(PluginGuiceModule.class);
     for (PluginGuiceModule pluginModule : pluginModules) {

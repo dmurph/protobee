@@ -11,10 +11,10 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
+import edu.cornell.jnutella.gnutella.session.ForMessageType;
 import edu.cornell.jnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.messages.MessageHeader;
 import edu.cornell.jnutella.messages.PongBody;
-import edu.cornell.jnutella.session.gnutella.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
 
 @ForMessageType(MessageHeader.F_PING_REPLY)
