@@ -15,6 +15,7 @@ import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.guice.GnutellaScopes;
 import edu.cornell.jnutella.guice.SessionScoped;
 import edu.cornell.jnutella.network.NetworkModule;
+import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
 public class GnutellaModule extends AbstractModule {
@@ -34,6 +35,9 @@ public class GnutellaModule extends AbstractModule {
         Multibinder.newSetBinder(binder(), ProtocolConfig.class);
     protocolBinder.addBinding().to(GnutellaProtocolConfig.class).in(Singleton.class);
 
+
+    bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)
+        .in(Singleton.class);
   }
 
   @Provides

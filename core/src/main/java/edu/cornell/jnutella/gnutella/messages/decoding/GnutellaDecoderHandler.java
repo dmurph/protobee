@@ -14,17 +14,18 @@ import org.slf4j.Logger;
 import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
-import edu.cornell.jnutella.ConnectionKey;
-import edu.cornell.jnutella.ConnectionManager;
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.gnutella.Gnutella;
+import edu.cornell.jnutella.gnutella.GnutellaIdentityModel;
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageBody;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.session.ForMessageType;
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
+import edu.cornell.jnutella.identity.NetworkIdentity;
+import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.network.FrameDecoderLE;
-import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.protocol.Protocol;
 
 /**
  * Handles the decoding of messages in the gnutella protocol. When the session state isn't at
@@ -36,11 +37,16 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
 
   @InjectLogger
   private Logger log;
-  private final ConnectionManager connectionManager;
+  private final NetworkIdentityManager identityManager;
   private final HttpRequestDecoder handshakeRequestDecoder;
   private final HttpResponseDecoder handshakeResponseDecoder;
   private final MessageHeaderDecoder headerDecoder;
   private final Map<Byte, MessageBodyDecoder<?>> messageDecoders;
+  private final Protocol protocol;
+
+  private NetworkIdentity identity = null;
+  private GnutellaIdentityModel identityModel = null;
+  private GnutellaSessionModel sessionModel = null;
 
   private MessageHeader header;
   private MessageBodyDecoder<?> currentDecoder;
@@ -48,9 +54,11 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
   @Inject
   public GnutellaDecoderHandler(HttpRequestDecoder handshakeRequestDecoder,
       HttpResponseDecoder handshakeResponseDecoder, MessageHeaderDecoder headerDecoder,
-      @Gnutella Set<MessageBodyDecoder<?>> messageDecoders, ConnectionManager connectionManager) {
+      @Gnutella Set<MessageBodyDecoder<?>> messageDecoders, NetworkIdentityManager identityManager,
+      @Gnutella Protocol protocol) {
+    this.protocol = protocol;
     this.headerDecoder = headerDecoder;
-    this.connectionManager = connectionManager;
+    this.identityManager = identityManager;
     this.handshakeRequestDecoder = handshakeRequestDecoder;
     this.handshakeResponseDecoder = handshakeResponseDecoder;
 
@@ -78,18 +86,13 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
   @Override
   public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
     Channel channel = e.getChannel();
-    SessionModel model =
-        connectionManager.getSession(new ConnectionKey(channel.getLocalAddress(), channel
-            .getRemoteAddress()));
-
-    if (!(model instanceof GnutellaSessionModel)) {
-      log.error("Not Gnutella session model: " + model);
-      throw new IllegalStateException("Not Gnutella session model: " + model);
+    if (identity == null) {
+      identity = identityManager.getNewtorkIdentity(channel.getRemoteAddress());
+      identityModel = (GnutellaIdentityModel) identity.getModel(protocol);
+      sessionModel = identityModel.getCurrentSession();
     }
 
-    GnutellaSessionModel session = (GnutellaSessionModel) model;
-
-    switch (session.getState()) {
+    switch (sessionModel.getState()) {
       case HANDSHAKE_0:
         handshakeRequestDecoder.handleUpstream(ctx, e);
         break;

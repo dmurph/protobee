@@ -37,7 +37,9 @@ public class NetworkIdentityManager {
   }
 
   public NetworkIdentity createNetworkIdentity() {
-    return identityProvider.get();
+    NetworkIdentity identity = identityProvider.get();
+    identities.add(identity);
+    return identity;
   }
 
   public boolean hasNetworkIdentity(SocketAddress address) {

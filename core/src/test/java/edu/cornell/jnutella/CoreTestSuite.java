@@ -9,5 +9,5 @@ import edu.cornell.jnutella.protocol.headers.HeaderMergerTest;
 import edu.cornell.jnutella.util.UtilSuite;
 
 @RunWith(Suite.class)
-@SuiteClasses({GnutellaSuite.class, UtilSuite.class, HeaderMergerTest.class})
+@SuiteClasses({GnutellaSuite.class, UtilSuite.class, HeaderMergerTest.class, IdentityTests.class})
 public class CoreTestSuite {}
