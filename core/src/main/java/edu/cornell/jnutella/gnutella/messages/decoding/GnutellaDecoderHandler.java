@@ -22,6 +22,7 @@ import edu.cornell.jnutella.gnutella.messages.MessageBody;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.session.ForMessageType;
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
+import edu.cornell.jnutella.gnutella.session.GnutellaSessionState;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.network.FrameDecoderLE;
@@ -91,6 +92,11 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
       identityModel = (GnutellaIdentityModel) identity.getModel(protocol);
       sessionModel = identityModel.getCurrentSession();
     }
+    
+    if(sessionModel.getState() == null) {
+      log.info("Receiving new session from host " + e.getChannel().getRemoteAddress());
+      sessionModel.setState(GnutellaSessionState.HANDSHAKE_0);
+    }
 
     switch (sessionModel.getState()) {
       case HANDSHAKE_0:
@@ -145,5 +151,10 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
       return message;
     }
     return null;
+  }
+  
+  @Override
+  public String toString() {
+    return "Gnutella Decoder Handler";
   }
 }

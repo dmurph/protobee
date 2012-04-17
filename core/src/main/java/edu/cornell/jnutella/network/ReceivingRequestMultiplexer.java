@@ -2,7 +2,6 @@ package edu.cornell.jnutella.network;
 
 import java.nio.charset.Charset;
 import java.util.Map;
-import java.util.Set;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
@@ -11,20 +10,16 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
-import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
 /**
  * Multiplexer for receiving arbitrary network connections. After matching a protocol, this class
- * will get or create a network identity, associate the remote connection with the chosen protocol
- * for that identity, and create a new session. If the identity is there and there is a current
- * session, then it will log the error and close the connection.
+ * will create the session handshake handlers using the {@link HandshakeStateBootstrapper}, which
+ * then creates the handlers from the protocol config after the handshake is complete
  * 
  * This class will be a singleton, so it must be threadsafe.
  * 
@@ -33,30 +28,19 @@ import edu.cornell.jnutella.protocol.ProtocolConfig;
 public class ReceivingRequestMultiplexer extends FrameDecoderLE {
 
   @InjectLogger
-  private Logger logger;
+  private Logger log;
   private final Object loggerLock = new Object();
 
-  private final NetworkIdentityManager identityManager;
+  private final HandshakeStateBootstrapper handshakeBootstrap;
+  private final Object bootstrapLock = new Object();
 
   private final Map<Protocol, ProtocolConfig> protocols;
-  private final Object providersLock = new Object();
 
   @Inject
-  public ReceivingRequestMultiplexer(Set<ProtocolConfig> protocolConfigs,
-      NetworkIdentityManager identityManager) {
-    this.identityManager = identityManager;
-
-    ImmutableMap.Builder<Protocol, ProtocolConfig> builder = ImmutableMap.builder();
-
-    for (ProtocolConfig config : protocolConfigs) {
-      Protocol protocolDef = config.getClass().getAnnotation(Protocol.class);
-      if (protocolDef == null) {
-        logger.error("Protocol config '" + config + "' does not have Protocol annotation");
-        throw new IllegalArgumentException("Protocol config missing Protocol annotation");
-      }
-      builder.put(protocolDef, config);
-    }
-    protocols = builder.build();
+  public ReceivingRequestMultiplexer(Map<Protocol, ProtocolConfig> protocols,
+      HandshakeStateBootstrapper handshakeBootstrap) {
+    this.protocols = protocols;
+    this.handshakeBootstrap = handshakeBootstrap;
   }
 
   @Override
@@ -84,9 +68,9 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
 
     if (!found) {
       synchronized (loggerLock) {
-        logger.error("Could not find protocol for header '" + header + "', closing channel.");
+        log.error("Could not find protocol for header '" + header + "', closing channel.");
       }
-      ctx.getChannel().close();
+      channel.close();
       return null;
     }
 
@@ -97,30 +81,16 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
 
   private void initializeChannel(ChannelHandlerContext ctx, Channel channel, Protocol protocol,
       ProtocolConfig protocolProvider) {
-    Iterable<ChannelHandler> handlers;
-
-    synchronized (providersLock) {
-      handlers = protocolProvider.createChannelHandlers();
-      NetworkIdentity identity;
-      if (identityManager.hasNetworkIdentity(channel.getRemoteAddress())) {
-        identity = identityManager.getNewtorkIdentity(channel.getRemoteAddress());
-        if (identity.hasCurrentSession(protocol)) {
-          logger.error("Protocol " + protocol + " already has a session running for identity "
-              + identity + ", closing channel.");
-          channel.close();
-          return;
-        }
-      } else {
-        identity = identityManager.createNetworkIdentity();
-      }
-      identityManager.setNetworkAddress(identity, protocol, channel.getRemoteAddress());
-      identity.createNewSession(channel, protocol);
+    ChannelHandler[] handshakeHandlers;
+    synchronized (bootstrapLock) {
+      handshakeHandlers = handshakeBootstrap.createHandshakeHandlers(protocolProvider, channel);
     }
 
     ChannelPipeline pipeline = ctx.getPipeline();
-    for (ChannelHandler channelHandler : handlers) {
+    for (ChannelHandler channelHandler : handshakeHandlers) {
       pipeline.addLast(channelHandler.toString(), channelHandler);
     }
+    // TODO: will we have another handler?
     pipeline.remove(this);
   }
 }

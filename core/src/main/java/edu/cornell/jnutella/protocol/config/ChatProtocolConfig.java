@@ -8,7 +8,7 @@ import com.google.inject.Provider;
 import edu.cornell.jnutella.annotation.LimeChat;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.protocol.session.SessionModel;
 
 //@Protocol(name = "CHAT", version = "0.1", headerRegex = "^CHAT CONNECT/0\\.1$")
 //public class ChatProtocolConfig implements ProtocolConfig {
