@@ -20,6 +20,12 @@
 			<artifactId>jibx-extras</artifactId>
 			<version>1.2.3</version>
 		</dependency>
+		<dependency>
+		  <groupId>com.google.inject.extensions</groupId>
+		  <artifactId>guice-grapher</artifactId>
+		  <version>3.0</version>
+		  <scope>test</scope>
+		</dependency>
 	</dependencies>
 	<build>
 	</build>
