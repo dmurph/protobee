@@ -17,11 +17,13 @@ import edu.cornell.jnutella.util.ByteUtils;
 public class QueryHitEncoder implements MessageBodyEncoder {
   private final GGEPEncoder ggepEncoder;
   private final ResponseEncoder responseEncoder;
+  private final EQHDEncoder eqhdEncoder;
 
   @Inject
-  public QueryHitEncoder(GGEPEncoder ggepEncoder, ResponseEncoder responseEncoder) {
+  public QueryHitEncoder(GGEPEncoder ggepEncoder, ResponseEncoder responseEncoder, EQHDEncoder eqhdEncoder) {
     this.ggepEncoder = ggepEncoder;
     this.responseEncoder = responseEncoder;
+    this.eqhdEncoder = eqhdEncoder;
   }
 
   public void encode(ChannelBuffer buffer, QueryHitBody toEncode) throws EncodingException {
@@ -35,12 +37,16 @@ public class QueryHitEncoder implements MessageBodyEncoder {
       responseEncoder.encode(buffer, hit);
     }
       
-    buffer.writeBytes(toEncode.getEQHD());
+    eqhdEncoder.encode(buffer,  toEncode.getEqhd());
+    
+    buffer.writeBytes(toEncode.getPrivateArea1());
     
     if (toEncode.getGgep() != null) {
       EncoderInput ei = new EncoderInput(toEncode.getGgep(), true);
       ggepEncoder.encode(buffer, ei);
     }
+    
+    buffer.writeBytes(toEncode.getPrivateArea2());
     
     buffer.writeBytes(toEncode.getServantID().getBytes());
 

@@ -10,13 +10,12 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 
 import edu.cornell.jnutella.AbstractTest;
-import edu.cornell.jnutella.gnutella.messages.MessageBodyFactory;
-import edu.cornell.jnutella.gnutella.messages.PongBody;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
 import edu.cornell.jnutella.gnutella.messages.decoding.PongDecoder;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 import edu.cornell.jnutella.gnutella.messages.encoding.PongEncoder;
 import edu.cornell.jnutella.util.ByteUtils;
+import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 public class PongTest extends AbstractTest {
 
@@ -27,7 +26,7 @@ public class PongTest extends AbstractTest {
     MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
 
     PongBody pong =
-        factory.createPongMessage(InetAddress.getLocalHost(), (int) Short.MAX_VALUE + 1,
+        factory.createPongMessage(new JnutellaSocketAddress(InetAddress.getLocalHost(), (int) Short.MAX_VALUE + 1),
             (long) Integer.MAX_VALUE + 1l, (long) Integer.MAX_VALUE + 2l, null);
 
     PongEncoder encoder = injector.getInstance(PongEncoder.class);

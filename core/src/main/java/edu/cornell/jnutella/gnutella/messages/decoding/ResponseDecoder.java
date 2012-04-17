@@ -12,7 +12,6 @@ import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.gnutella.messages.ResponseBody;
 import edu.cornell.jnutella.util.ByteUtils;
-import edu.cornell.jnutella.util.IOUtils;
 import edu.cornell.jnutella.util.URN;
 
 public class ResponseDecoder implements PartDecoder<ResponseBody> {
@@ -20,11 +19,9 @@ public class ResponseDecoder implements PartDecoder<ResponseBody> {
 
   @InjectLogger
   private Logger log;
-  private IOUtils ioUtils;
   
   @Inject
-  public ResponseDecoder(IOUtils ioUtils, GGEPDecoder ggepDecoder) {
-    this.ioUtils = ioUtils;
+  public ResponseDecoder(GGEPDecoder ggepDecoder) {
     this.ggepDecoder = ggepDecoder;
   }
 
