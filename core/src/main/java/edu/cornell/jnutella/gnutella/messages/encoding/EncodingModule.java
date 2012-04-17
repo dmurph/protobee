@@ -24,8 +24,10 @@ public class EncodingModule extends AbstractModule {
       PongEncoder.class);
     bind(MessageBodyEncoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_QUERY)).to(
       QueryEncoder.class);
+    bind(MessageBodyEncoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_QUERY_REPLY)).to(
+      QueryHitEncoder.class);
     bind(MessageBodyEncoder.class).annotatedWith(ForMessageTypes.with(MessageHeader.F_PUSH)).to(
-      QueryEncoder.class);
+      PushEncoder.class);
 
     // add body encoder to set {};
     Multibinder<MessageBodyEncoder> gnutellaEncoders =
@@ -35,6 +37,7 @@ public class EncodingModule extends AbstractModule {
       Key.get(MessageBodyEncoder.class, ForMessageTypes.with(MessageHeader.F_PING)));
       Key.get(MessageBodyEncoder.class, ForMessageTypes.with(MessageHeader.F_PING_REPLY));
       Key.get(MessageBodyEncoder.class, ForMessageTypes.with(MessageHeader.F_QUERY));
+      Key.get(MessageBodyEncoder.class, ForMessageTypes.with(MessageHeader.F_QUERY_REPLY));
       Key.get(MessageBodyEncoder.class, ForMessageTypes.with(MessageHeader.F_PUSH));
 
   }
