@@ -2,7 +2,7 @@ package edu.cornell.jnutella.identity;
 
 import java.net.SocketAddress;
 
-import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.protocol.session.SessionModel;
 
 public interface ProtocolIdentityModel {
   /**
@@ -24,4 +24,6 @@ public interface ProtocolIdentityModel {
   boolean hasCurrentSession();
   
   void setCurrentSessionModel(SessionModel model);
+  
+  SessionModel getCurrentSession();
 }

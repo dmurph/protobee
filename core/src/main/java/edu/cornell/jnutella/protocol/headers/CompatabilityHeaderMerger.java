@@ -1,41 +1,53 @@
 package edu.cornell.jnutella.protocol.headers;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.Map;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.slf4j.Logger;
 
-import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.Multimap;
-import com.google.inject.Inject;
+import com.google.common.collect.ImmutableMultimap;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.util.VersionComparator;
 
 public class CompatabilityHeaderMerger {
 
+  public static interface Factory {
+    CompatabilityHeaderMerger create(Headers[] moduleHeaders);
+  }
+
   @InjectLogger
   private Logger log;
 
-  private final Multimap<String, CompatabilityHeader> requiredVersions = ArrayListMultimap.create();
-  private final Multimap<String, CompatabilityHeader> requestedVersions = ArrayListMultimap
-      .create();
+  private final ImmutableMultimap<String, CompatabilityHeader> requiredVersions;
+  private final ImmutableMultimap<String, CompatabilityHeader> requestedVersions;
   private final VersionComparator comp;
 
-  @Inject
-  public CompatabilityHeaderMerger(VersionComparator comparator) {
+  @AssistedInject
+  public CompatabilityHeaderMerger(VersionComparator comparator, @Assisted Headers[] moduleHeaders) {
     comp = comparator;
-  }
 
-  public void addHeaders(Headers headers) {
-    for (CompatabilityHeader header : headers.requiredCompatabilities()) {
-      requiredVersions.put(header.name(), header);
+    ImmutableMultimap.Builder<String, CompatabilityHeader> requiredVersionsBuilder =
+        ImmutableMultimap.builder();
+    ImmutableMultimap.Builder<String, CompatabilityHeader> requestedVersionsBuilder =
+        ImmutableMultimap.builder();
+
+    for (Headers headers : moduleHeaders) {
+      for (CompatabilityHeader header : headers.requiredCompatabilities()) {
+        requiredVersionsBuilder.put(header.name(), header);
+      }
+      for (CompatabilityHeader header : headers.requestedCompatabilities()) {
+        requestedVersionsBuilder.put(header.name(), header);
+      }
     }
-    for (CompatabilityHeader header : headers.requestedCompatabilities()) {
-      requestedVersions.put(header.name(), header);
-    }
+
+    requiredVersions = requiredVersionsBuilder.build();
+    requestedVersions = requestedVersionsBuilder.build();
   }
 
   public void populateModuleHeaders(HttpMessage message) {
@@ -99,6 +111,7 @@ public class CompatabilityHeaderMerger {
   }
 
   public Map<String, String> mergeHeaders(HttpMessage message) {
+
     ImmutableMap.Builder<String, String> builder = ImmutableMap.builder();
 
     for (Map.Entry<String, String> header : message.getHeaders()) {
@@ -125,10 +138,6 @@ public class CompatabilityHeaderMerger {
     for (CompatabilityHeader compHeader : versions) {
 
       if (compHeader.maxVersion().equals("+")) {
-        if (comp.compare(compHeader.minVersion(), version) > 0) {
-          version = null;
-          break;
-        }
         continue;
       }
       if (comp.compare(compHeader.maxVersion(), version) < 0) {

@@ -27,7 +27,9 @@ public @interface Protocol {
    * 
    * @return
    */
-  String version();
+  int majorVersion();
+  
+  int minorVersion();
 
   /**
    * Regex string used to match each protocol to corresponding headers

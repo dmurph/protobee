@@ -11,6 +11,7 @@ import com.google.inject.Guice;
 import com.google.inject.Inject;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 import com.google.inject.util.Modules;
 
@@ -80,5 +81,46 @@ public class GuiceTests {
 
     test = injector.getInstance(InjectionTestClass.class);
     assertEquals("YO_ME2", test.yos.iterator().next().getValue());
+  }
+
+  private static int numConstructed;
+
+  public static class InjClass implements Valued {
+    public InjClass() {
+      GuiceTests.numConstructed++;
+    }
+
+    @Override
+    public String getValue() {
+      return null;
+    }
+  }
+
+
+  @Test
+  public void testMultipleMultibinding() {
+    AbstractModule module = new AbstractModule() {
+
+      @Override
+      protected void configure() {
+
+        Multibinder<Valued> mb = Multibinder.newSetBinder(binder(), Valued.class);
+        mb.addBinding().to(InjClass.class).in(Singleton.class);
+      }
+    };
+    Injector injector = Guice.createInjector(module);
+
+    numConstructed = 0;
+    injector.getInstance(MultiClass.class);
+    injector.getInstance(MultiClass.class);
+
+    assertEquals(1, numConstructed);
+  }
+
+  public static class MultiClass {
+    @Inject
+    public MultiClass(Set<Valued> valued) {
+
+    }
   }
 }

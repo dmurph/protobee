@@ -19,6 +19,7 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 import edu.cornell.jnutella.guice.LogModule;
 
@@ -38,14 +39,17 @@ public class HeaderMergerTest {
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
     Headers header = new HeadersImpl(required, requested);
+    Headers[] headers = new Headers[] {header};
 
-    Injector inj = Guice.createInjector(new LogModule());
+    Injector inj =
+        Guice.createInjector(new LogModule(),
+            new FactoryModuleBuilder().build(CompatabilityHeaderMerger.Factory.class));
 
 
-    CompatabilityHeaderMerger merger = inj.getInstance(CompatabilityHeaderMerger.class);
-
+    CompatabilityHeaderMerger.Factory mergerFactory = inj.getInstance(CompatabilityHeaderMerger.Factory.class);
+    CompatabilityHeaderMerger merger = mergerFactory.create(headers);
+    
     HttpMessage mockMessage = mock(HttpMessage.class);
-    merger.addHeaders(header);
     merger.populateModuleHeaders(mockMessage);
 
     verify(mockMessage, times(1)).addHeader(eq("A"), eq("0.4"));
@@ -67,10 +71,12 @@ public class HeaderMergerTest {
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
     Headers header = new HeadersImpl(required, requested);
+    Headers[] headerArray = new Headers[] {header};
 
     Injector inj = Guice.createInjector(new LogModule());
 
-    CompatabilityHeaderMerger merger = inj.getInstance(CompatabilityHeaderMerger.class);
+    CompatabilityHeaderMerger.Factory mergerFactory = inj.getInstance(CompatabilityHeaderMerger.Factory.class);
+    CompatabilityHeaderMerger merger = mergerFactory.create(headerArray);
 
     HttpMessage mockMessage = mock(HttpMessage.class);
 
@@ -80,7 +86,6 @@ public class HeaderMergerTest {
     headers.add(new MyEntry("D", "0.8"));
     headers.add(new MyEntry("F", "1.8"));
     when(mockMessage.getHeaders()).thenReturn(headers);
-    merger.addHeaders(header);
 
     Map<String, String> agreed = merger.mergeHeaders(mockMessage);
 

@@ -16,6 +16,7 @@ import com.google.inject.Inject;
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
+import edu.cornell.jnutella.protocol.session.SessionModel;
 
 public class NetworkIdentity {
 
@@ -54,6 +55,10 @@ public class NetworkIdentity {
 
   public boolean hasCurrentSession(Protocol protocol) {
     return protocolModels.get(protocol).hasCurrentSession();
+  }
+  
+  public SessionModel getCurrentSession(Protocol protocol) {
+    return protocolModels.get(protocol).getCurrentSession();
   }
 
   public void createNewSession(Channel channel, Protocol protocol) {
