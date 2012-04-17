@@ -20,6 +20,7 @@ public class NetworkModule extends AbstractModule {
     install(new FactoryModuleBuilder().build(HttpMessageEncoder.Factory.class));
 
     bind(Bootstrap.class).to(ServerBootstrap.class).in(Singleton.class);
+    bind(ReceivingRequestMultiplexer.class).in(Singleton.class);
     bind(ChannelFactory.class).to(NioServerSocketChannelFactory.class).in(Singleton.class);
   }
 

@@ -11,9 +11,11 @@ import com.google.inject.multibindings.Multibinder;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;
 import edu.cornell.jnutella.gnutella.messages.decoding.GnutellaDecoderHandler;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingModule;
+import edu.cornell.jnutella.gnutella.messages.encoding.GnutellaEncoderHandler;
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.guice.GnutellaScopes;
 import edu.cornell.jnutella.guice.SessionScoped;
+import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.network.NetworkModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
@@ -22,7 +24,6 @@ public class GnutellaGuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    install(new NetworkModule());
     install(new DecodingModule());
     install(new EncodingModule());
 
@@ -38,11 +39,16 @@ public class GnutellaGuiceModule extends AbstractModule {
 
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)
         .in(Singleton.class);
+
+    Multibinder<ProtocolModule> protocolModules =
+        Multibinder.newSetBinder(binder(), ProtocolModule.class, Gnutella.class);
+
   }
 
   @Provides
   @Gnutella
-  public ChannelHandler[] getChannelHandlers(GnutellaDecoderHandler decoder) {
-    return new ChannelHandler[] {decoder};
+  public ChannelHandler[] getChannelHandlers(GnutellaDecoderHandler decoder,
+      GnutellaEncoderHandler encoder) {
+    return new ChannelHandler[] {decoder, encoder};
   }
 }

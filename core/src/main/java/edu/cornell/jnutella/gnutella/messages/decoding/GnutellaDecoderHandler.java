@@ -55,7 +55,7 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
   @Inject
   public GnutellaDecoderHandler(HttpRequestDecoder handshakeRequestDecoder,
       HttpResponseDecoder handshakeResponseDecoder, MessageHeaderDecoder headerDecoder,
-      @Gnutella Set<MessageBodyDecoder<?>> messageDecoders, NetworkIdentityManager identityManager,
+      @Gnutella Set<MessageBodyDecoder> messageDecoders, NetworkIdentityManager identityManager,
       @Gnutella Protocol protocol) {
     this.protocol = protocol;
     this.headerDecoder = headerDecoder;

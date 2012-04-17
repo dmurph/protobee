@@ -73,7 +73,9 @@ public class HeaderMergerTest {
     Headers header = new HeadersImpl(required, requested);
     Headers[] headerArray = new Headers[] {header};
 
-    Injector inj = Guice.createInjector(new LogModule());
+    Injector inj =
+        Guice.createInjector(new LogModule(),
+            new FactoryModuleBuilder().build(CompatabilityHeaderMerger.Factory.class));
 
     CompatabilityHeaderMerger.Factory mergerFactory = inj.getInstance(CompatabilityHeaderMerger.Factory.class);
     CompatabilityHeaderMerger merger = mergerFactory.create(headerArray);

@@ -11,21 +11,22 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 import edu.cornell.jnutella.gnutella.GnutellaGuiceModule;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
+import edu.cornell.jnutella.network.NetworkModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.headers.CompatabilityHeaderMerger;
+import edu.cornell.jnutella.protocol.ProtocolGuiceModule;
 
 public class JnutellaMainModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    install(new GnutellaGuiceModule());
+    install(new NetworkModule());
     install(new LogModule());
-    install(new FactoryModuleBuilder().build(CompatabilityHeaderMerger.Factory.class));
+    install(new ProtocolGuiceModule());
+    install(new GnutellaGuiceModule());
 
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
