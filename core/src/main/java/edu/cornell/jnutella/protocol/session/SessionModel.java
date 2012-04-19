@@ -1,48 +1,37 @@
 package edu.cornell.jnutella.protocol.session;
 
+import java.util.Map;
 import java.util.Set;
 
-import org.jboss.netty.channel.Channel;
+import com.google.common.collect.MapMaker;
+import com.google.inject.Key;
 
-import com.google.common.eventbus.EventBus;
-
+import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
-import edu.cornell.jnutella.protocol.Protocol;
 
+/**
+ * On construction, puts itself and the network identity into it's scope map
+ * 
+ * @author Daniel
+ */
 public abstract class SessionModel {
 
-  private final Channel channel;
   private final NetworkIdentity identity;
-  private final Protocol protocol;
   private SessionState sessionState;
-  private final EventBus eventBus;
   private final Set<ProtocolModule> modules;
 
-  public SessionModel(Channel channel, Protocol protocol, NetworkIdentity identity,
-      EventBus eventBus, Set<ProtocolModule> mutableModules) {
-    this.channel = channel;
-    this.protocol = protocol;
+  private final Map<String, Object> sessionScopeMap = new MapMaker().concurrencyLevel(4).makeMap();
+
+  public SessionModel(NetworkIdentity identity, Set<ProtocolModule> mutableModules) {
     this.identity = identity;
-    this.eventBus = eventBus;
     this.modules = mutableModules;
-  }
-
-  public Channel getChannel() {
-    return channel;
-  }
-
-  public Protocol getProtocol() {
-    return protocol;
+    JnutellaScopes.putObjectInScope(Key.get(SessionModel.class), this, sessionScopeMap);
+    JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), identity, sessionScopeMap);
   }
 
   public NetworkIdentity getIdentity() {
     return identity;
-  }
-
-  public ProtocolIdentityModel getProtocolModel() {
-    return identity.getModel(protocol);
   }
 
   public SessionState getSessionState() {
@@ -53,11 +42,27 @@ public abstract class SessionModel {
     this.sessionState = sessionState;
   }
 
-  public EventBus getEventBus() {
-    return eventBus;
-  }
-
   public Set<ProtocolModule> getModules() {
     return modules;
+  }
+
+  Map<String, Object> getSessionScopeMap() {
+    return sessionScopeMap;
+  }
+
+  public void enterScope() {
+    JnutellaScopes.enterSessionScope(sessionScopeMap);
+  }
+
+  public boolean isInScope() {
+    return JnutellaScopes.isInSessionScope(sessionScopeMap);
+  }
+
+  public void addObjectToScope(Key<?> key, Object object) {
+    JnutellaScopes.putObjectInScope(key, object, sessionScopeMap);
+  }
+
+  public void exitScope() {
+    JnutellaScopes.exitSessionScope();
   }
 }

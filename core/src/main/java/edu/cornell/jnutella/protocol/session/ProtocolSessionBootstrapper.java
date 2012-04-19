@@ -8,32 +8,35 @@ import com.google.common.eventbus.EventBus;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
+import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.protocol.ProtocolConfig;
+
 /**
  * Removes handshake handlers and adds protocol handlers.
  * 
  * @author Daniel
  */
+@SessionScope
 public class ProtocolSessionBootstrapper {
 
   public static interface Factory {
-    ProtocolSessionBootstrapper create(@Assisted("handshake") ChannelHandler[] handshakeHandlers,
-        @Assisted("protocol") ChannelHandler[] protocolHandlers);
+    ProtocolSessionBootstrapper create(ChannelHandler[] handshakeHandlers);
   }
 
   private final ChannelHandler[] handshakeHandlers;
-  private final ChannelHandler[] protocolHandlers;
+  private final ProtocolConfig config;
 
   @AssistedInject
-  public ProtocolSessionBootstrapper(@Assisted("handshake") ChannelHandler[] handshakeHandlers,
-      @Assisted("protocol") ChannelHandler[] protocolHandlers) {
+  public ProtocolSessionBootstrapper(@Assisted ChannelHandler[] handshakeHandlers,
+      ProtocolConfig config) {
     this.handshakeHandlers = handshakeHandlers;
-    this.protocolHandlers = protocolHandlers;
+    this.config = config;
   }
 
   public void bootstrapProtocolPipeline(ChannelPipeline pipeline, EventBus eventBus,
       SessionModel model, ChannelHandlerContext context) {
     // add new handlers
-    for (ChannelHandler handler : protocolHandlers) {
+    for (ChannelHandler handler : config.createProtocolHandlers()) {
       pipeline.addLast(handler.toString(), handler);
     }
     // remove handshaker handlers
@@ -42,6 +45,6 @@ public class ProtocolSessionBootstrapper {
     }
 
     // post event
-    eventBus.post(new ProtocolHandlersLoadedEvent(model, context));
+    eventBus.post(new ProtocolHandlersLoadedEvent(context));
   }
 }

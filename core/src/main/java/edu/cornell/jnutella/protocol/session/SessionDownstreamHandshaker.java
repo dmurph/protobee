@@ -8,10 +8,11 @@ import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.slf4j.Logger;
 
 import com.google.common.eventbus.EventBus;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.identity.NetworkIdentity;
 
 /**
  * Preconditions: modules in the model are already subscribed to the event bus and previously
@@ -21,25 +22,23 @@ import edu.cornell.jnutella.annotation.InjectLogger;
  * @author Daniel
  * 
  */
+@SessionScope
 public class SessionDownstreamHandshaker extends SimpleChannelDownstreamHandler {
-
-  public static interface Factory {
-    SessionDownstreamHandshaker create(SessionModel session,
-        ProtocolSessionBootstrapper protocolBootstrapper);
-  }
 
   @InjectLogger
   private Logger log;
   private final SessionModel sessionModel;
   private final EventBus eventBus;
   private final ProtocolSessionBootstrapper bootstrapper;
+  private final NetworkIdentity identity;
 
-  @AssistedInject
-  public SessionDownstreamHandshaker(@Assisted SessionModel session,
-      @Assisted ProtocolSessionBootstrapper bootstrapper) {
+  @Inject
+  public SessionDownstreamHandshaker(SessionModel session, EventBus eventBus,
+      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity) {
     this.sessionModel = session;
-    this.eventBus = session.getEventBus();
+    this.eventBus = eventBus;
     this.bootstrapper = bootstrapper;
+    this.identity = identity;
   }
 
   @Override
@@ -62,9 +61,14 @@ public class SessionDownstreamHandshaker extends SimpleChannelDownstreamHandler 
 
     HttpMessage request = (HttpMessage) e.getMessage();
 
+    identity.enterScope();
+    sessionModel.enterScope();
     // just post to the event bus because we do all filtering logic and setup in the upstream
     // handshaker
-    eventBus.post(new HandshakeSendingEvent(sessionModel, ctx, request));
+    eventBus.post(new HandshakeSendingEvent(ctx, request));
+
+    sessionModel.exitScope();
+    identity.exitScope();
 
     Channels.write(ctx, e.getFuture(), request);
 

@@ -3,9 +3,11 @@ package edu.cornell.jnutella.gnutella;
 import java.net.SocketAddress;
 
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
+import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.session.SessionModel;
 
+@IdentityScope
 public class GnutellaIdentityModel implements ProtocolIdentityModel {
 
   

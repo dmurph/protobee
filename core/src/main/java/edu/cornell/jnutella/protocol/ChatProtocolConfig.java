@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.protocol.config;
+package edu.cornell.jnutella.protocol;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
@@ -6,8 +6,6 @@ import org.jboss.netty.channel.ChannelHandler;
 import com.google.inject.Provider;
 
 import edu.cornell.jnutella.annotation.LimeChat;
-import edu.cornell.jnutella.protocol.Protocol;
-import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.protocol.session.SessionModel;
 
 //@Protocol(name = "CHAT", version = "0.1", headerRegex = "^CHAT CONNECT/0\\.1$")

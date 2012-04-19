@@ -3,32 +3,30 @@ package edu.cornell.jnutella.network;
 import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelUpstreamHandler;
-import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
+import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.slf4j.Logger;
 
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
+import com.google.inject.name.Named;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.protocol.session.SessionModel;
 
-public class HttpMessageDecoder implements ChannelUpstreamHandler {
-
-  public static interface Factory {
-    HttpMessageDecoder create(SessionModel sessionModel);
-  }
+@SessionScope
+public class HandshakeHttpMessageDecoder implements ChannelUpstreamHandler {
 
   @InjectLogger
   private Logger log;
-  private final HttpRequestDecoder requestDecoder;
+  private final HttpMessageDecoder requestDecoder;
   private final HttpResponseDecoder responseDecoder;
   private final SessionModel sessionModel;
 
 
-  @AssistedInject
-  public HttpMessageDecoder(HttpRequestDecoder requestDecoder, HttpResponseDecoder responseDecoder,
-      @Assisted SessionModel sessionModel) {
+  @Inject
+  public HandshakeHttpMessageDecoder(@Named("request") HttpMessageDecoder requestDecoder,
+      HttpResponseDecoder responseDecoder, SessionModel sessionModel) {
     this.requestDecoder = requestDecoder;
     this.responseDecoder = responseDecoder;
     this.sessionModel = sessionModel;

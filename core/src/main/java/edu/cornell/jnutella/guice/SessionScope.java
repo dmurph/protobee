@@ -17,4 +17,4 @@ import com.google.inject.ScopeAnnotation;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @ScopeAnnotation
-public @interface SessionScoped {}
+public @interface SessionScope {}

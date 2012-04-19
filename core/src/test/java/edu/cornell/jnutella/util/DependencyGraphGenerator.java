@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
-import java.util.concurrent.Executors;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -17,14 +16,10 @@ import com.google.inject.grapher.graphviz.GraphvizModule;
 import com.google.inject.grapher.graphviz.GraphvizRenderer;
 
 import edu.cornell.jnutella.guice.JnutellaMainModule;
-import edu.cornell.jnutella.guice.netty.ExecutorModule;
 
 public class DependencyGraphGenerator {
   public static void main(String[] args) {
-    graphGood(
-        "depGraph",
-        Guice.createInjector(new JnutellaMainModule(),
-            new ExecutorModule(Executors.newCachedThreadPool(), Executors.newCachedThreadPool())));
+    graphGood("depGraph", Guice.createInjector(new JnutellaMainModule()));
   }
 
   public final static Injector graphGood(String filename, Injector inj) {

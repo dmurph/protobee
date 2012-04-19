@@ -7,9 +7,8 @@ public class HandshakeSendingEvent extends SessionEvent {
 
   private final HttpMessage message;
 
-  public HandshakeSendingEvent(SessionModel model, ChannelHandlerContext context,
-      HttpMessage message) {
-    super(model, context);
+  public HandshakeSendingEvent(ChannelHandlerContext context, HttpMessage message) {
+    super(context);
     this.message = message;
   }
 
