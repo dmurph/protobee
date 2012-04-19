@@ -1,18 +1,19 @@
 package edu.cornell.jnutella.gnutella;
 
-import java.util.Set;
+import java.util.Map;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
+import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 
-import com.google.common.collect.Sets;
+import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
-import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.protocol.session.SessionModel;
@@ -21,26 +22,29 @@ import edu.cornell.jnutella.protocol.session.SessionModel;
 public class GnutellaProtocolConfig implements ProtocolConfig {
 
   private final Provider<ChannelHandler[]> channelsProvider;
-  private final GnutellaSessionModel.Factory sessionModuleProvider;
+  private final Provider<GnutellaSessionModel> sessionModuleProvider;
   private final Provider<GnutellaIdentityModel> identityModelProvider;
-  private final Provider<Set<ProtocolModule>> modules;
+  private final Provider<GnutellaHttpRequestDecoder> decoderProvider;
+  private final Provider<GnutellaHttpRequestEncoder> encoderProvider;
   private final Protocol protocol;
 
   @Inject
   public GnutellaProtocolConfig(@Gnutella Provider<ChannelHandler[]> channelsProvider,
-      GnutellaSessionModel.Factory sessionModuleProvider,
+      Provider<GnutellaSessionModel> sessionModuleProvider,
       Provider<GnutellaIdentityModel> identityModelProvider,
-      @Gnutella Provider<Set<ProtocolModule>> modules) {
+      Provider<GnutellaHttpRequestDecoder> decoderProvider,
+      Provider<GnutellaHttpRequestEncoder> encoderProvider) {
     this.channelsProvider = channelsProvider;
     this.sessionModuleProvider = sessionModuleProvider;
     this.identityModelProvider = identityModelProvider;
-    this.modules = modules;
     this.protocol = this.getClass().getAnnotation(Protocol.class);
+    this.decoderProvider = decoderProvider;
+    this.encoderProvider = encoderProvider;
   }
 
   @Override
-  public SessionModel createSessionModel(Channel channel, NetworkIdentity identity) {
-    return sessionModuleProvider.create(channel, protocol, identity, Sets.newHashSet(modules.get()));
+  public SessionModel createSessionModel() {
+    return sessionModuleProvider.get();
   }
 
   @Override
@@ -56,5 +60,26 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   @Override
   public Protocol get() {
     return protocol;
+  }
+
+  @Override
+  public HttpMessageDecoder createRequestDecoder() {
+    return decoderProvider.get();
+  }
+
+  @Override
+  public HttpMessageEncoder createRequestEncoder() {
+    return encoderProvider.get();
+  }
+
+  @Override
+  public int getPort() {
+    // TODO Auto-generated method stub
+    return 0;
+  }
+
+  @Override
+  public Map<String, Object> getNettyBootstrapOptions() {
+    return Maps.newHashMap();
   }
 }

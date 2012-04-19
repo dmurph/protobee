@@ -15,28 +15,22 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Predicate;
 import com.google.common.eventbus.EventBus;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
+import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.headers.CompatabilityHeaderMerger;
 import edu.cornell.jnutella.util.ProtocolModuleFilter;
 
 /**
- * Preconditions: modules in session model are already subscribed to the event bus, and are mutable.
- * Session is at the correct initial state
  * 
  * @author Daniel
- * 
  */
+@SessionScope
 public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
-
-  public static interface Factory {
-    SessionUpstreamHandshaker create(SessionModel session, CompatabilityHeaderMerger headerMerger,
-        ProtocolSessionBootstrapper bootstrapper);
-  }
 
   @InjectLogger
   private Logger log;
@@ -46,17 +40,21 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   private final EventBus eventBus;
   private final ProtocolModuleFilter filter;
   private final ProtocolSessionBootstrapper bootstrapper;
+  private final NetworkIdentity identity;
+  private final Protocol protocol;
 
-  @AssistedInject
-  public SessionUpstreamHandshaker(@Assisted SessionModel session,
-      @Assisted CompatabilityHeaderMerger headerMerger, HandshakeInterruptor interruptor,
-      ProtocolModuleFilter filter, @Assisted ProtocolSessionBootstrapper bootstrapper) {
+  @Inject
+  public SessionUpstreamHandshaker(SessionModel session, CompatabilityHeaderMerger headerMerger,
+      HandshakeInterruptor interruptor, ProtocolModuleFilter filter, EventBus eventBus,
+      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity, Protocol protocol) {
     this.sessionModel = session;
     this.headerMerger = headerMerger;
     this.interruptor = interruptor;
     this.filter = filter;
-    this.eventBus = session.getEventBus();
+    this.eventBus = eventBus;
     this.bootstrapper = bootstrapper;
+    this.identity = identity;
+    this.protocol = protocol;
   }
 
   @Override
@@ -78,13 +76,15 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
     HttpMessage request = (HttpMessage) e.getMessage();
 
     if (sessionModel.getSessionState() == SessionState.HANDSHAKE_2) {
-      eventBus.post(new HandshakeReceivedEvent(sessionModel, ctx, request, null));
+      eventBus.post(new HandshakeReceivedEvent(ctx, request, null));
       sessionModel.setSessionState(SessionState.MESSAGES);
 
       bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
       return;
     }
 
+    identity.enterScope();
+    sessionModel.enterScope();
     // they initiated the connection, we just got their first message
     Map<String, String> mergedCompatabilityHeaders = headerMerger.mergeHeaders(request);
     filter.filterModules(sessionModel.getModules(), mergedCompatabilityHeaders,
@@ -96,11 +96,10 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
           }
         });
 
-    eventBus.post(new HandshakeReceivedEvent(sessionModel, ctx, request, interruptor));
+    eventBus.post(new HandshakeReceivedEvent(ctx, request, interruptor));
 
     HttpResponseStatus interruptingResponse = interruptor.getInterruptingDisconnect();
 
-    Protocol protocol = sessionModel.getProtocol();
     HttpVersion version =
         new HttpVersion(protocol.name(), protocol.majorVersion(), protocol.minorVersion(), true);
 
@@ -122,6 +121,8 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
         sessionModel.setSessionState(SessionState.HANDSHAKE_2);
         break;
     }
+    sessionModel.exitScope();
+    identity.exitScope();
 
     Channels.write(ctx.getChannel(), response);
   }

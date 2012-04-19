@@ -5,6 +5,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 
 import com.google.common.collect.Sets;
+import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 
@@ -13,6 +14,7 @@ import edu.cornell.jnutella.annotation.InjectLogger;
  * 
  * @author Daniel
  */
+@Singleton
 public class IdentityTagManager {
 
   @InjectLogger
@@ -33,6 +35,9 @@ public class IdentityTagManager {
   public synchronized Object generateKey(long requestedValue) {
     if (keySet.contains(requestedValue)) {
       long newValue = startKey++;
+      while (keySet.contains(newValue)) {
+        newValue = startKey++;
+      }
       log.warn("Key '" + requestedValue + "' already registered.  Returning '" + newValue
           + "' instead.");
       keySet.add(newValue);

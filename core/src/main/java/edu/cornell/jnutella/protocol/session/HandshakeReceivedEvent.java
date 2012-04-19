@@ -8,9 +8,9 @@ public class HandshakeReceivedEvent extends SessionEvent {
   private final HttpMessage message;
   private final HandshakeInterruptor interruptor;
 
-  public HandshakeReceivedEvent(SessionModel model, ChannelHandlerContext context, HttpMessage message,
+  public HandshakeReceivedEvent(ChannelHandlerContext context, HttpMessage message,
       HandshakeInterruptor interruptor) {
-    super(model, context);
+    super(context);
     this.message = message;
     this.interruptor = interruptor;
   }
