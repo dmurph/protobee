@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.protocol.session;
+package edu.cornell.jnutella.session;
 
 import java.util.Map;
 
@@ -35,6 +35,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   @InjectLogger
   private Logger log;
   private final SessionModel sessionModel;
+  private final ProtocolSessionModel protocolSessionModel;
   private final CompatabilityHeaderMerger headerMerger;
   private final HandshakeInterruptor interruptor;
   private final EventBus eventBus;
@@ -46,7 +47,8 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   @Inject
   public SessionUpstreamHandshaker(SessionModel session, CompatabilityHeaderMerger headerMerger,
       HandshakeInterruptor interruptor, ProtocolModuleFilter filter, EventBus eventBus,
-      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity, Protocol protocol) {
+      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity, Protocol protocol,
+      ProtocolSessionModel protocolSessionModel) {
     this.sessionModel = session;
     this.headerMerger = headerMerger;
     this.interruptor = interruptor;
@@ -55,6 +57,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
     this.bootstrapper = bootstrapper;
     this.identity = identity;
     this.protocol = protocol;
+    this.protocolSessionModel = protocolSessionModel;
   }
 
   @Override
@@ -87,7 +90,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
     sessionModel.enterScope();
     // they initiated the connection, we just got their first message
     Map<String, String> mergedCompatabilityHeaders = headerMerger.mergeHeaders(request);
-    filter.filterModules(sessionModel.getModules(), mergedCompatabilityHeaders,
+    filter.filterModules(protocolSessionModel.getMutableModules(), mergedCompatabilityHeaders,
         new Predicate<ProtocolModule>() {
           @Override
           public boolean apply(ProtocolModule input) {

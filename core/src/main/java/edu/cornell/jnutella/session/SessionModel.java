@@ -1,31 +1,33 @@
-package edu.cornell.jnutella.protocol.session;
+package edu.cornell.jnutella.session;
 
 import java.util.Map;
-import java.util.Set;
 
-import com.google.common.collect.MapMaker;
+import com.google.inject.Inject;
 import com.google.inject.Key;
 
 import edu.cornell.jnutella.guice.JnutellaScopes;
+import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.guice.SessionScopeMap;
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.modules.ProtocolModule;
 
 /**
  * On construction, puts itself and the network identity into it's scope map
  * 
  * @author Daniel
  */
-public abstract class SessionModel {
+@SessionScope
+public class SessionModel {
 
   private final NetworkIdentity identity;
+  private final Map<String, Object> sessionScopeMap;
+
   private SessionState sessionState;
-  private final Set<ProtocolModule> modules;
 
-  private final Map<String, Object> sessionScopeMap = new MapMaker().concurrencyLevel(4).makeMap();
-
-  public SessionModel(NetworkIdentity identity, Set<ProtocolModule> mutableModules) {
+  @Inject
+  public SessionModel(NetworkIdentity identity, 
+      @SessionScopeMap Map<String, Object> sessionScopeMap) {
     this.identity = identity;
-    this.modules = mutableModules;
+    this.sessionScopeMap = sessionScopeMap;
     JnutellaScopes.putObjectInScope(Key.get(SessionModel.class), this, sessionScopeMap);
     JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), identity, sessionScopeMap);
   }
@@ -40,10 +42,6 @@ public abstract class SessionModel {
 
   public void setSessionState(SessionState sessionState) {
     this.sessionState = sessionState;
-  }
-
-  public Set<ProtocolModule> getModules() {
-    return modules;
   }
 
   Map<String, Object> getSessionScopeMap() {

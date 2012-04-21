@@ -8,17 +8,17 @@ import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.MapMaker;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.guice.IdentityScope;
+import edu.cornell.jnutella.guice.IdentityScopeMap;
 import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
 @IdentityScope
 public class NetworkIdentity {
@@ -26,13 +26,13 @@ public class NetworkIdentity {
   @InjectLogger
   private Logger log;
   private final Map<Protocol, ProtocolIdentityModel> protocolModels;
-
+  private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
 
-  private final Map<String, Object> identityScopeMap = new MapMaker().concurrencyLevel(4).makeMap();
-
   @Inject
-  public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap) {
+  public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap,
+      @IdentityScopeMap Map<String, Object> identityScopeMap) {
+    this.identityScopeMap = identityScopeMap;
     ImmutableMap.Builder<Protocol, ProtocolIdentityModel> builder = ImmutableMap.builder();
 
     for (Protocol protocol : configMap.keySet()) {

@@ -5,7 +5,6 @@ import org.jboss.netty.channel.ChannelHandler;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;

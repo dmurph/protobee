@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.protocol.session;
+package edu.cornell.jnutella.session;
 
 import java.util.Set;
 

@@ -9,21 +9,24 @@ import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import com.google.inject.Provider;
 
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
 
 public interface ProtocolConfig extends Provider<Protocol> {
 
-  SessionModel createSessionModel();
+  /**
+   * Precondition: we are in the session scope, but the SessionModel is not yet in the scope.
+   * 
+   * @return
+   */
+  ProtocolSessionModel createSessionModel();
 
   ChannelHandler[] createProtocolHandlers();
 
   ProtocolIdentityModel createIdentityModel();
-  
+
   HttpMessageDecoder createRequestDecoder();
-  
+
   HttpMessageEncoder createRequestEncoder();
-  
-  int getPort();
-  
+
   Map<String, Object> getNettyBootstrapOptions();
 }

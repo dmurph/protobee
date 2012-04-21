@@ -28,8 +28,8 @@ import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.HandshakeCreator;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.HandshakeCreator;
+import edu.cornell.jnutella.session.SessionModel;
 
 @Singleton
 public class NetworkManager {

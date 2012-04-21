@@ -2,7 +2,6 @@ package edu.cornell.jnutella.gnutella;
 
 import java.util.Map;
 
-import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
@@ -12,11 +11,10 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
-import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
 
 @Protocol(name = "GNUTELLA", majorVersion = 0, minorVersion = 6, headerRegex = "^GNUTELLA CONNECT/0\\.6$")
 public class GnutellaProtocolConfig implements ProtocolConfig {
@@ -43,7 +41,7 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   }
 
   @Override
-  public SessionModel createSessionModel() {
+  public ProtocolSessionModel createSessionModel() {
     return sessionModuleProvider.get();
   }
 
@@ -70,12 +68,6 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   @Override
   public HttpMessageEncoder createRequestEncoder() {
     return encoderProvider.get();
-  }
-
-  @Override
-  public int getPort() {
-    // TODO Auto-generated method stub
-    return 0;
   }
 
   @Override

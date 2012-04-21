@@ -1,6 +1,7 @@
 package edu.cornell.jnutella.network;
 
 import java.net.SocketAddress;
+import java.util.Set;
 
 import javax.annotation.Nullable;
 
@@ -20,11 +21,12 @@ import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.ProtocolSessionBootstrapper;
-import edu.cornell.jnutella.protocol.session.SessionDownstreamHandshaker;
-import edu.cornell.jnutella.protocol.session.SessionModel;
-import edu.cornell.jnutella.protocol.session.SessionModelFactory;
-import edu.cornell.jnutella.protocol.session.SessionUpstreamHandshaker;
+import edu.cornell.jnutella.session.ProtocolSessionBootstrapper;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
+import edu.cornell.jnutella.session.SessionDownstreamHandshaker;
+import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModelFactory;
+import edu.cornell.jnutella.session.SessionUpstreamHandshaker;
 
 /**
  * Needs to be threadsafe, not in any scope.
@@ -40,6 +42,7 @@ public class HandshakeStateBootstrapper {
   private final Provider<SessionDownstreamHandshaker> downShakerProvider;
   private final ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory;
   private final Provider<SessionModelFactory> sessionFactory;
+  private final Provider<ProtocolSessionModel> protocolSession;
 
   private final Provider<EventBus> eventBus;
 
@@ -49,7 +52,7 @@ public class HandshakeStateBootstrapper {
       Provider<SessionUpstreamHandshaker> upShakerProvider,
       Provider<SessionDownstreamHandshaker> downShakerProvider,
       ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory, Provider<EventBus> eventBus,
-      Provider<SessionModelFactory> sessionFactory) {
+      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolSessionModel> protocolSession) {
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;
     this.upShakerProvider = upShakerProvider;
@@ -57,6 +60,7 @@ public class HandshakeStateBootstrapper {
     this.protocolBootstrapperFactory = protocolBootstrapperFactory;
     this.eventBus = eventBus;
     this.sessionFactory = sessionFactory;
+    this.protocolSession = protocolSession;
   }
 
   /**
@@ -84,11 +88,21 @@ public class HandshakeStateBootstrapper {
 
     identityModel.setCurrentSessionModel(session);
 
-    // register modules
-    EventBus bus = eventBus.get();
-    for (ProtocolModule module : session.getModules()) {
-      bus.register(module);
+    ProtocolSessionModel protocolSessionModel = protocolSession.get();
+
+    Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
+    if (modules.size() == 0) {
+      log.info("No protocol modules for protocol: " + protocolConfig.get());
+    } else {
+      log.info(modules.size() + " modules available for protocol session " + protocolConfig.get());
+      log.debug(modules.toString());
+      // register modules
+      EventBus bus = eventBus.get();
+      for (ProtocolModule module : protocolSessionModel.getMutableModules()) {
+        bus.register(module);
+      }
     }
+
 
     // create handlers
     ChannelHandler[] handlers = new ChannelHandler[4];

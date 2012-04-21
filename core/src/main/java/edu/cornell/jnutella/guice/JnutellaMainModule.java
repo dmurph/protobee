@@ -11,10 +11,10 @@ import org.jboss.netty.logging.Slf4JLoggerFactory;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.MapMaker;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
-import com.google.inject.ProvisionException;
 import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.gnutella.GnutellaGuiceModule;
@@ -24,6 +24,7 @@ import edu.cornell.jnutella.network.NetworkGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.protocol.ProtocolGuiceModule;
+import edu.cornell.jnutella.session.SessionGuiceModule;
 
 public class JnutellaMainModule extends AbstractModule {
 
@@ -32,6 +33,7 @@ public class JnutellaMainModule extends AbstractModule {
     install(new NetworkGuiceModule());
     install(new LogModule());
     install(new ProtocolGuiceModule());
+    install(new SessionGuiceModule());
     install(new GnutellaGuiceModule());
     install(new ExecutorModule(new Provider<Executor>() {
       @Override
@@ -63,5 +65,17 @@ public class JnutellaMainModule extends AbstractModule {
       builder.put(protocol, protocolConfig);
     }
     return builder.build();
+  }
+  
+  @Provides
+  @SessionScopeMap
+  public Map<String, Object> createSessionScopeMap() {
+    return new MapMaker().concurrencyLevel(4).makeMap();
+  }
+  
+  @Provides
+  @IdentityScopeMap
+  public Map<String, Object> createIdentiyScopeMap() {
+    return new MapMaker().concurrencyLevel(4).makeMap();
   }
 }
