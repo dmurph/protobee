@@ -1,5 +1,6 @@
 package edu.cornell.jnutella.gnutella.messages.decoding;
 
+import java.net.InetSocketAddress;
 import java.util.ArrayList;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -17,7 +18,6 @@ import edu.cornell.jnutella.gnutella.session.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
 import edu.cornell.jnutella.util.GUID;
 import edu.cornell.jnutella.util.HexConverter;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 @ForMessageType(MessageHeader.F_QUERY_REPLY)
 public class QueryHitDecoder implements MessageBodyDecoder<QueryHitBody> {
@@ -41,7 +41,7 @@ public class QueryHitDecoder implements MessageBodyDecoder<QueryHitBody> {
     byte numHits = buffer.readByte();
     int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
     byte[] address = {buffer.readByte(), buffer.readByte(), buffer.readByte(), buffer.readByte()};
-    JnutellaSocketAddress socketAddress = new JnutellaSocketAddress(address, port);
+    InetSocketAddress socketAddress = ByteUtils.getInetSocketAddress(address, port);
     long speed = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
 
     ArrayList<ResponseBody> hitList = new ArrayList<ResponseBody>();

@@ -13,6 +13,7 @@ import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.gnutella.messages.ResponseBody;
 import edu.cornell.jnutella.util.ByteUtils;
 import edu.cornell.jnutella.util.URN;
+import edu.cornell.jnutella.util.URN.Type;
 
 public class ResponseDecoder implements PartDecoder<ResponseBody> {
   private final GGEPDecoder ggepDecoder;
@@ -57,15 +58,22 @@ public class ResponseDecoder implements PartDecoder<ResponseBody> {
     
     // will be urn or ggep
     if (tag != ((byte) 0xC3)){
+      Type type = Type.ANY_TYPE;
       int lengthAccompaniedURN = buffer.bytesBefore((byte) 0x1C);
       int lengthSoloURN = buffer.bytesBefore((byte) 0x0);
       // if it's a solo urn
       if (lengthAccompaniedURN == -1){
-        urn = new URN(buffer.toString(buffer.readerIndex(), lengthSoloURN, Charset.forName("UTF-8")));
+        String urnString = buffer.toString(buffer.readerIndex(), lengthSoloURN, Charset.forName("UTF-8"));
+        type = (urnString.substring(0, 3).equals("sha1:")) ? Type.SHA1 : type;
+        type = (urnString.substring(0, 8).equals("bitprint:")) ? Type.BITPRINT : type;
+        type = (urnString.substring(0, 7).equals("ttroot:")) ? Type.TTROOT : type;
+        type = (urnString.substring(0, 6).equals("Invalid")) ? Type.INVALID : type;
+        type = (urnString.substring(0, 4).equals("guid:")) ? Type.GUID : type;
+        urn = new URN(urnString, type);
         return new ResponseBody(fileIndex, fileSize, fileName, urn, null);
       }
       // if not a solo urn
-      urn = new URN(buffer.toString(buffer.readerIndex(), lengthAccompaniedURN, Charset.forName("UTF-8")));
+      urn = new URN(buffer.toString(buffer.readerIndex(), lengthAccompaniedURN, Charset.forName("UTF-8")), type);
       buffer.readerIndex(buffer.readerIndex() + lengthAccompaniedURN + 1);
     }
     

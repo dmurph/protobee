@@ -51,7 +51,6 @@ public class URLCodecUtils
         }
         catch ( DecodingException exp )
         {
-            NLogger.error( URLCodecUtils.class, exp, exp );
             throw new RuntimeException( exp.toString() + ": " + exp.getMessage() );
         }
     }
@@ -69,7 +68,6 @@ public class URLCodecUtils
         }
         catch ( EncodingException exp )
         {
-            NLogger.error( URLCodecUtils.class, exp, exp );
             throw new RuntimeException( exp.toString() + ": " + exp.getMessage() );
         }
     }

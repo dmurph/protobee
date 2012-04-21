@@ -3,6 +3,7 @@ package edu.cornell.jnutella.gnutella.messages;
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -15,7 +16,6 @@ import edu.cornell.jnutella.gnutella.messages.decoding.QueryHitDecoder;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 import edu.cornell.jnutella.gnutella.messages.encoding.QueryHitEncoder;
 import edu.cornell.jnutella.util.GUID;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 import edu.cornell.jnutella.util.VendorCode;
 
 public class QueryHitTest extends AbstractTest {
@@ -30,7 +30,7 @@ public class QueryHitTest extends AbstractTest {
     byte[] xmlBytes = {(byte) 0x06, (byte) 0x07, (byte) 0x08};
     byte[] privateArea2 = {(byte) 0x09, (byte) 0x10, (byte) 0x11};
 
-    QueryHitBody queryHit = factory.createQueryHitMessage(new JnutellaSocketAddress( InetAddress.getLocalHost(),
+    QueryHitBody queryHit = factory.createQueryHitMessage(new InetSocketAddress( InetAddress.getLocalHost(),
       (short) (Integer.MAX_VALUE + 1)), (long) Integer.MAX_VALUE + 1l, null, new VendorCode('L', 'I', 'M', 'E'), 
       (byte) 0x01, (byte) 0x02, privateArea1, null, xmlBytes, privateArea2, new GUID());
 

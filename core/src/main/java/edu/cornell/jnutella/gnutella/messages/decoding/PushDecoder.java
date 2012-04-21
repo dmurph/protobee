@@ -1,5 +1,7 @@
 package edu.cornell.jnutella.gnutella.messages.decoding;
 
+import java.net.InetSocketAddress;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 
 import com.google.common.base.Preconditions;
@@ -13,7 +15,6 @@ import edu.cornell.jnutella.gnutella.session.ForMessageType;
 import edu.cornell.jnutella.util.ByteUtils;
 import edu.cornell.jnutella.util.GUID;
 import edu.cornell.jnutella.util.HexConverter;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 @ForMessageType(MessageHeader.F_PUSH)
 public class PushDecoder implements MessageBodyDecoder<PushBody> {
@@ -40,7 +41,7 @@ public class PushDecoder implements MessageBodyDecoder<PushBody> {
     
     byte[] address = {buffer.readByte(), buffer.readByte(), buffer.readByte(), buffer.readByte()};
     int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
-    JnutellaSocketAddress socketAddress = new JnutellaSocketAddress(address, port);
+    InetSocketAddress socketAddress = ByteUtils.getInetSocketAddress(address, port);
     
     if (!buffer.readable()) {
       return bodyFactory.createPushMessage(servantID, index, socketAddress, null);

@@ -3,6 +3,7 @@ package edu.cornell.jnutella.gnutella.messages;
 import static org.junit.Assert.assertEquals;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -15,7 +16,6 @@ import edu.cornell.jnutella.gnutella.messages.decoding.PongDecoder;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 import edu.cornell.jnutella.gnutella.messages.encoding.PongEncoder;
 import edu.cornell.jnutella.util.ByteUtils;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 public class PongTest extends AbstractTest {
 
@@ -26,7 +26,7 @@ public class PongTest extends AbstractTest {
     MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
 
     PongBody pong =
-        factory.createPongMessage(new JnutellaSocketAddress(InetAddress.getLocalHost(), (int) Short.MAX_VALUE + 1),
+        factory.createPongMessage(new InetSocketAddress(InetAddress.getLocalHost(), (int) Short.MAX_VALUE + 1),
             (long) Integer.MAX_VALUE + 1l, (long) Integer.MAX_VALUE + 2l, null);
 
     PongEncoder encoder = injector.getInstance(PongEncoder.class);

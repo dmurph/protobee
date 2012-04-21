@@ -1,6 +1,7 @@
 package edu.cornell.jnutella.gnutella.messages;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import javax.annotation.Nullable;
 
@@ -11,20 +12,19 @@ import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.GGEPKeys;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
 import edu.cornell.jnutella.util.GUID;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 public class PushBody implements MessageBody {
 
   public static final long FW_TRANS_INDEX = Integer.MAX_VALUE - 2;
   private GUID servantID;
   private long index;
-  private JnutellaSocketAddress socketAddress;
+  private InetSocketAddress socketAddress;
   private int port;
   private GGEP ggep;
 
   @AssistedInject
   public PushBody(@Assisted GUID servantID, @Assisted long index,
-                  @Assisted JnutellaSocketAddress socketAddress, 
+                  @Assisted InetSocketAddress socketAddress, 
                   @Nullable @Assisted GGEP ggep) throws DecodingException {
     this.servantID = servantID;
     this.index = index;
@@ -40,7 +40,7 @@ public class PushBody implements MessageBody {
     return index;
   }
   
-  public JnutellaSocketAddress getsSocketAddress(){
+  public InetSocketAddress getsSocketAddress(){
     return socketAddress;
   }
 

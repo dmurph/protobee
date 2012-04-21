@@ -1,6 +1,7 @@
 package edu.cornell.jnutella.gnutella.messages;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 
 import javax.annotation.Nullable;
 
@@ -8,17 +9,16 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.extension.GGEP;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 public class PongBody implements MessageBody {
 
-  private final JnutellaSocketAddress socketAddress;
+  private final InetSocketAddress socketAddress;
   private final long fileCount;
   private final long fileSizeInKB;
   private final GGEP ggep;
 
   @AssistedInject
-  public PongBody(@Assisted JnutellaSocketAddress address,
+  public PongBody(@Assisted InetSocketAddress address,
       @Assisted("fileCount") long fileCount,
       @Assisted("fileSizeInKB") long fileSizeInKB, @Nullable @Assisted("ggep") GGEP ggep) {
     
@@ -28,7 +28,7 @@ public class PongBody implements MessageBody {
     this.ggep = ggep;
   }
 
-  public JnutellaSocketAddress getSocketAddress(){
+  public InetSocketAddress getSocketAddress(){
     return socketAddress;
   }
   
