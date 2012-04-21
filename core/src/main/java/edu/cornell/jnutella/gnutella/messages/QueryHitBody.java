@@ -1,6 +1,7 @@
 package edu.cornell.jnutella.gnutella.messages;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.util.Arrays;
 
 import javax.annotation.Nullable;
@@ -11,7 +12,6 @@ import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.util.GUID;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 import edu.cornell.jnutella.util.VendorCode;
 
 public class QueryHitBody implements MessageBody {
@@ -19,7 +19,7 @@ public class QueryHitBody implements MessageBody {
   public static final int XML_MAX_SIZE = 32768;
 
   private byte numHits;
-  private JnutellaSocketAddress socketAddress;
+  private InetSocketAddress socketAddress;
   private long speed;
   private ResponseBody[] hitList;
   private EQHDBody eqhd;
@@ -31,7 +31,7 @@ public class QueryHitBody implements MessageBody {
 
   // xmlBytes should be stored in GGEP - set to a constant for now
   @AssistedInject
-  public QueryHitBody( @Assisted JnutellaSocketAddress socketAddress, @Assisted long speed,
+  public QueryHitBody( @Assisted InetSocketAddress socketAddress, @Assisted long speed,
                        @Nullable @Assisted ResponseBody[] hitList, @Assisted VendorCode vendorCode, @Assisted("flags") byte flags, 
                        @Assisted("controls") byte controls, @Assisted("privateArea1") byte[] privateArea1, 
                        @Nullable @Assisted GGEP ggep, @Assisted("xmlBytes") byte[] xmlBytes, 
@@ -75,7 +75,7 @@ public class QueryHitBody implements MessageBody {
     return numHits;
   }
   
-  public JnutellaSocketAddress getSocketAddress(){
+  public InetSocketAddress getSocketAddress(){
     return socketAddress;
   }
 

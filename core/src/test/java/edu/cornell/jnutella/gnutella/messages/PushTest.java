@@ -4,6 +4,7 @@ import static org.junit.Assert.assertEquals;
 
 import java.io.UnsupportedEncodingException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
 import org.jboss.netty.buffer.ChannelBuffer;
@@ -16,7 +17,6 @@ import edu.cornell.jnutella.gnutella.messages.decoding.PushDecoder;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 import edu.cornell.jnutella.gnutella.messages.encoding.PushEncoder;
 import edu.cornell.jnutella.util.GUID;
-import edu.cornell.jnutella.util.JnutellaSocketAddress;
 
 public class PushTest extends AbstractTest {
 
@@ -27,7 +27,7 @@ public class PushTest extends AbstractTest {
     MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
     
     PushBody push = factory.createPushMessage(new GUID(), 
-      (long) Integer.MAX_VALUE + 1l, new JnutellaSocketAddress(InetAddress.getLocalHost(), 
+      (long) Integer.MAX_VALUE + 1l, new InetSocketAddress(InetAddress.getLocalHost(), 
       (int) Short.MAX_VALUE + 1), null);
 
     PushEncoder encoder = injector.getInstance(PushEncoder.class);

@@ -32,9 +32,9 @@ public class ResponseEncoder implements PartEncoder<ResponseBody> {
 
     if (toEncode.getURN() != null) {
       try {
-        buffer.writeBytes(toEncode.getURN().getAsString().getBytes("UTF-8"));
+        buffer.writeBytes(toEncode.getURN().getUrnString().getBytes("UTF-8"));
       } catch (UnsupportedEncodingException e) {
-        throw new EncodingException("UTF-8 not supported by filename "+toEncode.getURN().getAsString()+" in response encoder");
+        throw new EncodingException("UTF-8 not supported by filename "+toEncode.getURN().getUrnString()+" in response encoder");
       }
       buffer.writeByte((byte) 0x1C);
     }
