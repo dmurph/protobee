@@ -1,6 +1,6 @@
 package edu.cornell.jnutella.gnutella.messages.encoding;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -25,13 +25,9 @@ public class QueryEncoder implements MessageBodyEncoder {
 
   public void encode(ChannelBuffer buffer, QueryBody toEncode) throws EncodingException {
     ByteUtils.short2leb((short) toEncode.getMinSpeed(), buffer);
-    try {
-      buffer.writeBytes(toEncode.getQuery().getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new EncodingException("Cannot get UTF-8 bytes from "+toEncode.getQuery());
-    }
+    buffer.writeBytes(toEncode.getQuery().getBytes(Charset.forName("UTF-8")));
     buffer.writeByte(0);
-    
+
     if (toEncode.getGgep() != null) {
       EncoderInput ei = new EncoderInput(toEncode.getGgep(), false);
       ggepEncoder.encode(buffer, ei);
