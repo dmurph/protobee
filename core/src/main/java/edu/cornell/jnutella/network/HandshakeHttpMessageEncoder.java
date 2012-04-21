@@ -12,7 +12,7 @@ import com.google.inject.name.Named;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.guice.SessionScope;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
 @SessionScope
 public class HandshakeHttpMessageEncoder implements ChannelDownstreamHandler {

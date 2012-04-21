@@ -9,8 +9,6 @@ import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import org.junit.After;
 import org.junit.Before;
-import org.mockito.invocation.InvocationOnMock;
-import org.mockito.stubbing.Answer;
 
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
@@ -28,7 +26,7 @@ import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.plugin.PluginGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
 
 public abstract class AbstractTest {
 
@@ -61,22 +59,26 @@ public abstract class AbstractTest {
     };
   }
 
-  public static Answer<SessionModel> getSessionModelAnswer(final Injector injector,
-      final Set<ProtocolModule> mutableModules) {
-    return new Answer<SessionModel>() {
-
-      @Override
-      public SessionModel answer(InvocationOnMock invocation) throws Throwable {
-        return new SessionModel(injector.getInstance(NetworkIdentity.class), mutableModules) {};
-      }
-    };
-  }
-
   public static ProtocolConfig mockDefaultProtocolConfig() {
     ProtocolConfig config = mock(ProtocolConfig.class);
     when(config.get()).thenReturn(mock(Protocol.class));
     when(config.createIdentityModel()).thenReturn(mock(ProtocolIdentityModel.class));
-    when(config.createSessionModel()).thenReturn(mock(SessionModel.class));
+    when(config.createSessionModel()).thenReturn(mock(ProtocolSessionModel.class));
+    when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
+    when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
+    when(config.getNettyBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
+    return config;
+  }
+
+  public static ProtocolConfig mockDefaultProtocolConfig(Set<ProtocolModule> sessionModules) {
+
+    ProtocolSessionModel sessionModel = mock(ProtocolSessionModel.class);
+    when(sessionModel.getMutableModules()).thenReturn(sessionModules);
+
+    ProtocolConfig config = mock(ProtocolConfig.class);
+    when(config.get()).thenReturn(mock(Protocol.class));
+    when(config.createIdentityModel()).thenReturn(mock(ProtocolIdentityModel.class));
+    when(config.createSessionModel()).thenReturn(sessionModel);
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
     when(config.getNettyBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());

@@ -10,28 +10,19 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.gnutella.Gnutella;
 import edu.cornell.jnutella.guice.SessionScope;
-import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.modules.ProtocolModule;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
 import edu.cornell.jnutella.util.HeaderUtil;
 
 @SessionScope
-public class GnutellaSessionModel extends SessionModel {
+public class GnutellaSessionModel implements ProtocolSessionModel {
 
-  private GnutellaSessionState state;
   private Map<String, String> allHeaders = null;
+  private final Set<ProtocolModule> mutableModules;
 
   @Inject
-  public GnutellaSessionModel(NetworkIdentity identity, @Gnutella Set<ProtocolModule> modules) {
-    super(identity, Sets.newHashSet(modules));
-  }
-
-  public GnutellaSessionState getState() {
-    return state;
-  }
-
-  public void setState(GnutellaSessionState state) {
-    this.state = state;
+  public GnutellaSessionModel(@Gnutella Set<ProtocolModule> modules) {
+    this.mutableModules = Sets.newHashSet(modules);
   }
 
   /**
@@ -45,5 +36,10 @@ public class GnutellaSessionModel extends SessionModel {
 
   public Map<String, String> getAllHeaders() {
     return allHeaders;
+  }
+
+  @Override
+  public Set<ProtocolModule> getMutableModules() {
+    return mutableModules;
   }
 }

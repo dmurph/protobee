@@ -5,10 +5,8 @@ import java.util.Set;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelEvent;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
-import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;
@@ -20,8 +18,6 @@ import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageBody;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.session.ForMessageType;
-import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
-import edu.cornell.jnutella.gnutella.session.GnutellaSessionState;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.network.FrameDecoderLE;
 
@@ -36,25 +32,16 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
 
   @InjectLogger
   private Logger log;
-  private final HttpRequestDecoder handshakeRequestDecoder;
-  private final HttpResponseDecoder handshakeResponseDecoder;
   private final MessageHeaderDecoder headerDecoder;
   private final Map<Byte, MessageBodyDecoder<?>> messageDecoders;
-
-  private final GnutellaSessionModel sessionModel;
 
   private MessageHeader header;
   private MessageBodyDecoder<?> currentDecoder;
 
   @Inject
-  public GnutellaDecoderHandler(HttpRequestDecoder handshakeRequestDecoder,
-      HttpResponseDecoder handshakeResponseDecoder, MessageHeaderDecoder headerDecoder,
-      @SuppressWarnings("rawtypes") @Gnutella Set<MessageBodyDecoder> messageDecoders,
-      GnutellaSessionModel model) {
-    this.sessionModel = model;
+  public GnutellaDecoderHandler(MessageHeaderDecoder headerDecoder,
+      @SuppressWarnings("rawtypes") @Gnutella Set<MessageBodyDecoder> messageDecoders) {
     this.headerDecoder = headerDecoder;
-    this.handshakeRequestDecoder = handshakeRequestDecoder;
-    this.handshakeResponseDecoder = handshakeResponseDecoder;
 
     ImmutableMap.Builder<Byte, MessageBodyDecoder<?>> decodersBuilder = ImmutableMap.builder();
 
@@ -74,30 +61,6 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
       log.error("Cannot have two messages decoders for the same message type", e);
       throw new IllegalArgumentException(
           "Cannot have two messages decoders for the same message type", e);
-    }
-  }
-
-  @Override
-  public void handleUpstream(ChannelHandlerContext ctx, ChannelEvent e) throws Exception {
-
-    if (sessionModel.getState() == null) {
-      log.info("Receiving new session from host " + e.getChannel().getRemoteAddress());
-      sessionModel.setState(GnutellaSessionState.HANDSHAKE_0);
-    }
-
-    switch (sessionModel.getState()) {
-      case HANDSHAKE_0:
-        handshakeRequestDecoder.handleUpstream(ctx, e);
-        break;
-      case HANDSHAKE_1:
-      case HANDSHAKE_2:
-        handshakeResponseDecoder.handleUpstream(ctx, e);
-        break;
-      case MESSAGES:
-        super.handleUpstream(ctx, e);
-        break;
-      default:
-        throw new RuntimeException("illegal state");
     }
   }
 

@@ -19,22 +19,21 @@ import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
 public class HandshakeBootstrapperTest extends AbstractTest {
 
   @Test
   public void testSessionSet() {
-    ProtocolConfig config = mockDefaultProtocolConfig();
+    Set<ProtocolModule> modules = Sets.newHashSet();
+    ProtocolConfig config = mockDefaultProtocolConfig(modules);
     ProtocolIdentityModel identityModel = mock(ProtocolIdentityModel.class);
 
     Injector inj = getInjectorWithProtocolConfig(config);
 
-    Set<ProtocolModule> modules = Sets.newHashSet();
-
     when(config.createIdentityModel()).thenReturn(identityModel);
-    when(config.createSessionModel()).thenAnswer(getSessionModelAnswer(inj, modules));
     when(identityModel.hasCurrentSession()).thenReturn(false);
+
 
     HandshakeStateBootstrapper handshakeBootstrapper =
         inj.getInstance(HandshakeStateBootstrapper.class);

@@ -13,7 +13,7 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.modules.ProtocolModule;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
 import edu.cornell.jnutella.util.VersionComparator;
 
 public class CompatabilityHeaderMerger {
@@ -26,7 +26,7 @@ public class CompatabilityHeaderMerger {
   private final VersionComparator comp;
 
   @Inject
-  public CompatabilityHeaderMerger(VersionComparator comparator, SessionModel session) {
+  public CompatabilityHeaderMerger(VersionComparator comparator, ProtocolSessionModel session) {
     comp = comparator;
 
     ImmutableMultimap.Builder<String, CompatabilityHeader> requiredVersionsBuilder =
@@ -34,7 +34,7 @@ public class CompatabilityHeaderMerger {
     ImmutableMultimap.Builder<String, CompatabilityHeader> requestedVersionsBuilder =
         ImmutableMultimap.builder();
 
-    for (ProtocolModule module : session.getModules()) {
+    for (ProtocolModule module : session.getMutableModules()) {
       Headers headers = module.getClass().getAnnotation(Headers.class);
       for (CompatabilityHeader header : headers.requiredCompatabilities()) {
         requiredVersionsBuilder.put(header.name(), header);

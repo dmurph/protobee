@@ -6,7 +6,7 @@ import org.jboss.netty.channel.ChannelHandler;
 import com.google.inject.Provider;
 
 import edu.cornell.jnutella.gnutella.Gnutella;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
 //@Protocol(name = "GET", version = "1.1", headerRegex = "^GET /[\\d]+/[^\\\\/:\\*\\\"<>\\|]+ HTTP/1.1$")
 //public class HttpGetProtocolConfig implements ProtocolConfig {

@@ -3,7 +3,7 @@ package edu.cornell.jnutella.gnutella.session;
 import org.jboss.netty.channel.ChannelHandlerContext;
 
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
-import edu.cornell.jnutella.protocol.session.SessionEvent;
+import edu.cornell.jnutella.session.SessionEvent;
 
 public class MessageSendingEvent extends SessionEvent {
 

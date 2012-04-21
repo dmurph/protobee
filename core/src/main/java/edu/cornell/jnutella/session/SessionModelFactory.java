@@ -1,10 +1,12 @@
-package edu.cornell.jnutella.protocol.session;
+package edu.cornell.jnutella.session;
 
 import java.util.Map;
 
 import com.google.common.collect.Maps;
 import com.google.common.eventbus.EventBus;
+import com.google.inject.Inject;
 import com.google.inject.Key;
+import com.google.inject.Provider;
 
 import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.guice.JnutellaScopes;
@@ -19,6 +21,12 @@ import edu.cornell.jnutella.protocol.ProtocolConfig;
 @IdentityScope
 public class SessionModelFactory {
 
+  private final Provider<SessionModel> sessionModelProvider;
+  
+  @Inject
+  public SessionModelFactory(Provider<SessionModel> sessionModelProvider) {
+    this.sessionModelProvider = sessionModelProvider;
+  }
 
   /**
    * Precondition: was have to be in the respective entity scope
@@ -36,8 +44,11 @@ public class SessionModelFactory {
     JnutellaScopes.putObjectInScope(Key.get(ProtocolConfig.class), pconfig, map);
     JnutellaScopes.enterSessionScope(map);
 
-    SessionModel sessionModel = pconfig.createSessionModel();
-
+    ProtocolSessionModel protocolSessionModel = pconfig.createSessionModel();
+    JnutellaScopes.putObjectInScope(Key.get(ProtocolSessionModel.class), protocolSessionModel, map);
+    
+    SessionModel sessionModel = sessionModelProvider.get();
+    
     sessionModel.getSessionScopeMap().putAll(map);
 
     JnutellaScopes.exitSessionScope();

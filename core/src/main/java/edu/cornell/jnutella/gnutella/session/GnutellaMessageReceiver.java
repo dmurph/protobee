@@ -14,7 +14,7 @@ import com.google.inject.Singleton;
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
 @Singleton
 public class GnutellaMessageReceiver extends SimpleChannelUpstreamHandler {

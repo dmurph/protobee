@@ -13,6 +13,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -20,6 +21,7 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.guice.IdentityScope;
+import edu.cornell.jnutella.guice.IdentityScopeMap;
 import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.guice.LogModule;
 import edu.cornell.jnutella.identity.IdentityTagManager;
@@ -48,6 +50,13 @@ public class IdentityTests extends AbstractTest {
       @Singleton
       public Map<Protocol, ProtocolConfig> getConfigMap() {
         return ImmutableMap.of();
+      }
+
+      @SuppressWarnings("unused")
+      @Provides
+      @IdentityScopeMap
+      public Map<String, Object> createScopeMap() {
+        return Maps.newHashMap();
       }
     });
 
@@ -157,7 +166,7 @@ public class IdentityTests extends AbstractTest {
     NetworkIdentityManager manager = inj.getInstance(NetworkIdentityManager.class);
     SocketAddress address = new InetSocketAddress(80);
     manager.getNetworkIdentityWithNewConnection(protocol, address);
-    
+
 
     SocketAddress address2 = new InetSocketAddress(80);
     boolean caught = false;
