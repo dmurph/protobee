@@ -21,6 +21,7 @@ package edu.cornell.jnutella.util;
 
 import java.io.ByteArrayOutputStream;
 import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 import java.util.BitSet;
 
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
@@ -57,7 +58,7 @@ public class URLCodec // implements BinaryEncoder, BinaryDecoder, StringEncoder,
  /**
   * The default charset used for string decoding and encoding.
   */
- protected String charset = CharacterEncodingNames.UTF8;
+ protected String charset = "UTF-8";
  
  protected static byte ESCAPE_CHAR = '%';
  /**
@@ -228,7 +229,7 @@ public class URLCodec // implements BinaryEncoder, BinaryDecoder, StringEncoder,
      if (pString == null) {
          return null;
      }
-     return new String(encode(pString.getBytes(charset)), CharacterEncodingNames.US_ASCII);
+     return new String(encode(pString.getBytes(charset)), Charset.forName("US_ASCII"));
  }
 
 
@@ -272,7 +273,7 @@ public class URLCodec // implements BinaryEncoder, BinaryDecoder, StringEncoder,
      if (pString == null) {
          return null;
      }
-     return new String(decode(pString.getBytes(CharacterEncodingNames.US_ASCII)), charset);
+     return new String(decode(pString.getBytes(Charset.forName("US_ASCII"))), charset); 
  }
 
 

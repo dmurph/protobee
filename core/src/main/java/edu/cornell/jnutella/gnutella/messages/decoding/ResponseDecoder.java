@@ -64,12 +64,7 @@ public class ResponseDecoder implements PartDecoder<ResponseBody> {
       // if it's a solo urn
       if (lengthAccompaniedURN == -1){
         String urnString = buffer.toString(buffer.readerIndex(), lengthSoloURN, Charset.forName("UTF-8"));
-        type = (urnString.substring(0, 3).equals("sha1:")) ? Type.SHA1 : type;
-        type = (urnString.substring(0, 8).equals("bitprint:")) ? Type.BITPRINT : type;
-        type = (urnString.substring(0, 7).equals("ttroot:")) ? Type.TTROOT : type;
-        type = (urnString.substring(0, 6).equals("Invalid")) ? Type.INVALID : type;
-        type = (urnString.substring(0, 4).equals("guid:")) ? Type.GUID : type;
-        urn = new URN(urnString, type);
+        urn = new URN(urnString);
         return new ResponseBody(fileIndex, fileSize, fileName, urn, null);
       }
       // if not a solo urn

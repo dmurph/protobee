@@ -1,6 +1,6 @@
 package edu.cornell.jnutella.gnutella.messages.encoding;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -17,16 +17,12 @@ public class HUGEEncoder implements PartEncoder<HUGEExtension> {
   public HUGEEncoder(GGEPEncoder ggepEncoder) {
     this.ggepEncoder = ggepEncoder;
   }
-  
+
   @Override
   public void encode(ChannelBuffer buffer, HUGEExtension toEncode) throws EncodingException {
     URN[] urns = toEncode.getUrns();
     for (int i = 0; i < urns.length; i++){
-      try {
-        buffer.writeBytes(urns[i].getUrnString().getBytes("UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        throw new EncodingException("UTF-8 encoding is not supported by urn: "+urns[i].getUrnString());
-      }
+      buffer.writeBytes(urns[i].getUrnString().getBytes(Charset.forName("UTF-8")));
       buffer.writeByte((byte) 0x1C);
     }
     if (toEncode.getGGEP() == null){

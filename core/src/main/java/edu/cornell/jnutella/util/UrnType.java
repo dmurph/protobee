@@ -33,3 +33,4 @@ public class UrnType implements Serializable {
         return "urn type: " + _urnType;
     }
 }
+

@@ -1,6 +1,6 @@
 package edu.cornell.jnutella.gnutella.messages.encoding;
 
-import java.io.UnsupportedEncodingException;
+import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
@@ -22,20 +22,12 @@ public class ResponseEncoder implements PartEncoder<ResponseBody> {
 
     ByteUtils.int2leb((int) toEncode.getFileIndex(), buffer);
     ByteUtils.int2leb((int) toEncode.getFileSize(), buffer);
-    try {
-      buffer.writeBytes(toEncode.getFileName().getBytes("UTF-8"));
-    } catch (UnsupportedEncodingException e) {
-      throw new EncodingException("UTF-8 not supported by filename "+toEncode.getFileName()+" in response encoder");
-    }
-    
+    buffer.writeBytes(toEncode.getFileName().getBytes(Charset.forName("UTF-8")));
+
     buffer.writeByte((byte) 0x0);
 
     if (toEncode.getURN() != null) {
-      try {
-        buffer.writeBytes(toEncode.getURN().getUrnString().getBytes("UTF-8"));
-      } catch (UnsupportedEncodingException e) {
-        throw new EncodingException("UTF-8 not supported by filename "+toEncode.getURN().getUrnString()+" in response encoder");
-      }
+      buffer.writeBytes(toEncode.getURN().getUrnString().getBytes(Charset.forName("UTF-8")));
       buffer.writeByte((byte) 0x1C);
     }
 
@@ -45,7 +37,6 @@ public class ResponseEncoder implements PartEncoder<ResponseBody> {
     }
 
     buffer.writeByte((byte) 0x0);
-    
-    
+
   }
 }
