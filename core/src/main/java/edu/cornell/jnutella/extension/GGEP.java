@@ -55,6 +55,12 @@ public class GGEP {
     Preconditions.checkNotNull(properties);
     this.properties.putAll(properties);
   }
+  
+  public GGEP(GGEP other) {
+    Preconditions.checkNotNull(other);
+    this.properties.putAll(other.properties);
+    this.hashCode = other.hashCode;
+  }
 
 
   /**

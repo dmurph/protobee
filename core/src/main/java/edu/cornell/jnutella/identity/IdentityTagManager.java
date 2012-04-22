@@ -24,11 +24,13 @@ public class IdentityTagManager {
   // 10 so we have room for our default keys
   private long startKey = 10;
 
-  private Long ultrapeerKey;
+  private final Long ultrapeerKey;
+  private final Long leafKey;
 
   public IdentityTagManager() {
     keySet = Sets.newHashSet();
     ultrapeerKey = Long.valueOf(1);
+    leafKey = Long.valueOf(2);
     keySet.add(ultrapeerKey);
   }
 
@@ -49,5 +51,9 @@ public class IdentityTagManager {
 
   public Object getUltrapeerKey() {
     return ultrapeerKey;
+  }
+  
+  public Object getLeafKey() {
+    return leafKey;
   }
 }

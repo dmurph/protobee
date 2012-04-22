@@ -11,6 +11,8 @@ import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;
 import edu.cornell.jnutella.gnutella.messages.decoding.GnutellaDecoderHandler;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingModule;
 import edu.cornell.jnutella.gnutella.messages.encoding.GnutellaEncoderHandler;
+import edu.cornell.jnutella.gnutella.modules.PRSPongCache;
+import edu.cornell.jnutella.gnutella.modules.PongCache;
 import edu.cornell.jnutella.gnutella.modules.PingModule;
 import edu.cornell.jnutella.gnutella.session.FlowControlHandler;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageReceiver;
@@ -48,7 +50,11 @@ public class GnutellaGuiceModule extends AbstractModule {
     protocolModules.addBinding().to(PingModule.class);
     
     bind(FlowControlHandler.class).to(NoOpFlowControl.class);
-
+    
+    bind(RequestFilter.class).to(SimpleRequestFilter.class).in(Singleton.class);
+    
+    
+    bind(PongCache.class).to(PRSPongCache.class).in(Singleton.class);
   }
 
   @Provides
