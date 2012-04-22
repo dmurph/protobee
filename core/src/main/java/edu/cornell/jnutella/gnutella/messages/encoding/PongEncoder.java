@@ -1,5 +1,7 @@
 package edu.cornell.jnutella.gnutella.messages.encoding;
 
+import java.net.InetSocketAddress;
+
 import org.jboss.netty.buffer.ChannelBuffer;
 
 import com.google.common.base.Preconditions;
@@ -22,8 +24,11 @@ public class PongEncoder implements MessageBodyEncoder {
   }
 
   public void encode(ChannelBuffer buffer, PongBody toEncode) {
-    ByteUtils.short2leb((short) toEncode.getPort(), buffer);
-    buffer.writeBytes(toEncode.getAddress().getAddress(), 0, 4);
+    Preconditions.checkArgument(toEncode.getSocketAddress() instanceof InetSocketAddress,
+        "SocketAddress has to be an InetSocketAddress");
+    InetSocketAddress address = (InetSocketAddress) toEncode.getSocketAddress();
+    ByteUtils.short2leb((short) address.getPort(), buffer);
+    buffer.writeBytes(address.getAddress().getAddress(), 0, 4);
     ByteUtils.int2leb((int) toEncode.getFileCount(), buffer);
     ByteUtils.int2leb((int) toEncode.getFileSizeInKB(), buffer);
 
@@ -38,5 +43,5 @@ public class PongEncoder implements MessageBodyEncoder {
     Preconditions.checkArgument(toEncode instanceof PongBody, "Not a pong body.");
     encode(channel, (PongBody) toEncode);
   }
-  
+
 }
