@@ -25,12 +25,14 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.protocol.ProtocolGuiceModule;
 import edu.cornell.jnutella.session.SessionGuiceModule;
+import edu.cornell.jnutella.util.UtilGuiceModule;
 
 public class JnutellaMainModule extends AbstractModule {
 
   @Override
   protected void configure() {
     install(new NetworkGuiceModule());
+    install(new UtilGuiceModule());
     install(new LogModule());
     install(new ProtocolGuiceModule());
     install(new SessionGuiceModule());

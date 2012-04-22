@@ -103,7 +103,6 @@ public class HandshakeStateBootstrapper {
       }
     }
 
-
     // create handlers
     ChannelHandler[] handlers = new ChannelHandler[4];
 

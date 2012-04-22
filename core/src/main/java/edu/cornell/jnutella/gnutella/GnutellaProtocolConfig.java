@@ -9,6 +9,7 @@ import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
@@ -16,6 +17,7 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.ProtocolSessionModel;
 
+@Singleton
 @Protocol(name = "GNUTELLA", majorVersion = 0, minorVersion = 6, headerRegex = "^GNUTELLA CONNECT/0\\.6$")
 public class GnutellaProtocolConfig implements ProtocolConfig {
 
