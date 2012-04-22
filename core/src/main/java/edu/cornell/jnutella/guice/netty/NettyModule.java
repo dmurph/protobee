@@ -10,11 +10,11 @@ import org.jboss.netty.channel.socket.oio.OioServerSocketChannelFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Scopes;
 
-import edu.cornell.jnutella.network.NetworkModule;
+import edu.cornell.jnutella.network.NetworkGuiceModule;
 
 /**
  * Module to make the channel factories in Netty bindable. Not specific to the jnutella application
- * at all, see {@link NetworkModule}.
+ * at all, see {@link NetworkGuiceModule}.
  * 
  * @author Daniel
  */

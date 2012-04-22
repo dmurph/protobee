@@ -11,8 +11,12 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
 
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.identity.NetworkIdentity;
+import edu.cornell.jnutella.identity.NetworkIdentityManager;
+import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
@@ -25,12 +29,14 @@ import edu.cornell.jnutella.protocol.ProtocolConfig;
  * 
  * @author Daniel
  */
+@Singleton
 public class ReceivingRequestMultiplexer extends FrameDecoderLE {
 
   @InjectLogger
   private Logger log;
   private final Object loggerLock = new Object();
 
+  private final NetworkIdentityManager identityManager;
   private final HandshakeStateBootstrapper handshakeBootstrap;
   private final Object bootstrapLock = new Object();
 
@@ -38,9 +44,10 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
 
   @Inject
   public ReceivingRequestMultiplexer(Map<Protocol, ProtocolConfig> protocols,
-      HandshakeStateBootstrapper handshakeBootstrap) {
+      HandshakeStateBootstrapper handshakeBootstrap, NetworkIdentityManager identityManager) {
     this.protocols = protocols;
     this.handshakeBootstrap = handshakeBootstrap;
+    this.identityManager = identityManager;
   }
 
   @Override
@@ -83,7 +90,14 @@ public class ReceivingRequestMultiplexer extends FrameDecoderLE {
       ProtocolConfig protocolProvider) {
     ChannelHandler[] handshakeHandlers;
     synchronized (bootstrapLock) {
-      handshakeHandlers = handshakeBootstrap.createHandshakeHandlers(protocolProvider, channel);
+      NetworkIdentity identity =
+          identityManager.getNetworkIdentityWithNewConnection(protocol, channel.getRemoteAddress());
+      identity.enterScope();
+      ProtocolIdentityModel identityModel = identity.getModel(protocol);
+      handshakeHandlers =
+          handshakeBootstrap.bootstrapSession(protocolProvider, identityModel,
+              channel.getRemoteAddress(), channel);
+      identity.exitScope();
     }
 
     ChannelPipeline pipeline = ctx.getPipeline();

@@ -11,7 +11,7 @@ import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.protocol.Protocol;
@@ -21,6 +21,7 @@ import edu.cornell.jnutella.protocol.Protocol;
  * 
  * @author Daniel
  */
+@Singleton
 public class NetworkIdentityManager {
 
   @InjectLogger
@@ -29,16 +30,45 @@ public class NetworkIdentityManager {
   private final Set<NetworkIdentity> identities = Sets.newHashSet();
   private final Map<SocketAddress, NetworkIdentity> identityLocationMap = Maps.newHashMap();
   private final Object identitiesLock = new Object();
-  private final Provider<NetworkIdentity> identityProvider;
+  private final NetworkIdentityFactory identityFactory;
 
   @Inject
-  public NetworkIdentityManager(Provider<NetworkIdentity> identityProvider) {
-    this.identityProvider = identityProvider;
+  public NetworkIdentityManager(NetworkIdentityFactory identityFactory) {
+    this.identityFactory = identityFactory;
   }
 
   public NetworkIdentity createNetworkIdentity() {
-    NetworkIdentity identity = identityProvider.get();
-    identities.add(identity);
+    NetworkIdentity identity = identityFactory.create();
+    synchronized (identitiesLock) {
+      identities.add(identity);
+    }
+    return identity;
+  }
+
+  /**
+   * Gets or creates a network identity with a new connection with the respective protocol.
+   * 
+   * @param protocol
+   * @param address
+   * @throws IllegalStateException if there is a current session for that protocol in the identity
+   * @return
+   */
+  public NetworkIdentity getNetworkIdentityWithNewConnection(Protocol protocol,
+      SocketAddress address) {
+    Preconditions.checkNotNull(protocol);
+    Preconditions.checkNotNull(address);
+    NetworkIdentity identity;
+    synchronized (identitiesLock) {
+      identity = getNewtorkIdentity(address);
+      if (identity != null) {
+        Preconditions.checkState(!identity.hasCurrentSession(protocol),
+            "Identity already has a current session");
+      } else {
+        identity = createNetworkIdentity();
+      }
+      setNetworkAddress(identity, protocol, address);
+    }
+
     return identity;
   }
 

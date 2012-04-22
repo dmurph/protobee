@@ -19,9 +19,9 @@ import org.junit.Test;
 import com.google.common.collect.Lists;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 import edu.cornell.jnutella.guice.LogModule;
+import edu.cornell.jnutella.util.VersionComparator;
 
 public class HeaderMergerTest {
 
@@ -42,13 +42,12 @@ public class HeaderMergerTest {
     Headers[] headers = new Headers[] {header};
 
     Injector inj =
-        Guice.createInjector(new LogModule(),
-            new FactoryModuleBuilder().build(CompatabilityHeaderMerger.Factory.class));
+        Guice.createInjector(new LogModule());
 
+    CompatabilityHeaderMerger merger =
+        new CompatabilityHeaderMerger(new VersionComparator(), headers);
+    inj.injectMembers(merger);
 
-    CompatabilityHeaderMerger.Factory mergerFactory = inj.getInstance(CompatabilityHeaderMerger.Factory.class);
-    CompatabilityHeaderMerger merger = mergerFactory.create(headers);
-    
     HttpMessage mockMessage = mock(HttpMessage.class);
     merger.populateModuleHeaders(mockMessage);
 
@@ -74,11 +73,11 @@ public class HeaderMergerTest {
     Headers[] headerArray = new Headers[] {header};
 
     Injector inj =
-        Guice.createInjector(new LogModule(),
-            new FactoryModuleBuilder().build(CompatabilityHeaderMerger.Factory.class));
+        Guice.createInjector(new LogModule());
 
-    CompatabilityHeaderMerger.Factory mergerFactory = inj.getInstance(CompatabilityHeaderMerger.Factory.class);
-    CompatabilityHeaderMerger merger = mergerFactory.create(headerArray);
+    CompatabilityHeaderMerger merger =
+        new CompatabilityHeaderMerger(new VersionComparator(), headerArray);
+    inj.injectMembers(merger);
 
     HttpMessage mockMessage = mock(HttpMessage.class);
 

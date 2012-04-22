@@ -2,16 +2,17 @@ package edu.cornell.jnutella.gnutella;
 
 import java.net.SocketAddress;
 
-import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
+import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
+@IdentityScope
 public class GnutellaIdentityModel implements ProtocolIdentityModel {
 
-  
+
   private SocketAddress address;
   private byte[] guid;
-  private GnutellaSessionModel currentSession;
+  private SessionModel currentSession;
 
   @Override
   public void setNetworkAddress(SocketAddress address) {
@@ -30,12 +31,12 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
   public void setGuid(byte[] guid) {
     this.guid = guid;
   }
-  
-  public boolean hasCurrentSession() { 
+
+  public boolean hasCurrentSession() {
     return currentSession != null;
   }
 
-  public GnutellaSessionModel getCurrentSession() {
+  public SessionModel getCurrentSession() {
     return currentSession;
   }
 
@@ -46,6 +47,6 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
 
   @Override
   public void setCurrentSessionModel(SessionModel model) {
-    this.currentSession = (GnutellaSessionModel) model;
+    this.currentSession = model;
   }
 }
