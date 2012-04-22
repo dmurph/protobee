@@ -1,6 +1,8 @@
 package edu.cornell.jnutella.gnutella.messages;
 
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 
 import javax.annotation.Nullable;
 
@@ -19,21 +21,34 @@ public class PongBody implements MessageBody {
 
   @AssistedInject
   public PongBody(@Assisted InetAddress address, @Assisted int port,
-      @Assisted("fileCount") long fileCount,
-      @Assisted("fileSizeInKB") long fileSizeInKB, @Nullable @Assisted("ggep") GGEP ggep) {
+      @Assisted("fileCount") long fileCount, @Assisted("fileSizeInKB") long fileSizeInKB,
+      @Nullable @Assisted("ggep") GGEP ggep) {
     this.port = port;
     this.address = address;
     this.fileCount = fileCount;
     this.fileSizeInKB = fileSizeInKB;
     this.ggep = ggep;
   }
-
-  public InetAddress getAddress() {
-    return address;
+  
+  public SocketAddress getAddress() {
+    return new InetSocketAddress(address, port);
   }
 
   public int getPort() {
     return port;
+  }
+
+  /**
+   * Returns true if this pong is marking a ultrapeer. This is the case when fileSizeInKB is a power
+   * of two but at least 8.
+   * 
+   * @return true if this pong is marking a ultrapeer.
+   */
+  public boolean isUltrapeerMarked() {
+    if (fileSizeInKB < 8) {
+      return false;
+    }
+    return (fileSizeInKB & (fileSizeInKB - 1)) == 0;
   }
 
   public long getFileCount() {
