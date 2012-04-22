@@ -28,7 +28,7 @@ import edu.cornell.jnutella.util.Clock;
  */
 @Singleton
 public class PRSPongCache implements PongCache {
-  
+
   private final Set<CacheElement> cache = Sets.newLinkedHashSet();
   private final Object cacheLock = new Object();
   private final Clock clock;
@@ -48,7 +48,7 @@ public class PRSPongCache implements PongCache {
 
     PongBody body = (PongBody) message.getBody();
     CacheElement cacheElement =
-        new CacheElement(body.getAddress(), body.getFileCount(), body.getFileSizeInKB(),
+        new CacheElement(body.getSocketAddress(), body.getFileCount(), body.getFileSizeInKB(),
             clock.currentTimeMillis(), body.getGgep());
     synchronized (cacheLock) {
       cache.add(cacheElement);
@@ -60,9 +60,9 @@ public class PRSPongCache implements PongCache {
     long now = clock.currentTimeMillis();
     synchronized (cacheLock) {
       Iterator<CacheElement> it = cache.iterator();
-      while(it.hasNext()) {
+      while (it.hasNext()) {
         CacheElement element = it.next();
-        if(now - element.millisAdded > timoutMillis) {
+        if (now - element.millisAdded > timoutMillis) {
           it.remove();
         } else {
           break;
@@ -77,14 +77,15 @@ public class PRSPongCache implements PongCache {
   }
 
   @Override
-  public Iterable<PongBody> getPongs(SocketAddress destAddress, int num) {
+  public Iterable<PongBody> getPongs(int num) {
     synchronized (cacheLock) {
       return ImmutableSet.copyOf(Iterables.transform(Iterables.limit(cache, num),
           new Function<PRSPongCache.CacheElement, PongBody>() {
             @Override
             public PongBody apply(CacheElement input) {
               // TODO change when it's a socketaddress
-              return factory.createPongMessage(null, 0, input.numFiles, input.fileSize, input.ggep);
+              return factory.createPongMessage(input.address, input.numFiles, input.fileSize,
+                  input.ggep);
             }
           }));
     }
