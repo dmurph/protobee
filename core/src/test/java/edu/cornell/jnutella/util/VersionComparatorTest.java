@@ -14,6 +14,7 @@ public class VersionComparatorTest {
     assertEquals(0, comparator.compare("1.0", "1.0"));
     testBothWays(comparator, 1, "1.1", "1.0");
     testBothWays(comparator, 1, "0.4.1", "0.3.1");
+    testBothWays(comparator, 1, "1", "0");
   }
   
   @Test

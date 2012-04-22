@@ -1,113 +1,123 @@
 package edu.cornell.jnutella.network;
 
 import java.net.SocketAddress;
-import java.util.List;
+import java.util.Set;
+
+import javax.annotation.Nullable;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
 import org.slf4j.Logger;
 
-import com.google.common.collect.Lists;
+import com.google.common.base.Preconditions;
+import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
+import com.google.inject.Key;
+import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
-import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.identity.NetworkIdentityManager;
+import edu.cornell.jnutella.guice.JnutellaScopes;
+import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
-import edu.cornell.jnutella.network.HttpMessageDecoder.Factory;
-import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.headers.CompatabilityHeaderMerger;
-import edu.cornell.jnutella.protocol.headers.Headers;
-import edu.cornell.jnutella.protocol.session.ProtocolSessionBootstrapper;
-import edu.cornell.jnutella.protocol.session.SessionDownstreamHandshaker;
-import edu.cornell.jnutella.protocol.session.SessionModel;
-import edu.cornell.jnutella.protocol.session.SessionUpstreamHandshaker;
+import edu.cornell.jnutella.session.ProtocolSessionBootstrapper;
+import edu.cornell.jnutella.session.ProtocolSessionModel;
+import edu.cornell.jnutella.session.SessionDownstreamHandshaker;
+import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModelFactory;
+import edu.cornell.jnutella.session.SessionUpstreamHandshaker;
 
 /**
- * 
- * @author Daniel
+ * Needs to be threadsafe, not in any scope.
  */
+@Singleton
 public class HandshakeStateBootstrapper {
 
   @InjectLogger
   private Logger log;
-  private final HttpMessageDecoder.Factory decoderFactory;
-  private final HttpMessageEncoder.Factory encoderFactory;
-  private final SessionUpstreamHandshaker.Factory upShakerProvider;
-  private final SessionDownstreamHandshaker.Factory downShakerProvider;
-  private final CompatabilityHeaderMerger.Factory mergerFactory;
-  private final NetworkIdentityManager identityManager;
+  private final Provider<HandshakeHttpMessageDecoder> decoderFactory;
+  private final Provider<HandshakeHttpMessageEncoder> encoderFactory;
+  private final Provider<SessionUpstreamHandshaker> upShakerProvider;
+  private final Provider<SessionDownstreamHandshaker> downShakerProvider;
   private final ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory;
+  private final Provider<SessionModelFactory> sessionFactory;
+  private final Provider<ProtocolSessionModel> protocolSession;
+
+  private final Provider<EventBus> eventBus;
 
   @Inject
-  public HandshakeStateBootstrapper(Factory decoderFactory,
-      HttpMessageEncoder.Factory encoderFactory,
-      SessionUpstreamHandshaker.Factory upShakerProvider,
-      SessionDownstreamHandshaker.Factory downShakerProvider,
-      CompatabilityHeaderMerger.Factory mergerFactory, NetworkIdentityManager identityManager,
-      ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory) {
+  public HandshakeStateBootstrapper(Provider<HandshakeHttpMessageDecoder> decoderFactory,
+      Provider<HandshakeHttpMessageEncoder> encoderFactory,
+      Provider<SessionUpstreamHandshaker> upShakerProvider,
+      Provider<SessionDownstreamHandshaker> downShakerProvider,
+      ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory, Provider<EventBus> eventBus,
+      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolSessionModel> protocolSession) {
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;
     this.upShakerProvider = upShakerProvider;
     this.downShakerProvider = downShakerProvider;
-    this.mergerFactory = mergerFactory;
-    this.identityManager = identityManager;
     this.protocolBootstrapperFactory = protocolBootstrapperFactory;
+    this.eventBus = eventBus;
+    this.sessionFactory = sessionFactory;
+    this.protocolSession = protocolSession;
   }
 
-  public ChannelHandler[] createHandshakeHandlers(ProtocolConfig protocolConfig, Channel channel) {
-    SocketAddress remoteAddress = channel.getRemoteAddress();
+  /**
+   * Precondition: we are in the respective identity scope
+   * 
+   * @param protocolConfig
+   * @param identity
+   * @param remoteAddress
+   * @param channel
+   * @return
+   */
+  public ChannelHandler[] bootstrapSession(ProtocolConfig protocolConfig,
+      ProtocolIdentityModel identityModel, SocketAddress remoteAddress, @Nullable Channel channel) {
+    Preconditions.checkNotNull(protocolConfig);
+    Preconditions.checkNotNull(identityModel);
+    Preconditions.checkNotNull(remoteAddress);
+    Preconditions.checkState(JnutellaScopes.isInIdentityScope(), "Need to be in identity scope");
 
-    // grab identity
-    NetworkIdentity identity;
-    Protocol protocol = protocolConfig.get();
-    if (identityManager.hasNetworkIdentity(remoteAddress)) {
-      identity = identityManager.getNewtorkIdentity(remoteAddress);
-      if (identity.hasCurrentSession(protocol)) {
-        log.error("Protocol " + protocol + " already has a session running for identity "
-            + identity + ", closing channel.");
-        channel.close();
-        return null;
-      }
-    } else {
-      log.info("Creating new network identity for address: " + remoteAddress);
-      identity = identityManager.createNetworkIdentity();
-    }
-    identityManager.setNetworkAddress(identity, protocol, remoteAddress);
     // create session
-    identity.createNewSession(channel, protocol);
-
-    // register modules
-    SessionModel session = identity.getCurrentSession(protocol);
-    for (ProtocolModule module : session.getModules()) {
-      session.getEventBus().register(module);
+    SessionModel session = sessionFactory.get().create(protocolConfig, remoteAddress.toString());
+    if (channel != null) {
+      session.addObjectToScope(Key.get(Channel.class), channel);
     }
+    session.enterScope();
 
-    // create header merger
-    List<Headers> headersList = Lists.newArrayListWithExpectedSize(session.getModules().size());
-    for (ProtocolModule module : session.getModules()) {
-      Headers headerAnnotation = module.getClass().getAnnotation(Headers.class);
-      if (headerAnnotation == null) {
-        log.debug("Module '" + module + "' doesn't have a Headers annotation.");
-      } else {
-        headersList.add(headerAnnotation);
+    identityModel.setCurrentSessionModel(session);
+
+    ProtocolSessionModel protocolSessionModel = protocolSession.get();
+
+    Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
+    if (modules.size() == 0) {
+      log.info("No protocol modules for protocol: " + protocolConfig.get());
+    } else {
+      log.info(modules.size() + " modules available for protocol session " + protocolConfig.get());
+      log.debug(modules.toString());
+      // register modules
+      EventBus bus = eventBus.get();
+      for (ProtocolModule module : protocolSessionModel.getMutableModules()) {
+        bus.register(module);
       }
     }
-    Headers[] headers = headersList.toArray(new Headers[headersList.size()]);
-    CompatabilityHeaderMerger merger = mergerFactory.create(headers);
+
 
     // create handlers
     ChannelHandler[] handlers = new ChannelHandler[4];
 
     // create protocol bootstrap
-    ProtocolSessionBootstrapper protocolBootstrap =
-        protocolBootstrapperFactory.create(handlers, protocolConfig.createProtocolHandlers());
+    ProtocolSessionBootstrapper protocolBootstrap = protocolBootstrapperFactory.create(handlers);
+    session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class), protocolBootstrap);
 
-    handlers[0] = decoderFactory.create(session);
-    handlers[1] = encoderFactory.create(session);
-    handlers[2] = upShakerProvider.create(session, merger, protocolBootstrap);
-    handlers[3] = downShakerProvider.create(session, protocolBootstrap);
+    handlers[0] = decoderFactory.get();
+    handlers[1] = encoderFactory.get();
+    handlers[2] = upShakerProvider.get();
+    handlers[3] = downShakerProvider.get();
+
+    session.exitScope();
+
     return handlers;
   }
 }

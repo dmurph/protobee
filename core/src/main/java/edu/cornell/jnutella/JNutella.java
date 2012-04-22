@@ -2,8 +2,6 @@ package edu.cornell.jnutella;
 
 import java.util.List;
 import java.util.ServiceLoader;
-import java.util.concurrent.Executor;
-import java.util.concurrent.Executors;
 
 import org.jboss.netty.bootstrap.Bootstrap;
 import org.jboss.netty.channel.ChannelFactory;
@@ -14,7 +12,6 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import edu.cornell.jnutella.guice.JnutellaMainModule;
-import edu.cornell.jnutella.guice.netty.ExecutorModule;
 import edu.cornell.jnutella.network.ReceivingRequestMultiplexer;
 import edu.cornell.jnutella.plugin.OverridingModule;
 import edu.cornell.jnutella.plugin.PluginGuiceModule;
@@ -24,7 +21,7 @@ import edu.cornell.jnutella.plugin.PluginGuiceModule;
  * 
  * @author Daniel
  */
-public class JNutella {
+public class Jnutella {
 
   private final ChannelFactory channelFactory;
   private final Bootstrap bootstrap;
@@ -32,7 +29,7 @@ public class JNutella {
 
 
   @Inject
-  public JNutella(ChannelFactory channelFactory, Bootstrap bootstrap,
+  public Jnutella(ChannelFactory channelFactory, Bootstrap bootstrap,
       ReceivingRequestMultiplexer multiplexer) {
     this.channelFactory = channelFactory;
     this.bootstrap = bootstrap;
@@ -48,24 +45,15 @@ public class JNutella {
 
   }
 
-  /**
-   * @return the modules of all application modules and plugin modules, with default
-   *         {@link Executor}s
-   */
-  public static Module getCombinedModules() {
-    return getCombinedModules(Executors.newCachedThreadPool(), Executors.newCachedThreadPool());
-  }
 
   /**
-   * @param bossExecutor the boss executor to use for the executor module
-   * @param workerExecutor the worker executor to use for the worker module
-   * @return the modules of all application modules and plugin modules
+   * Gets all plugin modules with main application module
+   * @return
    */
-  public static Module getCombinedModules(Executor bossExecutor, Executor workerExecutor) {
+  public static Module getCombinedModules() {
     List<Module> modules = Lists.newArrayList();
     List<Module> overridingModules = Lists.newArrayList();
 
-    modules.add(new ExecutorModule(bossExecutor, workerExecutor));
     modules.add(new JnutellaMainModule());
 
     ServiceLoader<PluginGuiceModule> pluginModules = ServiceLoader.load(PluginGuiceModule.class);

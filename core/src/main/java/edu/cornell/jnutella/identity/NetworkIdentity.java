@@ -4,33 +4,35 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.netty.channel.Channel;
 import org.slf4j.Logger;
 
-import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
+import com.google.inject.Key;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
+import edu.cornell.jnutella.guice.IdentityScope;
+import edu.cornell.jnutella.guice.IdentityScopeMap;
+import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
-import edu.cornell.jnutella.protocol.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModel;
 
+@IdentityScope
 public class NetworkIdentity {
 
   @InjectLogger
   private Logger log;
   private final Map<Protocol, ProtocolIdentityModel> protocolModels;
-  private final Map<Protocol, ProtocolConfig> protocolConfigs;
-
+  private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
 
   @Inject
-  public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap) {
-    protocolConfigs = configMap;
-
+  public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap,
+      @IdentityScopeMap Map<String, Object> identityScopeMap) {
+    this.identityScopeMap = identityScopeMap;
     ImmutableMap.Builder<Protocol, ProtocolIdentityModel> builder = ImmutableMap.builder();
 
     for (Protocol protocol : configMap.keySet()) {
@@ -43,6 +45,9 @@ public class NetworkIdentity {
       builder.put(protocol, identityModel);
     }
     protocolModels = builder.build();
+    // this should happen automatically because this object is in the identity scope, but we'll keep
+    // this here in case of subclasses
+    JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
   }
 
   public ProtocolIdentityModel getModel(Protocol protocol) {
@@ -56,19 +61,9 @@ public class NetworkIdentity {
   public boolean hasCurrentSession(Protocol protocol) {
     return protocolModels.get(protocol).hasCurrentSession();
   }
-  
+
   public SessionModel getCurrentSession(Protocol protocol) {
     return protocolModels.get(protocol).getCurrentSession();
-  }
-
-  public void createNewSession(Channel channel, Protocol protocol) {
-    Preconditions.checkArgument(protocolModels.containsKey(protocol), "No model for protocol "
-        + protocol);
-    ProtocolIdentityModel model = protocolModels.get(protocol);
-    if (model.hasCurrentSession()) {
-      log.warn("Protocol " + protocol + " already has a current session.");
-    }
-    model.setCurrentSessionModel(protocolConfigs.get(protocol).createSessionModel(channel, this));
   }
 
   /**
@@ -92,6 +87,10 @@ public class NetworkIdentity {
     }
   }
 
+  Map<String, Object> getIdentityScopeMap() {
+    return identityScopeMap;
+  }
+
   @Override
   public final int hashCode() {
     return super.hashCode();
@@ -100,5 +99,21 @@ public class NetworkIdentity {
   @Override
   public String toString() {
     return "{ tags: " + tags.toString() + ", protocolModels: " + protocolModels + "}";
+  }
+
+  public void enterScope() {
+    JnutellaScopes.enterIdentityScope(identityScopeMap);
+  }
+
+  public boolean isInScope() {
+    return JnutellaScopes.isInIdentityScope(identityScopeMap);
+  }
+
+  public void addObjectToScope(Key<?> key, Object object) {
+    JnutellaScopes.putObjectInScope(key, object, identityScopeMap);
+  }
+
+  public void exitScope() {
+    JnutellaScopes.exitIdentityScope();
   }
 }
