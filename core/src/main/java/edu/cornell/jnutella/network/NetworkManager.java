@@ -13,6 +13,7 @@ import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
+import org.jboss.netty.channel.DefaultChannelFuture;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.slf4j.Logger;
 
@@ -26,6 +27,7 @@ import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
+import edu.cornell.jnutella.protocol.HandshakeFuture;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.HandshakeCreator;
@@ -93,19 +95,34 @@ public class NetworkManager {
 
     ChannelFuture future = bootstrap.connect(remoteAddress);
 
-    // put the channel on the session scope
-    SessionModel model = identity.getCurrentSession(protocol);
-    model.addObjectToScope(Key.get(Channel.class), future.getChannel());
+    final ChannelFuture handshakeStartedFuture =
+        new DefaultChannelFuture(future.getChannel(), false);
 
-    // send our handshake
-    identity.enterScope();
-    model.enterScope();
-    HandshakeCreator handshake = handshakeCreator.get();
-    HttpMessage request = handshake.createHandshakeRequest();
-    model.exitScope();
-    identity.exitScope();
+    future.addListener(new ChannelFutureListener() {
 
-    return Channels.write(future.getChannel(), request);
+      @Override
+      public void operationComplete(ChannelFuture future) throws Exception {
+        log.info("Connected to " + remoteAddress + " for '" + protocol + "' protocol");
+
+        // put the channel on the session scope
+        SessionModel model = identity.getCurrentSession(protocol);
+        model.addObjectToScope(Key.get(Channel.class), future.getChannel());
+        model.addObjectToScope(Key.get(ChannelFuture.class, HandshakeFuture.class),
+            handshakeStartedFuture);
+
+        // send our handshake
+        identity.enterScope();
+        model.enterScope();
+        HandshakeCreator handshake = handshakeCreator.get();
+        HttpMessage request = handshake.createHandshakeRequest();
+        model.exitScope();
+        identity.exitScope();
+
+        Channels.write(future.getChannel(), request);
+      }
+    });
+
+    return handshakeStartedFuture;
   }
 
   public Channel bind(SocketAddress localAddress, Map<String, Object> serverOptions) {

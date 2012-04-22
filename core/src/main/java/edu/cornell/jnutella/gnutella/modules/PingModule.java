@@ -21,13 +21,15 @@ public class PingModule implements ProtocolModule {
   private final RequestFilter filter;
   private final NetworkIdentityManager identityManager;
   private final IdentityTagManager tagManager;
+  private final NetworkIdentity identity;
 
   @Inject
   public PingModule(RequestFilter filter, NetworkIdentityManager identityManager,
-                          IdentityTagManager tagManager) {
+                          IdentityTagManager tagManager, NetworkIdentity identity) {
     this.filter = filter;
     this.identityManager = identityManager;
     this.tagManager = tagManager;
+    this.identity = identity;
   }
 
   public void pingMessageRecieved(MessageReceivedEvent event, MessageHeader header) {
@@ -43,11 +45,14 @@ public class PingModule implements ProtocolModule {
     // For crawler pings (hops==1, ttl=1) we have a special treatment...
     // We reply with all our leaf connections... in case we have them as a
     // ultrapeer...
-    if (hops == 1 && ttl == 1) {// crawler ping
+    if (hops == 0 && ttl == 2) {// crawler ping
                                 // respond with leaf nodes pongs, already "hoped" one step.
                                 // (ttl=1,hops=1)
       Set<NetworkIdentity> leafs = identityManager.getTaggedIdentities(tagManager.getLeafKey());
       for (NetworkIdentity leaf : leafs) {
+        if(leaf == identity) {
+          continue;
+        }
         
       }
 //      for (int i = 0; i < leafs.length; i++) {

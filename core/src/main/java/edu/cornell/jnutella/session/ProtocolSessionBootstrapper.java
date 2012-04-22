@@ -1,14 +1,17 @@
 package edu.cornell.jnutella.session;
 
+import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 
 import com.google.common.eventbus.EventBus;
+import com.google.inject.Provider;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.protocol.HandshakeFuture;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
 /**
@@ -25,12 +28,14 @@ public class ProtocolSessionBootstrapper {
 
   private final ChannelHandler[] handshakeHandlers;
   private final ProtocolConfig config;
+  private final Provider<ChannelFuture> handshakeComplete;
 
   @AssistedInject
   public ProtocolSessionBootstrapper(@Assisted ChannelHandler[] handshakeHandlers,
-      ProtocolConfig config) {
+      ProtocolConfig config, @HandshakeFuture Provider<ChannelFuture> handshakeComplete) {
     this.handshakeHandlers = handshakeHandlers;
     this.config = config;
+    this.handshakeComplete = handshakeComplete;
   }
 
   public void bootstrapProtocolPipeline(ChannelPipeline pipeline, EventBus eventBus,
@@ -43,7 +48,10 @@ public class ProtocolSessionBootstrapper {
     for (ChannelHandler handler : handshakeHandlers) {
       pipeline.remove(handler);
     }
-
+    ChannelFuture handshake = handshakeComplete.get();
+    if (handshake != null) {
+      handshake.setSuccess();
+    }
     // post event
     eventBus.post(new ProtocolHandlersLoadedEvent(context));
   }
