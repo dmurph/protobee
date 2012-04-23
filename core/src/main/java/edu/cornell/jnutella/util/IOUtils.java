@@ -185,7 +185,46 @@ public class IOUtils {
           if      (num <      0x20000000) return 29; else return 30;
       else                                return 31;
   }
+
+  /**
+   * Returns the logarithm to the based 2 of value.
+   * @param num the number to determine the log2 of. This is expceted to be a
+   * power of 2
+   */
+  public static byte calculateLog2( int value )
+  {
+      if      (value <             0x10000)
+          if      (value <           0x100)
+              if      (value <        0x10)
+                  if      (value <     0x4)
+                      if  (value <     0x2) return  0; else return  1;
+                  else if (value <     0x8) return  2; else return  3;
+              else if (value <        0x40)
+                  if      (value <    0x20) return  4; else return  5;
+              else if (value <        0x80) return  6; else return  7;
+          else if (value <          0x1000)
+              if      (value <       0x400)
+                  if      (value <   0x200) return  8; else return  9;
+              else if (value <       0x800) return 10; else return 11;
+          else if (value <          0x4000)
+              if       (value <     0x2000) return 12; else return 13;
+          else if (value <          0x8000) return 14; else return 15;
+      else if (value <           0x1000000)
+          if      (value <        0x100000)
+              if      (value <     0x40000)
+                  if      (value < 0x20000) return 16; else return 17;
+              else if (value <     0x80000) return 18; else return 19;
+          else if (value <        0x400000)
+              if      (value <    0x200000) return 20; else return 21;
+          else if (value <        0x800000) return 22; else return 23;
+      else if (value <          0x10000000)
+          if      (value <       0x4000000)
+              if      (value <   0x2000000) return 24; else return 25;
+          else if (value <       0x8000000) return 26; else return 27;
+      else if (value <          0x40000000)
+          if      (value <      0x20000000) return 28; else return 29;
+      else return 30;
+  }
+
+
 }
-
-
-
