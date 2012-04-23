@@ -16,6 +16,7 @@ import edu.cornell.jnutella.gnutella.messages.encoding.GnutellaEncoderHandler;
 import edu.cornell.jnutella.gnutella.modules.PRSPongCache;
 import edu.cornell.jnutella.gnutella.modules.PingModule;
 import edu.cornell.jnutella.gnutella.modules.PongCache;
+import edu.cornell.jnutella.gnutella.modules.handshake.HeadersModule;
 import edu.cornell.jnutella.gnutella.session.FlowControlHandler;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageReceiver;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageWriter;
@@ -24,10 +25,11 @@ import edu.cornell.jnutella.gnutella.session.NoOpFlowControl;
 import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.modules.ProtocolModule;
+import edu.cornell.jnutella.plugin.PluginGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
-public class GnutellaGuiceModule extends AbstractModule {
+public class GnutellaGuiceModule extends PluginGuiceModule {
 
   @Override
   protected void configure() {
@@ -39,17 +41,12 @@ public class GnutellaGuiceModule extends AbstractModule {
     bind(GnutellaSessionModel.class).in(SessionScope.class);
     bind(GnutellaIdentityModel.class).in(IdentityScope.class);
 
-    Multibinder<ProtocolConfig> protocolBinder =
-        Multibinder.newSetBinder(binder(), ProtocolConfig.class);
-    protocolBinder.addBinding().to(GnutellaProtocolConfig.class).in(Singleton.class);
-
+    addProtocolConfig(GnutellaProtocolConfig.class);
 
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)
         .in(Singleton.class);
 
-    Multibinder<ProtocolModule> protocolModules =
-        Multibinder.newSetBinder(binder(), ProtocolModule.class, Gnutella.class);
-    protocolModules.addBinding().to(PingModule.class);
+    addGnutellaProtocolModuleInSessionScope(PingModule.class, HeadersModule.class);
 
     bind(FlowControlHandler.class).to(NoOpFlowControl.class);
 
