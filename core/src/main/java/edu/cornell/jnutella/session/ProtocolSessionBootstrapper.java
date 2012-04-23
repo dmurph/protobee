@@ -49,9 +49,8 @@ public class ProtocolSessionBootstrapper {
       pipeline.remove(handler);
     }
     ChannelFuture handshake = handshakeComplete.get();
-    if (handshake != null) {
-      handshake.setSuccess();
-    }
+    handshake.setSuccess();
+    
     // post event
     eventBus.post(new ProtocolHandlersLoadedEvent(context));
   }

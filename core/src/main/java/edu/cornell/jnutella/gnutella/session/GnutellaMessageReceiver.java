@@ -1,6 +1,7 @@
 package edu.cornell.jnutella.gnutella.session;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.slf4j.Logger;
@@ -51,5 +52,11 @@ public class GnutellaMessageReceiver extends SimpleChannelUpstreamHandler {
     e.getFuture().setSuccess();
     currSession.exitScope();
     currIdentity.exitScope();
+  }
+  
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+    log.error("Exception caught", e);
+    super.exceptionCaught(ctx, e);
   }
 }

@@ -5,15 +5,17 @@ import org.jboss.netty.channel.ChannelHandler;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.multibindings.Multibinder;
 
+import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;
 import edu.cornell.jnutella.gnutella.messages.decoding.GnutellaDecoderHandler;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingModule;
 import edu.cornell.jnutella.gnutella.messages.encoding.GnutellaEncoderHandler;
 import edu.cornell.jnutella.gnutella.modules.PRSPongCache;
-import edu.cornell.jnutella.gnutella.modules.PongCache;
 import edu.cornell.jnutella.gnutella.modules.PingModule;
+import edu.cornell.jnutella.gnutella.modules.PongCache;
 import edu.cornell.jnutella.gnutella.session.FlowControlHandler;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageReceiver;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageWriter;
@@ -32,7 +34,7 @@ public class GnutellaGuiceModule extends AbstractModule {
     install(new DecodingModule());
     install(new EncodingModule());
 
-    bind(GnutellaSessionModel.class);
+    install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
     bind(GnutellaSessionModel.class).in(SessionScope.class);
     bind(GnutellaIdentityModel.class).in(IdentityScope.class);
@@ -48,13 +50,14 @@ public class GnutellaGuiceModule extends AbstractModule {
     Multibinder<ProtocolModule> protocolModules =
         Multibinder.newSetBinder(binder(), ProtocolModule.class, Gnutella.class);
     protocolModules.addBinding().to(PingModule.class);
-    
+
     bind(FlowControlHandler.class).to(NoOpFlowControl.class);
-    
+
     bind(RequestFilter.class).to(SimpleRequestFilter.class).in(Singleton.class);
-    
-    
+
+
     bind(PongCache.class).to(PRSPongCache.class).in(Singleton.class);
+
   }
 
   @Provides
@@ -62,6 +65,6 @@ public class GnutellaGuiceModule extends AbstractModule {
   public ChannelHandler[] getChannelHandlers(GnutellaDecoderHandler decoder,
       GnutellaEncoderHandler encoder, FlowControlHandler flow, GnutellaMessageReceiver receiver,
       GnutellaMessageWriter writer) {
-    return new ChannelHandler[] {decoder, encoder, flow, receiver, writer};
+    return new ChannelHandler[] {decoder, encoder, flow, writer, receiver};
   }
 }

@@ -6,6 +6,7 @@ import java.util.Set;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ExceptionEvent;
 import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.slf4j.Logger;
 
@@ -106,5 +107,11 @@ public class GnutellaDecoderHandler extends FrameDecoderLE {
   @Override
   public String toString() {
     return "Gnutella Decoder Handler";
+  }
+  
+  @Override
+  public void exceptionCaught(ChannelHandlerContext ctx, ExceptionEvent e) throws Exception {
+    log.error("Exception caught", e);
+    super.exceptionCaught(ctx, e);
   }
 }

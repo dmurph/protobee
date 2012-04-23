@@ -16,6 +16,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.multibindings.Multibinder;
 
 import edu.cornell.jnutella.gnutella.GnutellaGuiceModule;
 import edu.cornell.jnutella.guice.netty.ExecutorModule;
@@ -48,6 +49,9 @@ public class JnutellaMainModule extends AbstractModule {
         return new OrderedDownstreamThreadPoolExecutor(10);
       }
     }));
+    
+    Multibinder<ProtocolConfig> protocolBinder =
+        Multibinder.newSetBinder(binder(), ProtocolConfig.class);
 
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 

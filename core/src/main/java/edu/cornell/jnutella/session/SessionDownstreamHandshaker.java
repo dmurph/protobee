@@ -80,9 +80,8 @@ public class SessionDownstreamHandshaker extends SimpleChannelDownstreamHandler 
         sessionModel.setSessionState(SessionState.HANDSHAKE_2);
         break;
       case HANDSHAKE_2:
-        sessionModel.setSessionState(SessionState.MESSAGES);
-
         bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
+        sessionModel.setSessionState(SessionState.MESSAGES);
         break;
     }
   }
