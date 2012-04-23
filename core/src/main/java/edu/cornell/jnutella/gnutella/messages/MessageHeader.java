@@ -1,8 +1,21 @@
 package edu.cornell.jnutella.gnutella.messages;
 
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
 
 public class MessageHeader {
-  
+
+  public static interface Factory {
+    MessageHeader create(byte[] guid, @Assisted("payloadType") byte payloadType,
+        @Assisted("ttl") byte ttl, @Assisted("hops") byte hops, int payloadLength);
+
+    MessageHeader create(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
+        @Assisted("ttl") byte ttl, @Assisted("hops") byte hops);
+  }
+
+  public static final int UNKNOWN_PAYLOAD_LENGTH = -1;
+
   public static final int MESSAGE_HEADER_LENGTH = 23;
 
   public static final byte F_PING = (byte) 0x0;
@@ -26,11 +39,13 @@ public class MessageHeader {
 
   private final byte[] guid;
   private final byte payloadType;
-  private byte ttl;
-  private byte hops;
+  private final byte ttl;
+  private final byte hops;
   private int payloadLength;
 
-  public MessageHeader(byte[] guid, byte payloadType, byte ttl, byte hops, int payloadLength) {
+  @AssistedInject
+  public MessageHeader(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
+      @Assisted("ttl") byte ttl, @Assisted("hops") byte hops, @Assisted int payloadLength) {
     this.guid = guid;
     this.payloadType = payloadType;
     this.ttl = ttl;
@@ -38,28 +53,34 @@ public class MessageHeader {
     this.payloadLength = payloadLength;
   }
 
-  public byte getTtl() {
-    return ttl;
+  @AssistedInject
+  public MessageHeader(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
+      @Assisted("ttl") byte ttl, @Assisted("hops") byte hops) {
+    this.guid = guid;
+    this.payloadType = payloadType;
+    this.ttl = ttl;
+    this.hops = hops;
+    this.payloadLength = UNKNOWN_PAYLOAD_LENGTH;
   }
 
-  public void setTtl(byte ttl) {
-    this.ttl = ttl;
+  public byte getTtl() {
+    return ttl;
   }
 
   public byte getHops() {
     return hops;
   }
 
-  public void setHops(byte hops) {
-    this.hops = hops;
-  }
-
   public int getPayloadLength() {
     return payloadLength;
   }
-
+  
   public void setPayloadLength(int payloadLength) {
     this.payloadLength = payloadLength;
+  }
+
+  public boolean isPayloadLengthUnknown() {
+    return payloadLength == UNKNOWN_PAYLOAD_LENGTH;
   }
 
   public byte[] getGuid() {

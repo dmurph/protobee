@@ -80,9 +80,8 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
 
     if (sessionModel.getSessionState() == SessionState.HANDSHAKE_2) {
       eventBus.post(new HandshakeReceivedEvent(ctx, request, null));
-      sessionModel.setSessionState(SessionState.MESSAGES);
-
       bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
+      sessionModel.setSessionState(SessionState.MESSAGES);
       return;
     }
 

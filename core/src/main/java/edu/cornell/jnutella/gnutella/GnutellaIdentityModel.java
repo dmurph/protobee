@@ -13,6 +13,8 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
   private SocketAddress address;
   private byte[] guid;
   private SessionModel currentSession;
+  private int fileCount;
+  private int fileSizeInKB;
 
   @Override
   public void setNetworkAddress(SocketAddress address) {
@@ -48,5 +50,21 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
   @Override
   public void setCurrentSessionModel(SessionModel model) {
     this.currentSession = model;
+  }
+
+  public int getFileCount() {
+    return fileCount;
+  }
+
+  public void setFileCount(int fileCount) {
+    this.fileCount = fileCount;
+  }
+
+  public int getFileSizeInKB() {
+    return fileSizeInKB;
+  }
+
+  public void setFileSizeInKB(int fileSizeInKB) {
+    this.fileSizeInKB = fileSizeInKB;
   }
 }

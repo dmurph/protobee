@@ -45,6 +45,7 @@ public class NetworkManager {
   private final ChannelFactory channelFactory;
   private final ReceivingRequestMultiplexer multiplexer;
   private final Provider<Channel> channelProvider;
+  private final Object connectLock = new Object();
 
   @Inject
   public NetworkManager(Map<Protocol, ProtocolConfig> protocolConfigs,
@@ -66,63 +67,61 @@ public class NetworkManager {
     Preconditions.checkArgument(protocolConfigs.containsKey(protocol),
         "Protocol specified does not come from a protocol config");
     final ProtocolConfig config = protocolConfigs.get(protocol);
-    final NetworkIdentity identity =
-        identityManager.getNetworkIdentityWithNewConnection(protocol, remoteAddress);
-
-    Preconditions.checkState(!identity.hasCurrentSession(protocol),
-        "Session already active with that identity.");
-
-    ChannelPipelineFactory factory = new ChannelPipelineFactory() {
-      @Override
-      public ChannelPipeline getPipeline() throws Exception {
-        ChannelPipeline pipeline = Channels.pipeline();
-        identity.enterScope();
-        ProtocolIdentityModel identityModel = identity.getModel(protocol);
-        ChannelHandler[] handlers =
-            handshakeBootstrapper.bootstrapSession(config, identityModel, remoteAddress, null);
-        identity.exitScope();
-        for (ChannelHandler channelHandler : handlers) {
-          pipeline.addLast(channelHandler.toString(), channelHandler);
+    synchronized (connectLock) {
+      final NetworkIdentity identity =
+          identityManager.getNetworkIdentityWithNewConnection(protocol, remoteAddress);
+      Preconditions.checkState(!identity.hasCurrentSession(protocol),
+          "Session already active with that identity.");
+      ChannelPipelineFactory factory = new ChannelPipelineFactory() {
+        @Override
+        public ChannelPipeline getPipeline() throws Exception {
+          ChannelPipeline pipeline = Channels.pipeline();
+          identity.enterScope();
+          ProtocolIdentityModel identityModel = identity.getModel(protocol);
+          ChannelHandler[] handlers =
+              handshakeBootstrapper.bootstrapSession(config, identityModel, remoteAddress, null);
+          identity.exitScope();
+          for (ChannelHandler channelHandler : handlers) {
+            pipeline.addLast(channelHandler.toString(), channelHandler);
+          }
+          return pipeline;
         }
-        return pipeline;
-      }
-    };
+      };
+      ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
+      bootstrap.setOptions(config.getNettyBootstrapOptions());
+      bootstrap.setPipelineFactory(factory);
+      ChannelFuture future = bootstrap.connect(remoteAddress);
+      final ChannelFuture handshakeFinishedFuture =
+          new DefaultChannelFuture(future.getChannel(), false);
+      future.addListener(new ChannelFutureListener() {
 
-    ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
-    bootstrap.setOptions(config.getNettyBootstrapOptions());
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+          if(!future.isSuccess()) {
+            log.error("Could not connect to " + remoteAddress + " for '" + protocol + "' protocol", future.getCause());
+            
+          }
+          log.info("Connected to " + remoteAddress + " for '" + protocol + "' protocol");
 
-    bootstrap.setPipelineFactory(factory);
+          // put the channel on the session scope
+          SessionModel model = identity.getCurrentSession(protocol);
+          model.addObjectToScope(Key.get(Channel.class), future.getChannel());
+          model.addObjectToScope(Key.get(ChannelFuture.class, HandshakeFuture.class),
+              handshakeFinishedFuture);
 
-    ChannelFuture future = bootstrap.connect(remoteAddress);
+          // send our handshake
+          identity.enterScope();
+          model.enterScope();
+          HandshakeCreator handshake = handshakeCreator.get();
+          HttpMessage request = handshake.createHandshakeRequest();
+          model.exitScope();
+          identity.exitScope();
 
-    final ChannelFuture handshakeStartedFuture =
-        new DefaultChannelFuture(future.getChannel(), false);
-
-    future.addListener(new ChannelFutureListener() {
-
-      @Override
-      public void operationComplete(ChannelFuture future) throws Exception {
-        log.info("Connected to " + remoteAddress + " for '" + protocol + "' protocol");
-
-        // put the channel on the session scope
-        SessionModel model = identity.getCurrentSession(protocol);
-        model.addObjectToScope(Key.get(Channel.class), future.getChannel());
-        model.addObjectToScope(Key.get(ChannelFuture.class, HandshakeFuture.class),
-            handshakeStartedFuture);
-
-        // send our handshake
-        identity.enterScope();
-        model.enterScope();
-        HandshakeCreator handshake = handshakeCreator.get();
-        HttpMessage request = handshake.createHandshakeRequest();
-        model.exitScope();
-        identity.exitScope();
-
-        Channels.write(future.getChannel(), request);
-      }
-    });
-
-    return handshakeStartedFuture;
+          Channels.write(future.getChannel(), request);
+        }
+      });
+      return handshakeFinishedFuture;
+    }
   }
 
   public Channel bind(SocketAddress localAddress, Map<String, Object> serverOptions) {
@@ -147,22 +146,22 @@ public class NetworkManager {
     Preconditions.checkNotNull(remoteAddress);
     final NetworkIdentity identity = identityManager.getNewtorkIdentity(remoteAddress);
 
-    Preconditions.checkState(identity.hasCurrentSession(protocol), "No current session");
-
-    SessionModel session = identity.getCurrentSession(protocol);
-    identity.enterScope();
-    session.enterScope();
-    Channel channel = channelProvider.get();
-    ChannelFuture future = channel.disconnect();
-    future.addListener(new ChannelFutureListener() {
-      @Override
-      public void operationComplete(ChannelFuture future) throws Exception {
-        identity.clearCurrentSession(protocol);
-      }
-    });
-    session.exitScope();
-    identity.exitScope();
-
-    return future;
+    synchronized (connectLock) {
+      Preconditions.checkState(identity.hasCurrentSession(protocol), "No current session");
+      SessionModel session = identity.getCurrentSession(protocol);
+      identity.enterScope();
+      session.enterScope();
+      Channel channel = channelProvider.get();
+      ChannelFuture future = channel.disconnect();
+      future.addListener(new ChannelFutureListener() {
+        @Override
+        public void operationComplete(ChannelFuture future) throws Exception {
+          identity.clearCurrentSession(protocol);
+        }
+      });
+      session.exitScope();
+      identity.exitScope();
+      return future;
+    }
   }
 }

@@ -28,6 +28,7 @@ public class NetworkIdentity {
   private final Map<Protocol, ProtocolIdentityModel> protocolModels;
   private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
+  private String description;
 
   @Inject
   public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap,
@@ -96,9 +97,18 @@ public class NetworkIdentity {
     return super.hashCode();
   }
 
+  public void setDescription(String description) {
+    this.description = description;
+  }
+
+  public String getDescription() {
+    return description;
+  }
+
   @Override
   public String toString() {
-    return "{ tags: " + tags.toString() + ", protocolModels: " + protocolModels + "}";
+    return "{ description: " + description + ", tags: " + tags.toString() + ", protocolModels: "
+        + protocolModels + "}";
   }
 
   public void enterScope() {
