@@ -44,6 +44,7 @@ public class ResponseBody {
     return urn;
   }
 
+
   @Override
   public int hashCode() {
     final int prime = 31;
@@ -76,6 +77,5 @@ public class ResponseBody {
     } else if (!urn.equals(other.urn)) return false;
     return true;
   }
-  
   
 }

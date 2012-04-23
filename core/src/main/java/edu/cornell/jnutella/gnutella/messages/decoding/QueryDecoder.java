@@ -10,6 +10,7 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.extension.GGEP;
+import edu.cornell.jnutella.extension.HUGEExtension;
 import edu.cornell.jnutella.gnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.QueryBody;
@@ -20,47 +21,50 @@ import edu.cornell.jnutella.util.ByteUtils;
 public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
   private final MessageBodyFactory bodyFactory;
   private final GGEPDecoder ggepDecoder;
+  private final HUGEDecoder hugeDecoder;
 
   @InjectLogger
   private Logger log;
   
   @Inject
-  public QueryDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder) {
+  public QueryDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder, HUGEDecoder hugeDecoder) {
     this.bodyFactory = bodyFactory;
     this.ggepDecoder = ggepDecoder;
+    this.hugeDecoder = hugeDecoder;
   }
 
+  // TODO check query length
+  // if (query.length() > MAX_QUERY_LENGTH){ }
+  
   @Override
   public QueryBody decode(ChannelBuffer buffer) throws DecodingException {
     Preconditions.checkState(buffer.readableBytes() >= 3);
     
     short minSpeed = (ByteUtils.leb2short(buffer));
-    int startIndex = buffer.readerIndex();
-    byte currByte = 0x1;
-    while (buffer.readable()){
-      currByte = buffer.readByte();
-      if (currByte == 0x0){
-        break;
-      }
-    }
-    
-    if(currByte != 0x0) {
-      log.error("Reached end of buffer with no 0 byte in query");
-      throw new DecodingException("Reached end of buffer with no 0 byte in query");
-    }
-    
-    int endIndex = buffer.readerIndex();
-    String query = buffer.toString(startIndex, endIndex-startIndex-1, Charset.forName("UTF-8"));
-    
-    // TODO check query length
-    // if (query.length() > MAX_QUERY_LENGTH){ }
+    int lengthQuery = buffer.bytesBefore((byte) 0x0);
+    String query = buffer.toString(buffer.readerIndex(), lengthQuery, Charset.forName("UTF-8"));
+    buffer.readerIndex(buffer.readerIndex()+lengthQuery+1);
     
     if (!buffer.readable()) {
-      return bodyFactory.createQueryMessage(minSpeed, query, null);
+      return bodyFactory.createQueryMessage(minSpeed, query, null, null);
     }
 
-    GGEP ggep = ggepDecoder.decode(buffer);
+    byte tag = buffer.readByte();
+    buffer.readerIndex(buffer.readerIndex() - 1);
+    
+    HUGEExtension huge = null; 
+    if (tag != ((byte) 0xC3)){
+      huge = hugeDecoder.decode(buffer);
+      buffer.readByte();
+    }
+    
+    GGEP ggep = null;
+    
+    if (buffer.readable()) {
+      ggep = ggepDecoder.decode(buffer);
+    }
+    
     Preconditions.checkNotNull(ggep, "GGEP is null.");
-    return bodyFactory.createQueryMessage(minSpeed, query, ggep);
+    return bodyFactory.createQueryMessage(minSpeed, query, huge, ggep);
   }
 }

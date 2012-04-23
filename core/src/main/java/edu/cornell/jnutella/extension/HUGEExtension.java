@@ -21,6 +21,12 @@ public class HUGEExtension {
   public GGEP getGGEP(){
     return ggep;
   }
+  
+  public boolean isEmpty(){
+    if (ggep != null || ggep.getHeaders().size() == 0) return false;
+    if (urns.length != 0) return false;
+    return true;
+  }
 
   @Override
   public int hashCode() {

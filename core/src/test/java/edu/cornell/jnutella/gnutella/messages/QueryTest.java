@@ -24,7 +24,7 @@ public class QueryTest extends AbstractTest {
 
     MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
 
-    QueryBody query = factory.createQueryMessage( (short) (Integer.MAX_VALUE + 1), "kjhsdfkjs", null);
+    QueryBody query = factory.createQueryMessage( (short) (Integer.MAX_VALUE + 1), "kjhsdfkjs", null, null);
 
     QueryEncoder encoder = injector.getInstance(QueryEncoder.class);
     encoder.encode(buffer, query);

@@ -21,7 +21,7 @@ import edu.cornell.jnutella.plugin.PluginGuiceModule;
  * 
  * @author Daniel
  */
-public class Jnutella {
+public class JNutella {
 
   private final ChannelFactory channelFactory;
   private final Bootstrap bootstrap;
@@ -29,7 +29,7 @@ public class Jnutella {
 
 
   @Inject
-  public Jnutella(ChannelFactory channelFactory, Bootstrap bootstrap,
+  public JNutella(ChannelFactory channelFactory, Bootstrap bootstrap,
       ReceivingRequestMultiplexer multiplexer) {
     this.channelFactory = channelFactory;
     this.bootstrap = bootstrap;
