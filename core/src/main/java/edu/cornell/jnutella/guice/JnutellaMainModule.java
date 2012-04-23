@@ -30,6 +30,8 @@ import edu.cornell.jnutella.util.UtilGuiceModule;
 
 public class JnutellaMainModule extends AbstractModule {
 
+  public static final String USER_AGENT_STRING = "Jnutella/0.1";
+  
   @Override
   protected void configure() {
     install(new NetworkGuiceModule());
@@ -50,8 +52,7 @@ public class JnutellaMainModule extends AbstractModule {
       }
     }));
     
-    Multibinder<ProtocolConfig> protocolBinder =
-        Multibinder.newSetBinder(binder(), ProtocolConfig.class);
+    Multibinder.newSetBinder(binder(), ProtocolConfig.class);
 
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
@@ -59,6 +60,8 @@ public class JnutellaMainModule extends AbstractModule {
 
     bindScope(SessionScope.class, JnutellaScopes.SESSION);
     bindScope(IdentityScope.class, JnutellaScopes.IDENTITY);
+    
+    bindConstant().annotatedWith(UserAgent.class).to("Jnutella/0.1");
   }
 
   @Provides
