@@ -34,7 +34,7 @@ public class QueryHitBody implements MessageBody {
   public QueryHitBody( @Assisted InetSocketAddress socketAddress, @Assisted long speed,
                        @Nullable @Assisted ResponseBody[] hitList, @Assisted VendorCode vendorCode, @Assisted("flags") byte flags, 
                        @Assisted("controls") byte controls, @Assisted("privateArea1") byte[] privateArea1, 
-                       @Nullable @Assisted GGEP ggep, @Assisted("xmlBytes") byte[] xmlBytes, 
+                       @Nullable @Assisted GGEP ggep,  @Assisted("xmlBytes") byte[] xmlBytes, 
                        @Assisted("privateArea2") byte[] privateArea2, @Assisted GUID servantID) {
 
     Preconditions.checkArgument((speed & 0xFFFFFFFF00000000l) == 0);
@@ -43,8 +43,9 @@ public class QueryHitBody implements MessageBody {
     }
     Preconditions.checkArgument(hitList.length < 256);
 
-    // if ggep will print out zero bytes, put concatenate private areas 1 and 2
-    if ((ggep == null || ggep.getHeaders().size() == 0 ) && privateArea2.length > 0){
+    // if ggep and huge will print out zero bytes, put concatenate private areas 1 and 2
+    if ((ggep == null || ggep.getHeaders().size() == 0 ) 
+        && privateArea2.length > 0){
       this.privateArea1 = new byte[privateArea1.length + privateArea2.length];
       System.arraycopy(privateArea1, 0, this.privateArea1, 0, privateArea1.length);
       System.arraycopy(privateArea2, 0, this.privateArea1, privateArea1.length, privateArea2.length);

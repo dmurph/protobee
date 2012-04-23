@@ -6,6 +6,8 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.extension.GGEP;
+import edu.cornell.jnutella.extension.HUGEExtension;
+import edu.cornell.jnutella.gnutella.routing.DynamicQueryConstants;
 import edu.cornell.jnutella.util.ByteUtils;
 
 public class QueryBody implements MessageBody {
@@ -56,12 +58,18 @@ public class QueryBody implements MessageBody {
   private final String query;
 
   private final GGEP ggep;
+  private final HUGEExtension huge;
 
   @AssistedInject
-  public QueryBody(@Assisted short minSpeed, @Assisted String query, @Nullable @Assisted GGEP ggep) {
+  public QueryBody(@Assisted short minSpeed, @Assisted String query, @Nullable @Assisted GGEP ggep, @Nullable @Assisted HUGEExtension huge) {
     this.minSpeed = minSpeed;
     this.query = query;
     this.ggep = ggep;
+    this.huge = huge;
+  }
+  
+  public boolean hasInvalidQuery(){
+    return query.length() < DynamicQueryConstants.MIN_SEARCH_TERM_LENGTH;
   }
   
   public short getMinSpeed(){
@@ -75,12 +83,17 @@ public class QueryBody implements MessageBody {
   public GGEP getGgep() {
     return ggep;
   }
+  
+  public HUGEExtension getHuge(){
+    return huge;
+  }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
     result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
+    result = prime * result + ((huge == null) ? 0 : huge.hashCode());
     result = prime * result + minSpeed;
     result = prime * result + ((query == null) ? 0 : query.hashCode());
     return result;
@@ -95,6 +108,9 @@ public class QueryBody implements MessageBody {
     if (ggep == null) {
       if (other.ggep != null) return false;
     } else if (!ggep.equals(other.ggep)) return false;
+    if (huge == null) {
+      if (other.huge != null) return false;
+    } else if (!huge.equals(other.huge)) return false;
     if (minSpeed != other.minSpeed) return false;
     if (query == null) {
       if (other.query != null) return false;

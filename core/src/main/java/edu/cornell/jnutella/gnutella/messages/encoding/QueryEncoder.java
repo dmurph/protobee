@@ -17,10 +17,12 @@ import edu.cornell.jnutella.util.ByteUtils;
 @ForMessageType(MessageHeader.F_QUERY)
 public class QueryEncoder implements MessageBodyEncoder {
   private final GGEPEncoder ggepEncoder;
+  private final HUGEEncoder hugeEncoder;
 
   @Inject
-  public QueryEncoder(GGEPEncoder ggepEncoder) {
+  public QueryEncoder(GGEPEncoder ggepEncoder, HUGEEncoder hugeEncoder) {
     this.ggepEncoder = ggepEncoder;
+    this.hugeEncoder = hugeEncoder;
   }
 
   public void encode(ChannelBuffer buffer, QueryBody toEncode) throws EncodingException {
@@ -28,7 +30,12 @@ public class QueryEncoder implements MessageBodyEncoder {
     buffer.writeBytes(toEncode.getQuery().getBytes(Charset.forName("UTF-8")));
     buffer.writeByte(0);
 
+    if (toEncode.getHuge() != null) {
+      hugeEncoder.encode(buffer, toEncode.getHuge());
+    }
+    
     if (toEncode.getGgep() != null) {
+      buffer.writeByte((byte) 0x1C);
       EncoderInput ei = new EncoderInput(toEncode.getGgep(), false);
       ggepEncoder.encode(buffer, ei);
     }
