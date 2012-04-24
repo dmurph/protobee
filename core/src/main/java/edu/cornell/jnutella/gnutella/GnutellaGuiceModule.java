@@ -2,11 +2,9 @@ package edu.cornell.jnutella.gnutella;
 
 import org.jboss.netty.channel.ChannelHandler;
 
-import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-import com.google.inject.multibindings.Multibinder;
 
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;
@@ -24,10 +22,8 @@ import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
 import edu.cornell.jnutella.gnutella.session.NoOpFlowControl;
 import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.guice.SessionScope;
-import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.plugin.PluginGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
-import edu.cornell.jnutella.protocol.ProtocolConfig;
 
 public class GnutellaGuiceModule extends PluginGuiceModule {
 
@@ -46,7 +42,8 @@ public class GnutellaGuiceModule extends PluginGuiceModule {
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)
         .in(Singleton.class);
 
-    addGnutellaProtocolModuleInSessionScope(PingModule.class, HeadersModule.class);
+    addGnutellaProtocolModuleInSessionScope(PingModule.class);
+    addGnutellaProtocolModuleInSessionScope(HeadersModule.class);
 
     bind(FlowControlHandler.class).to(NoOpFlowControl.class);
 

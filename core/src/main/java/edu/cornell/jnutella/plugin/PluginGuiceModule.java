@@ -3,6 +3,7 @@ package edu.cornell.jnutella.plugin;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
+import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.multibindings.Multibinder;
 
 import edu.cornell.jnutella.gnutella.Gnutella;
@@ -27,38 +28,28 @@ public abstract class PluginGuiceModule extends AbstractModule {
     }
     return configBinder;
   }
-  
+
   public Multibinder<ProtocolModule> getGnutellaModulesBinder() {
-    if(gnutellaModules == null) {
+    if (gnutellaModules == null) {
       gnutellaModules = Multibinder.newSetBinder(binder(), ProtocolModule.class, Gnutella.class);
     }
     return gnutellaModules;
   }
 
-  public void addProtocolConfig(Class<? extends ProtocolConfig>... classes) {
-    for (Class<? extends ProtocolConfig> klass : classes) {
-      getConfigBinder().addBinding().to(klass).in(Singleton.class);
-    }
+  public void addProtocolConfig(Class<? extends ProtocolConfig> klass) {
+    getConfigBinder().addBinding().to(klass).in(Singleton.class);
   }
-  
-  public void addGnutellaProtocolModuleInSessionScope(Class<? extends ProtocolModule>... classes) {
-    for (Class<? extends ProtocolModule> klass : classes) {
-      getGnutellaModulesBinder().addBinding().to(klass).in(SessionScope.class);
-    }
+
+  public void addGnutellaProtocolModuleInSessionScope(Class<? extends ProtocolModule> klass) {
+    getGnutellaModulesBinder().addBinding().to(klass).in(SessionScope.class);
   }
-  
-  public <T extends ProtocolModule> void addGnutellaProtocolModuleNoScope(Class<T>... classes) {
-    for (Class<T> klass : classes) {
-      getGnutellaModulesBinder().addBinding().to(klass);
-    }
+
+  public <T extends ProtocolModule> ScopedBindingBuilder addGnutellaProtocolModule(Class<T> klass) {
+    return getGnutellaModulesBinder().addBinding().to(klass);
   }
-  
+
   @VisibleForTesting
-  public <T extends ProtocolConfig> void addProtocolConfig(T... configs) {
-    for (T config : configs) {
-      getConfigBinder().addBinding().toInstance(config);      
-    }
+  public <T extends ProtocolConfig> void addProtocolConfig(T config) {
+    getConfigBinder().addBinding().toInstance(config);
   }
-  
-  
 }

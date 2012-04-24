@@ -54,7 +54,9 @@ public abstract class AbstractTest {
     return new PluginGuiceModule() {
       @Override
       protected void configure() {
-        addProtocolConfig(configs);
+        for (ProtocolConfig protocolConfig : configs) {
+          addProtocolConfig(protocolConfig);
+        }
       }
     };
   }
