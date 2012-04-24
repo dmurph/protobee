@@ -23,6 +23,7 @@ import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.network.ProtocolMessageWriter;
 import edu.cornell.jnutella.protocol.Protocol;
+import edu.cornell.jnutella.protocol.headers.CompatabilityHeader;
 import edu.cornell.jnutella.protocol.headers.Headers;
 
 @Headers(requiredCompatabilities = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requestedCompatabilities = {})
@@ -102,7 +103,7 @@ public class PingModule implements ProtocolModule {
       PongBody body =
           bodyFactory.createPongMessage(address, identityModel.getFileCount(),
               identityModel.getFileSizeInKB(), ggep);
-      messageDispatcher.dispatchMessage(new GnutellaMessage(newHeader, body));
+      messageDispatcher.write(new GnutellaMessage(newHeader, body));
 
     } else if (ttl > 1) {
       // send cached pongs if we have enough, otherwise we dispatch to neighbors
