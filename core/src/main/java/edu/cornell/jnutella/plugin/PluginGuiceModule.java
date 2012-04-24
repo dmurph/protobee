@@ -5,6 +5,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
+import edu.cornell.jnutella.gnutella.Gnutella;
+import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
 /**
@@ -16,6 +19,7 @@ import edu.cornell.jnutella.protocol.ProtocolConfig;
 public abstract class PluginGuiceModule extends AbstractModule {
 
   private Multibinder<ProtocolConfig> configBinder = null;
+  private Multibinder<ProtocolModule> gnutellaModules = null;
 
   public Multibinder<ProtocolConfig> getConfigBinder() {
     if (configBinder == null) {
@@ -23,10 +27,29 @@ public abstract class PluginGuiceModule extends AbstractModule {
     }
     return configBinder;
   }
+  
+  public Multibinder<ProtocolModule> getGnutellaModulesBinder() {
+    if(gnutellaModules == null) {
+      gnutellaModules = Multibinder.newSetBinder(binder(), ProtocolModule.class, Gnutella.class);
+    }
+    return gnutellaModules;
+  }
 
-  public <T extends ProtocolConfig> void addProtocolConfig(Class<T>... classes) {
-    for (Class<T> klass : classes) {
+  public void addProtocolConfig(Class<? extends ProtocolConfig>... classes) {
+    for (Class<? extends ProtocolConfig> klass : classes) {
       getConfigBinder().addBinding().to(klass).in(Singleton.class);
+    }
+  }
+  
+  public void addGnutellaProtocolModuleInSessionScope(Class<? extends ProtocolModule>... classes) {
+    for (Class<? extends ProtocolModule> klass : classes) {
+      getGnutellaModulesBinder().addBinding().to(klass).in(SessionScope.class);
+    }
+  }
+  
+  public <T extends ProtocolModule> void addGnutellaProtocolModuleNoScope(Class<T>... classes) {
+    for (Class<T> klass : classes) {
+      getGnutellaModulesBinder().addBinding().to(klass);
     }
   }
   
@@ -36,4 +59,6 @@ public abstract class PluginGuiceModule extends AbstractModule {
       getConfigBinder().addBinding().toInstance(config);      
     }
   }
+  
+  
 }

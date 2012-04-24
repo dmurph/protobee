@@ -1,10 +1,13 @@
 package edu.cornell.jnutella.gnutella.modules;
 
+import java.net.InetSocketAddress;
 import java.util.Set;
 
+import com.google.common.base.Preconditions;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
+import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.gnutella.Gnutella;
 import edu.cornell.jnutella.gnutella.GnutellaIdentityModel;
 import edu.cornell.jnutella.gnutella.RequestFilter;
@@ -20,7 +23,9 @@ import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.network.ProtocolMessageWriter;
 import edu.cornell.jnutella.protocol.Protocol;
+import edu.cornell.jnutella.protocol.headers.Headers;
 
+@Headers(requiredCompatabilities = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requestedCompatabilities = {})
 @SessionScope
 public class PingModule implements ProtocolModule {
 
@@ -76,14 +81,31 @@ public class PingModule implements ProtocolModule {
         PongBody body =
             bodyFactory.createPongMessage(gnutellaModel.getNetworkAddress(),
                 gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
-        messageDispatcher.write(leaf, new GnutellaMessage(newHeader, body));
+        messageDispatcher.write(new GnutellaMessage(newHeader, body));
       }
     }
 
     if (ttl == 1 && hops <= 1) {
       // just send our data back
       NetworkIdentity me = identityManager.getMe();
+      GnutellaIdentityModel identityModel = (GnutellaIdentityModel) me.getModel(gnutella);
+      InetSocketAddress address = (InetSocketAddress) identityModel.getNetworkAddress();
+      Preconditions.checkState(address != null, "Host address of program must be populated");
 
+      byte newTTL = (byte) (hops + ttl);
+      MessageHeader newHeader =
+          headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) newTTL,
+              (byte) 0);
+
+      GGEP ggep = new GGEP();
+      // TODO populate ggep
+      PongBody body =
+          bodyFactory.createPongMessage(address, identityModel.getFileCount(),
+              identityModel.getFileSizeInKB(), ggep);
+      messageDispatcher.dispatchMessage(new GnutellaMessage(newHeader, body));
+
+    } else if (ttl > 1) {
+      // send cached pongs if we have enough, otherwise we dispatch to neighbors
     }
 
     // send back my own pong
