@@ -7,46 +7,31 @@ import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
-
-import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
-/**
- * Sets up a protocol session when a request is received.
- * 
- * @author Daniel
- */
-public class ReceivingRequestHandler extends FrameDecoderLE {
+public abstract class AbstractRequestReceiver extends FrameDecoderLE {
 
-  public static interface Factory {
-    ReceivingRequestHandler create(ProtocolConfig protocol);
-  }
-
-  @InjectLogger
-  private Logger log;
+  private static final Logger log = LoggerFactory.getLogger(AbstractRequestReceiver.class);
 
   private final NetworkIdentityManager identityManager;
   private final HandshakeStateBootstrapper handshakeBootstrap;
-  private final ProtocolConfig protocolConfig;
+  private final JnutellaChannels channels;
 
-  @AssistedInject
-  public ReceivingRequestHandler(@Assisted ProtocolConfig protocol,
-      HandshakeStateBootstrapper handshakeBootstrap, NetworkIdentityManager identityManager) {
-    this.protocolConfig = protocol;
+  public AbstractRequestReceiver(HandshakeStateBootstrapper handshakeBootstrap,
+      NetworkIdentityManager identityManager, JnutellaChannels channels) {
     this.handshakeBootstrap = handshakeBootstrap;
     this.identityManager = identityManager;
+    this.channels = channels;
   }
 
   @Override
   protected Object decode(ChannelHandlerContext ctx, Channel channel, ChannelBuffer buffer)
       throws Exception {
-
 
     String data = buffer.toString(Charset.forName("UTF-8"));
     // update the reader index so netty doesn't yell at us
@@ -56,13 +41,18 @@ public class ReceivingRequestHandler extends FrameDecoderLE {
       return null;
     }
     String header = data.substring(0, data.indexOf("\r\n"));
-    Protocol protocol = protocolConfig.get();
-    if (!header.matches(protocol.headerRegex())) {
+    ProtocolConfig protocolConfig = getMatchingConfig(header);
+    if (protocolConfig == null) {
       log.error("Request header '" + header + "' doesn't match " + protocolConfig
           + " protocol header, closing channel.");
       channel.close();
       return null;
     }
+
+    Protocol protocol = protocolConfig.get();
+
+    // add our newly connected channel to the group
+    channels.addChannel(channel, protocol);
 
     ChannelPipeline pipeline = ctx.getPipeline();
 
@@ -78,4 +68,6 @@ public class ReceivingRequestHandler extends FrameDecoderLE {
     newBuffer.writeBytes(buffer);
     return newBuffer;
   }
+
+  protected abstract ProtocolConfig getMatchingConfig(String header);
 }
