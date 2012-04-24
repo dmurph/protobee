@@ -18,7 +18,6 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
-import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;

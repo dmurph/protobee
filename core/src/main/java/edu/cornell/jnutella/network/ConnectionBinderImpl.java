@@ -29,14 +29,14 @@ public class ConnectionBinderImpl implements ConnectionBinder {
   private Logger log;
   private final NetworkIdentityManager identityManager;
   private final ChannelFactory channelFactory;
-  private final ReceivingRequestMultiplexer.Factory requestMultiplexerFactory;
-  private final ReceivingRequestHandler.Factory requestHandlerFactory;
+  private final MultipleRequestReceiver.Factory requestMultiplexerFactory;
+  private final SingleRequestReceiver.Factory requestHandlerFactory;
   private final JnutellaChannels channels;
 
   @Inject
   public ConnectionBinderImpl(NetworkIdentityManager identityManager,
-      ChannelFactory channelFactory, ReceivingRequestMultiplexer.Factory multiplexer,
-      ReceivingRequestHandler.Factory requestHandlerFactory, JnutellaChannels channels) {
+      ChannelFactory channelFactory, MultipleRequestReceiver.Factory multiplexer,
+      SingleRequestReceiver.Factory requestHandlerFactory, JnutellaChannels channels) {
     this.identityManager = identityManager;
     this.channelFactory = channelFactory;
     this.requestMultiplexerFactory = multiplexer;
@@ -51,7 +51,7 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     ChannelPipelineFactory factory = new ChannelPipelineFactory() {
       @Override
       public ChannelPipeline getPipeline() throws Exception {
-        ReceivingRequestHandler handler = requestHandlerFactory.create(config);
+        SingleRequestReceiver handler = requestHandlerFactory.create(config);
         return Channels.pipeline(handler);
       }
     };
@@ -81,7 +81,7 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     ChannelPipelineFactory factory = new ChannelPipelineFactory() {
       @Override
       public ChannelPipeline getPipeline() throws Exception {
-        ReceivingRequestMultiplexer handler = requestMultiplexerFactory.create(configs);
+        MultipleRequestReceiver handler = requestMultiplexerFactory.create(configs);
         return Channels.pipeline(handler);
       }
     };

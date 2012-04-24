@@ -84,4 +84,11 @@ public class JnutellaChannels {
   public ChannelGroup getChannels(Protocol protocol) {
     return protocolChannels.get(protocol);
   }
+
+  public void clear() {
+    channels.clear();
+    for (ChannelGroup group : protocolChannels.values()) {
+      group.clear();
+    }
+  }
 }

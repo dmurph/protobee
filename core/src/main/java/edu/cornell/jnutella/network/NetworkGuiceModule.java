@@ -11,6 +11,7 @@ import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 
+import edu.cornell.jnutella.JnutellaServantBootstrapper;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.guice.netty.NettyModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
@@ -20,8 +21,8 @@ public class NetworkGuiceModule extends AbstractModule {
   @Override
   protected void configure() {
     install(new NettyModule());
-    install(new FactoryModuleBuilder().build(ReceivingRequestMultiplexer.Factory.class));
-    install(new FactoryModuleBuilder().build(ReceivingRequestHandler.Factory.class));
+    install(new FactoryModuleBuilder().build(MultipleRequestReceiver.Factory.class));
+    install(new FactoryModuleBuilder().build(SingleRequestReceiver.Factory.class));
 
     bind(ChannelFactory.class).to(NioServerSocketChannelFactory.class).in(Singleton.class);
 
