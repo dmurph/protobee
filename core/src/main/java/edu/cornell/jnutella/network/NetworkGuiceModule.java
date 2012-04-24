@@ -8,6 +8,7 @@ import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 import com.google.inject.name.Named;
 
 import edu.cornell.jnutella.guice.SessionScope;
@@ -19,14 +20,17 @@ public class NetworkGuiceModule extends AbstractModule {
   @Override
   protected void configure() {
     install(new NettyModule());
+    install(new FactoryModuleBuilder().build(ReceivingRequestMultiplexer.Factory.class));
+    install(new FactoryModuleBuilder().build(ReceivingRequestHandler.Factory.class));
 
-    bind(ReceivingRequestMultiplexer.class).in(Singleton.class);
     bind(ChannelFactory.class).to(NioServerSocketChannelFactory.class).in(Singleton.class);
 
     bind(HandshakeHttpMessageDecoder.class).in(SessionScope.class);
     bind(HandshakeHttpMessageEncoder.class).in(SessionScope.class);
-    
-    bind(NetworkManager.class).in(Singleton.class);
+
+    bind(ConnectionCreator.class).to(ConnectionManagerImpl.class).in(Singleton.class);
+    bind(ConnectionBinder.class).to(ConnectionBinderImpl.class).in(Singleton.class);
+    bind(JnutellaServantBootstrapper.class).in(Singleton.class);
   }
 
   @Provides

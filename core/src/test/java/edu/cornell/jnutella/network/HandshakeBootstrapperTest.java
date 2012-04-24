@@ -9,6 +9,7 @@ import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Set;
 
+import org.jboss.netty.channel.ChannelPipeline;
 import org.junit.Test;
 
 import com.google.common.collect.Sets;
@@ -27,24 +28,21 @@ public class HandshakeBootstrapperTest extends AbstractTest {
   public void testSessionSet() {
     Set<ProtocolModule> modules = Sets.newHashSet();
     ProtocolConfig config = mockDefaultProtocolConfig(modules);
-    ProtocolIdentityModel identityModel = mock(ProtocolIdentityModel.class);
+    ProtocolIdentityModel identityModel = config.createIdentityModel();
+    when(config.createIdentityModel()).thenReturn(identityModel);
 
     Injector inj = getInjectorWithProtocolConfig(config);
 
-    when(config.createIdentityModel()).thenReturn(identityModel);
     when(identityModel.hasCurrentSession()).thenReturn(false);
-
 
     HandshakeStateBootstrapper handshakeBootstrapper =
         inj.getInstance(HandshakeStateBootstrapper.class);
-    
+
     NetworkIdentity identity = createIdentity(inj);
 
-    identity.enterScope();
-    
     SocketAddress address = new InetSocketAddress(90);
-    handshakeBootstrapper.bootstrapSession(config, identityModel, address, null);
-    identity.exitScope();
+    handshakeBootstrapper.bootstrapSession(config, identity, address, null,
+        mock(ChannelPipeline.class));
 
     verify(identityModel).setCurrentSessionModel(any(SessionModel.class));
   }

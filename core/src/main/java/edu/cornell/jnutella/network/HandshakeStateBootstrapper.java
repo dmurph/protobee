@@ -7,6 +7,7 @@ import javax.annotation.Nullable;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.channel.ChannelPipeline;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -18,6 +19,7 @@ import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.guice.JnutellaScopes;
+import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
@@ -64,59 +66,71 @@ public class HandshakeStateBootstrapper {
   }
 
   /**
-   * Precondition: we are in the respective identity scope
+   * Precondition: not in any scope
    * 
    * @param protocolConfig
    * @param identity
    * @param remoteAddress
    * @param channel
+   * @param pipeline
    * @return
    */
-  public ChannelHandler[] bootstrapSession(ProtocolConfig protocolConfig,
-      ProtocolIdentityModel identityModel, SocketAddress remoteAddress, @Nullable Channel channel) {
+  public void bootstrapSession(ProtocolConfig protocolConfig, NetworkIdentity identity,
+      SocketAddress remoteAddress, @Nullable Channel channel, ChannelPipeline pipeline) {
     Preconditions.checkNotNull(protocolConfig);
-    Preconditions.checkNotNull(identityModel);
+    Preconditions.checkNotNull(identity);
     Preconditions.checkNotNull(remoteAddress);
-    Preconditions.checkState(JnutellaScopes.isInIdentityScope(), "Need to be in identity scope");
 
-    // create session
-    SessionModel session = sessionFactory.get().create(protocolConfig, remoteAddress.toString());
-    if (channel != null) {
-      session.addObjectToScope(Key.get(Channel.class), channel);
-    }
-    session.enterScope();
+    ProtocolIdentityModel identityModel = identity.getModel(protocolConfig.get());
 
-    identityModel.setCurrentSessionModel(session);
-
-    ProtocolSessionModel protocolSessionModel = protocolSession.get();
-
-    Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
-    if (modules.size() == 0) {
-      log.info("No protocol modules for protocol: " + protocolConfig.get());
-    } else {
-      log.info(modules.size() + " modules available for protocol session " + protocolConfig.get());
-      log.debug(modules.toString());
-      // register modules
-      EventBus bus = eventBus.get();
-      for (ProtocolModule module : protocolSessionModel.getMutableModules()) {
-        bus.register(module);
+    SessionModel session = null;
+    try {
+      identity.enterScope();
+      // create session
+      session = sessionFactory.get().create(protocolConfig, remoteAddress.toString());
+      if (channel != null) {
+        session.addObjectToScope(Key.get(Channel.class), channel);
       }
+
+      session.enterScope();
+
+      identityModel.setCurrentSessionModel(session);
+
+      ProtocolSessionModel protocolSessionModel = protocolSession.get();
+
+      Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
+      if (modules.size() == 0) {
+        log.info("No protocol modules for protocol: " + protocolConfig.get());
+      } else {
+        log.info(modules.size() + " modules available for protocol session " + protocolConfig.get());
+        log.debug(modules.toString());
+        // register modules
+        EventBus bus = eventBus.get();
+        for (ProtocolModule module : protocolSessionModel.getMutableModules()) {
+          bus.register(module);
+        }
+      }
+
+      // create handlers
+      ChannelHandler[] handlers = new ChannelHandler[4];
+
+      // create protocol bootstrap
+      ProtocolSessionBootstrapper protocolBootstrap = protocolBootstrapperFactory.create(handlers);
+      session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class), protocolBootstrap);
+
+      handlers[0] = decoderFactory.get();
+      handlers[1] = encoderFactory.get();
+      handlers[2] = upShakerProvider.get();
+      handlers[3] = downShakerProvider.get();
+
+      for (ChannelHandler handler : handlers) {
+        pipeline.addLast(handler.toString(), handler);
+      }
+    } finally {
+      if (session != null) {
+        session.exitScope();
+      }
+      identity.exitScope();
     }
-
-    // create handlers
-    ChannelHandler[] handlers = new ChannelHandler[4];
-
-    // create protocol bootstrap
-    ProtocolSessionBootstrapper protocolBootstrap = protocolBootstrapperFactory.create(handlers);
-    session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class), protocolBootstrap);
-
-    handlers[0] = decoderFactory.get();
-    handlers[1] = encoderFactory.get();
-    handlers[2] = upShakerProvider.get();
-    handlers[3] = downShakerProvider.get();
-
-    session.exitScope();
-
-    return handlers;
   }
 }

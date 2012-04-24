@@ -76,4 +76,9 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   public Map<String, Object> getNettyBootstrapOptions() {
     return Maps.newHashMap();
   }
+  
+  @Override
+  public int getPort() {
+    return 20;
+  }
 }

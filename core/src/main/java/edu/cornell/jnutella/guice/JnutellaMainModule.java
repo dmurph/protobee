@@ -26,6 +26,7 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.protocol.ProtocolGuiceModule;
 import edu.cornell.jnutella.session.SessionGuiceModule;
+import edu.cornell.jnutella.util.ProtocolConfigUtils;
 import edu.cornell.jnutella.util.UtilGuiceModule;
 
 public class JnutellaMainModule extends AbstractModule {
@@ -49,9 +50,8 @@ public class JnutellaMainModule extends AbstractModule {
         return new OrderedDownstreamThreadPoolExecutor(10);
       }
     }));
-    
-    Multibinder<ProtocolConfig> protocolBinder =
-        Multibinder.newSetBinder(binder(), ProtocolConfig.class);
+
+    Multibinder.newSetBinder(binder(), ProtocolConfig.class);
 
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
@@ -72,13 +72,19 @@ public class JnutellaMainModule extends AbstractModule {
     }
     return builder.build();
   }
-  
+
+  @Provides
+  @Singleton
+  public Set<Protocol> getProtocols(Set<ProtocolConfig> configs) {
+    return ProtocolConfigUtils.getProtocolSet(configs);
+  }
+
   @Provides
   @SessionScopeMap
   public Map<String, Object> createSessionScopeMap() {
     return new MapMaker().concurrencyLevel(4).makeMap();
   }
-  
+
   @Provides
   @IdentityScopeMap
   public Map<String, Object> createIdentiyScopeMap() {

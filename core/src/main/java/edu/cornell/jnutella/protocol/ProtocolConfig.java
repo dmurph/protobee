@@ -29,4 +29,6 @@ public interface ProtocolConfig extends Provider<Protocol> {
   HttpMessageEncoder createRequestEncoder();
 
   Map<String, Object> getNettyBootstrapOptions();
+  
+  int getPort();
 }

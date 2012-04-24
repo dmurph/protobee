@@ -13,6 +13,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -30,6 +31,7 @@ import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
+import edu.cornell.jnutella.util.ProtocolConfigUtils;
 
 public class IdentityTests extends AbstractTest {
 
@@ -50,6 +52,13 @@ public class IdentityTests extends AbstractTest {
       @Singleton
       public Map<Protocol, ProtocolConfig> getConfigMap() {
         return ImmutableMap.of();
+      }
+
+      @SuppressWarnings("unused")
+      @Provides
+      @Singleton
+      public Set<ProtocolConfig> getProtocols() {
+        return ImmutableSet.of();
       }
 
       @SuppressWarnings("unused")

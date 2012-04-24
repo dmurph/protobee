@@ -31,19 +31,18 @@ public class NetworkIdentity {
   private String description;
 
   @Inject
-  public NetworkIdentity(Map<Protocol, ProtocolConfig> configMap,
+  public NetworkIdentity(Set<ProtocolConfig> configs,
       @IdentityScopeMap Map<String, Object> identityScopeMap) {
     this.identityScopeMap = identityScopeMap;
     ImmutableMap.Builder<Protocol, ProtocolIdentityModel> builder = ImmutableMap.builder();
 
-    for (Protocol protocol : configMap.keySet()) {
-      ProtocolConfig config = configMap.get(protocol);
+    for (ProtocolConfig config : configs) {
       ProtocolIdentityModel identityModel = config.createIdentityModel();
       if (identityModel == null) {
-        log.warn("No model for protocol: " + protocol);
+        log.warn("No model for protocol: " + config.get());
         continue;
       }
-      builder.put(protocol, identityModel);
+      builder.put(config.get(), identityModel);
     }
     protocolModels = builder.build();
     // this should happen automatically because this object is in the identity scope, but we'll keep
