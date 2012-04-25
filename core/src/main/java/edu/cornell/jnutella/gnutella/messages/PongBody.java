@@ -56,6 +56,12 @@ public class PongBody implements MessageBody {
   }
 
   @Override
+  public String toString() {
+    return "{ address: " + socketAddress + ", fileCount: " + fileCount + ", fileSizeInKB: "
+        + fileSizeInKB + ", ggep: " + ggep + "}";
+  }
+
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;

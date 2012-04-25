@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.gnutella.modules;
+package edu.cornell.jnutella.gnutella.modules.ping;
 
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.PongBody;

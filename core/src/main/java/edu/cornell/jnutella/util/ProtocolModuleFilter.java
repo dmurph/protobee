@@ -31,7 +31,7 @@ public class ProtocolModuleFilter {
       if (headers == null) {
         continue;
       }
-      for (CompatabilityHeader header : headers.requiredCompatabilities()) {
+      for (CompatabilityHeader header : headers.required()) {
         if (!httpHeaders.containsKey(header.name())) {
           if (confirm.apply(module)) {
             it.remove();

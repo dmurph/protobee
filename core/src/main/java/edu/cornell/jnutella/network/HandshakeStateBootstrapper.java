@@ -64,7 +64,7 @@ public class HandshakeStateBootstrapper {
     this.protocolSession = protocolSession;
   }
 
-  /**
+  /**.
    * Precondition: not in any scope
    * 
    * @param protocolConfig
