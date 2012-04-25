@@ -11,10 +11,7 @@ import edu.cornell.jnutella.gnutella.messages.decoding.DecodingModule;
 import edu.cornell.jnutella.gnutella.messages.decoding.GnutellaDecoderHandler;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingModule;
 import edu.cornell.jnutella.gnutella.messages.encoding.GnutellaEncoderHandler;
-import edu.cornell.jnutella.gnutella.modules.PRSPongCache;
-import edu.cornell.jnutella.gnutella.modules.PingModule;
-import edu.cornell.jnutella.gnutella.modules.PongCache;
-import edu.cornell.jnutella.gnutella.modules.handshake.HeadersModule;
+import edu.cornell.jnutella.gnutella.modules.ModulesGuiceModule;
 import edu.cornell.jnutella.gnutella.session.FlowControlHandler;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageReceiver;
 import edu.cornell.jnutella.gnutella.session.GnutellaMessageWriter;
@@ -24,6 +21,7 @@ import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.plugin.PluginGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
+import edu.cornell.jnutella.protocol.ProtocolConfig;
 
 public class GnutellaGuiceModule extends PluginGuiceModule {
 
@@ -31,6 +29,7 @@ public class GnutellaGuiceModule extends PluginGuiceModule {
   protected void configure() {
     install(new DecodingModule());
     install(new EncodingModule());
+    install(new ModulesGuiceModule());
 
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
@@ -38,20 +37,14 @@ public class GnutellaGuiceModule extends PluginGuiceModule {
     bind(GnutellaIdentityModel.class).in(IdentityScope.class);
 
     addProtocolConfig(GnutellaProtocolConfig.class);
+    
+    bind(ProtocolConfig.class).annotatedWith(Gnutella.class).to(GnutellaProtocolConfig.class).in(Singleton.class);
 
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)
         .in(Singleton.class);
 
-    addGnutellaProtocolModuleInSessionScope(PingModule.class);
-    addGnutellaProtocolModuleInSessionScope(HeadersModule.class);
-
     bind(FlowControlHandler.class).to(NoOpFlowControl.class);
-
     bind(RequestFilter.class).to(SimpleRequestFilter.class).in(Singleton.class);
-
-
-    bind(PongCache.class).to(PRSPongCache.class).in(Singleton.class);
-
   }
 
   @Provides

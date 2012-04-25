@@ -36,10 +36,10 @@ public class CompatabilityHeaderMerger {
 
     for (ProtocolModule module : session.getMutableModules()) {
       Headers headers = module.getClass().getAnnotation(Headers.class);
-      for (CompatabilityHeader header : headers.requiredCompatabilities()) {
+      for (CompatabilityHeader header : headers.required()) {
         requiredVersionsBuilder.put(header.name(), header);
       }
-      for (CompatabilityHeader header : headers.requestedCompatabilities()) {
+      for (CompatabilityHeader header : headers.requested()) {
         requestedVersionsBuilder.put(header.name(), header);
       }
     }
@@ -57,10 +57,10 @@ public class CompatabilityHeaderMerger {
         ImmutableMultimap.builder();
 
     for (Headers headers : headersArray) {
-      for (CompatabilityHeader header : headers.requiredCompatabilities()) {
+      for (CompatabilityHeader header : headers.required()) {
         requiredVersionsBuilder.put(header.name(), header);
       }
-      for (CompatabilityHeader header : headers.requestedCompatabilities()) {
+      for (CompatabilityHeader header : headers.requested()) {
         requestedVersionsBuilder.put(header.name(), header);
       }
     }

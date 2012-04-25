@@ -3,6 +3,7 @@ package edu.cornell.jnutella;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.SocketAddress;
 import java.util.Set;
 
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
@@ -14,19 +15,24 @@ import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.Key;
 import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
+import edu.cornell.jnutella.gnutella.Gnutella;
 import edu.cornell.jnutella.guice.JnutellaMainModule;
 import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityFactory;
+import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.plugin.PluginGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.ProtocolSessionModel;
+import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.session.SessionModelFactory;
 
 public abstract class AbstractTest {
 
@@ -85,6 +91,26 @@ public abstract class AbstractTest {
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
     when(config.getNettyBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
     return config;
+  }
+
+  public static Protocol getGnutellaProtocol(Injector inj) {
+    return inj.getInstance(Key.get(Protocol.class, Gnutella.class));
+  }
+
+  public static ProtocolConfig getGnutellaProtocolConfig(Injector inj) {
+    return inj.getInstance(Key.get(ProtocolConfig.class, Gnutella.class));
+  }
+
+  public static SessionModel createSession(Injector injector, SocketAddress address,
+      ProtocolConfig protocol) {
+    NetworkIdentityManager manager = injector.getInstance(NetworkIdentityManager.class);
+    NetworkIdentity identity = manager.getNetworkIdentityWithNewConnection(protocol.get(), address);
+    identity.enterScope();
+    SessionModelFactory sessionFactory = injector.getInstance(SessionModelFactory.class);
+    SessionModel session = sessionFactory.create(protocol, "AbstractTest#createSession()");
+    identity.exitScope();
+    identity.setCurrentSession(protocol.get(), session);
+    return session;
   }
 
   @After

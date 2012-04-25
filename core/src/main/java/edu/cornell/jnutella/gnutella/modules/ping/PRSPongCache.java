@@ -1,8 +1,8 @@
-package edu.cornell.jnutella.gnutella.modules;
+package edu.cornell.jnutella.gnutella.modules.ping;
 
 import java.net.SocketAddress;
 import java.util.Iterator;
-import java.util.Set;
+import java.util.LinkedHashSet;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
@@ -29,7 +29,7 @@ import edu.cornell.jnutella.util.Clock;
 @Singleton
 public class PRSPongCache implements PongCache {
 
-  private final Set<CacheElement> cache = Sets.newLinkedHashSet();
+  private final LinkedHashSet<CacheElement> cache = Sets.newLinkedHashSet();
   private final Object cacheLock = new Object();
   private final Clock clock;
   private final MessageBodyFactory factory;
@@ -42,9 +42,12 @@ public class PRSPongCache implements PongCache {
 
   @Override
   public void addPong(GnutellaMessage message) {
-    Preconditions.checkArgument(message.getBody() instanceof PongBody);
     MessageHeader header = message.getHeader();
     Preconditions.checkArgument(header.getHops() != 0);
+    Preconditions.checkArgument(header.getPayloadType() == MessageHeader.F_PING_REPLY,
+        "Wrong payload type");
+    Preconditions.checkArgument(message.getBody() instanceof PongBody,
+        "Can only work with PongBody");
 
     PongBody body = (PongBody) message.getBody();
     CacheElement cacheElement =

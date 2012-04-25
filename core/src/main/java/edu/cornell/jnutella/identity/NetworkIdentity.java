@@ -65,6 +65,10 @@ public class NetworkIdentity {
   public SessionModel getCurrentSession(Protocol protocol) {
     return protocolModels.get(protocol).getCurrentSession();
   }
+  
+  public void setCurrentSession(Protocol protocol, SessionModel session) {
+    protocolModels.get(protocol).setCurrentSessionModel(session);
+  }
 
   /**
    * returns an immutable copy of this object's tags

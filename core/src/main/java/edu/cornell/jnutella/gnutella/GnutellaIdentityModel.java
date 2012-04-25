@@ -12,9 +12,9 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
 
   private SocketAddress address;
   private byte[] guid;
-  private SessionModel currentSession;
-  private int fileCount;
-  private int fileSizeInKB;
+  private SessionModel currentSession = null;
+  private int fileCount = 0;
+  private int fileSizeInKB = 0;
 
   @Override
   public void setNetworkAddress(SocketAddress address) {

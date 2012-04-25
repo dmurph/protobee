@@ -13,10 +13,10 @@ public @interface Headers {
   /**
    * Capabilities required for this module to be included
    */
-  CompatabilityHeader[] requiredCompatabilities();
+  CompatabilityHeader[] required();
 
   /**
    * Capabilities requested but not required
    */
-  CompatabilityHeader[] requestedCompatabilities();
+  CompatabilityHeader[] requested();
 }

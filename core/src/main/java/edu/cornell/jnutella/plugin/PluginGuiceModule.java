@@ -40,11 +40,11 @@ public abstract class PluginGuiceModule extends AbstractModule {
     getConfigBinder().addBinding().to(klass).in(Singleton.class);
   }
 
-  public void addGnutellaProtocolModuleInSessionScope(Class<? extends ProtocolModule> klass) {
+  public void addGnutellaModuleInSessionScope(Class<? extends ProtocolModule> klass) {
     getGnutellaModulesBinder().addBinding().to(klass).in(SessionScope.class);
   }
 
-  public <T extends ProtocolModule> ScopedBindingBuilder addGnutellaProtocolModule(Class<T> klass) {
+  public <T extends ProtocolModule> ScopedBindingBuilder addGnutellaModule(Class<T> klass) {
     return getGnutellaModulesBinder().addBinding().to(klass);
   }
 
