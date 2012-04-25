@@ -11,6 +11,10 @@ public class MessageHeader {
   public static interface Factory {
     MessageHeader create(byte[] guid, @Assisted("payloadType") byte payloadType,
         @Assisted("ttl") byte ttl, @Assisted("hops") byte hops, int payloadLength);
+    
+
+    MessageHeader create(byte[] guid, @Assisted("payloadType") byte payloadType,
+        @Assisted("ttl") byte ttl);
 
     MessageHeader create(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
         @Assisted("ttl") byte ttl, @Assisted("hops") byte hops);
@@ -62,6 +66,16 @@ public class MessageHeader {
     this.payloadType = payloadType;
     this.ttl = ttl;
     this.hops = hops;
+    this.payloadLength = UNKNOWN_PAYLOAD_LENGTH;
+  }
+  
+  @AssistedInject
+  public MessageHeader(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
+      @Assisted("ttl") byte ttl) {
+    this.guid = guid;
+    this.payloadType = payloadType;
+    this.ttl = ttl;
+    this.hops = 0;
     this.payloadLength = UNKNOWN_PAYLOAD_LENGTH;
   }
 

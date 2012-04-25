@@ -83,8 +83,8 @@ public class PingModule implements ProtocolModule {
     if (!filter.shouldAcceptPing(event.getMessage())) {
       return;
     }
-    byte newTTL = (byte) (hops + ttl);
 
+    byte newTtl = (byte) (hops + 1);
     // dispatch our pong
     {
       NetworkIdentity me = identityManager.getMe();
@@ -94,8 +94,7 @@ public class PingModule implements ProtocolModule {
 
 
       MessageHeader newHeader =
-          headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) newTTL,
-              (byte) 0);
+          headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, newTtl);
 
       GGEP ggep = new GGEP();
       // TODO populate ggep
@@ -120,7 +119,7 @@ public class PingModule implements ProtocolModule {
         }
         GnutellaIdentityModel gnutellaModel = (GnutellaIdentityModel) leaf.getModel(gnutella);
         MessageHeader newHeader =
-            headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1, (byte) 0);
+            headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1, (byte) 1);
         PongBody newBody =
             bodyFactory.createPongMessage(gnutellaModel.getNetworkAddress(),
                 gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
@@ -135,7 +134,7 @@ public class PingModule implements ProtocolModule {
 
         for (PongBody body : pongs) {
           MessageHeader newHeader =
-              headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, newTTL, (byte) 0);
+              headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, newTtl);
           messageDispatcher.write(new GnutellaMessage(newHeader, body));
         }
       } else {
