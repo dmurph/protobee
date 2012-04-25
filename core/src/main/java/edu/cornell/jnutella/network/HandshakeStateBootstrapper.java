@@ -19,8 +19,8 @@ import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
+import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.ProtocolSessionBootstrapper;
 import edu.cornell.jnutella.session.ProtocolSessionModel;
@@ -79,8 +79,8 @@ public class HandshakeStateBootstrapper {
     Preconditions.checkNotNull(protocolConfig);
     Preconditions.checkNotNull(identity);
     Preconditions.checkNotNull(remoteAddress);
-
-    ProtocolIdentityModel identityModel = identity.getModel(protocolConfig.get());
+    
+    Protocol protocol = protocolConfig.get();
 
     SessionModel session = null;
     try {
@@ -93,15 +93,15 @@ public class HandshakeStateBootstrapper {
 
       session.enterScope();
 
-      identityModel.setCurrentSessionModel(session);
+      identity.setCurrentSession(protocol, session);
 
       ProtocolSessionModel protocolSessionModel = protocolSession.get();
 
       Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
       if (modules.size() == 0) {
-        log.info("No protocol modules for protocol: " + protocolConfig.get());
+        log.info("No protocol modules for protocol: " + protocol);
       } else {
-        log.info(modules.size() + " modules available for protocol session " + protocolConfig.get());
+        log.info(modules.size() + " modules available for protocol session " + protocol);
         log.debug(modules.toString());
         // register modules
         EventBus bus = eventBus.get();
