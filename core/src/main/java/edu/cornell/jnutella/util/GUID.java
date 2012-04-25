@@ -77,6 +77,10 @@ public class GUID {
       }
       bytes = b;
     }
+    
+    public static boolean isModernClient(byte[] guid) {
+      return guid[8] == (byte) 0xFF && guid[15] == 0;
+    }
 
     public byte[] getBytes(){
       return bytes;

@@ -47,7 +47,7 @@ public class PingModule implements ProtocolModule {
       IdentityTagManager tagManager, NetworkIdentity identity,
       ProtocolMessageWriter messageDispatcher, MessageBodyFactory bodyFactory,
       MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella, PongCache cache,
-      @PongCacheThreshold int threshold, @PongCacheTimout int timeout) {
+      @MaxPongsSent int threshold, @PongExpireTime int timeout) {
     this.filter = filter;
     this.identityManager = identityManager;
     this.tagManager = tagManager;

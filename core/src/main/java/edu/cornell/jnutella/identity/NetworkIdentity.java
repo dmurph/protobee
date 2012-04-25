@@ -54,6 +54,8 @@ public class NetworkIdentity {
     return protocolModels.get(protocol);
   }
 
+  // these all just delegate... perhaps we shouldn't have the protocol identity model as an interface, instead just our own concrete class
+  // or just store the sessions + addresses here
   public void clearCurrentSession(Protocol protocol) {
     protocolModels.get(protocol).clearCurrentSession();
   }
@@ -81,6 +83,10 @@ public class NetworkIdentity {
 
   void addTag(Object tag) {
     tags.add(tag);
+  }
+  
+  public boolean hasTag(Object tag) {
+    return tags.contains(tag);
   }
 
   void setNewtorkAddress(Protocol protocol, SocketAddress address) {
