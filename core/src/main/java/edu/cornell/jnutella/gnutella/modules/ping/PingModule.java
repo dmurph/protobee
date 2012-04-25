@@ -1,9 +1,11 @@
 package edu.cornell.jnutella.gnutella.modules.ping;
 
 import java.net.InetSocketAddress;
+import java.util.List;
 import java.util.Set;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
@@ -15,6 +17,8 @@ import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.PongBody;
+import edu.cornell.jnutella.gnutella.modules.MaxTTL;
+import edu.cornell.jnutella.gnutella.modules.ping.AdvancedPongCache.CacheEntry;
 import edu.cornell.jnutella.gnutella.session.MessageReceivedEvent;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.identity.IdentityTagManager;
@@ -25,6 +29,8 @@ import edu.cornell.jnutella.network.ProtocolMessageWriter;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.headers.CompatabilityHeader;
 import edu.cornell.jnutella.protocol.headers.Headers;
+import edu.cornell.jnutella.util.Clock;
+import edu.cornell.jnutella.util.GUID;
 
 @Headers(required = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requested = {})
 @SessionScope
@@ -38,16 +44,21 @@ public class PingModule implements ProtocolModule {
   private final MessageBodyFactory bodyFactory;
   private final MessageHeader.Factory headerFactory;
   private final Protocol gnutella;
-  private final PongCache pongCache;
-  private final int cacheTimeout;
-  private final int cacheThreshold;
+
+  private final Clock clock;
+  private final AdvancedPongCache pongCache;
+  private final PingSessionModel pingModel;
+  private final int maxPongsSent;
+  private final int expireTime;
+  private final int maxTtl;
 
   @Inject
   public PingModule(RequestFilter filter, NetworkIdentityManager identityManager,
       IdentityTagManager tagManager, NetworkIdentity identity,
       ProtocolMessageWriter messageDispatcher, MessageBodyFactory bodyFactory,
       MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella, PongCache cache,
-      @MaxPongsSent int threshold, @PongExpireTime int timeout) {
+      @MaxPongsSent int threshold, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
+      PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock) {
     this.filter = filter;
     this.identityManager = identityManager;
     this.tagManager = tagManager;
@@ -56,9 +67,12 @@ public class PingModule implements ProtocolModule {
     this.bodyFactory = bodyFactory;
     this.headerFactory = headerFactory;
     this.gnutella = gnutella;
-    this.pongCache = cache;
-    this.cacheTimeout = timeout;
-    this.cacheThreshold = threshold;
+    this.pongCache = pongCache;
+    this.pingModel = pingModel;
+    this.maxTtl = maxTtl;
+    this.maxPongsSent = threshold;
+    this.clock = clock;
+    this.expireTime = expireTime;
   }
 
   @Subscribe
@@ -78,14 +92,56 @@ public class PingModule implements ProtocolModule {
     final GnutellaMessage message = event.getMessage();
     final MessageHeader header = message.getHeader();
 
-    byte ttl = header.getTtl();
-    byte hops = header.getHops();
-    if (!filter.shouldAcceptPing(event.getMessage())) {
+    byte inTtl = header.getTtl();
+    byte inHops = header.getHops();
+
+    // throttling
+    long now = clock.currentTimeMillis();
+    if (now < pingModel.getAcceptTime()) {
+      // TODO: record drop
+      return;
+    }
+    pingModel.setAcceptTime(now + expireTime);
+
+    // responding
+    if (pongCache.needsRebroadcasting()) {
+      // get all current sessions, send pings to them with max ttl
+    }
+
+    // For crawler pings (hops==0, ttl=2)
+    if (inHops == 0 && inTtl == 2) {
+      // crawler ping
+      // respond with leaf nodes pongs, already "hoped" one step.
+      // (ttl=1,hops=1)
+      Set<NetworkIdentity> leafs = identityManager.getTaggedIdentities(tagManager.getLeafKey());
+
+      for (NetworkIdentity leaf : leafs) {
+        if (leaf == identity) {
+          continue;
+        }
+        GnutellaIdentityModel gnutellaModel = (GnutellaIdentityModel) leaf.getModel(gnutella);
+        MessageHeader newHeader =
+            headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1, (byte) 1);
+        PongBody newBody =
+            bodyFactory.createPongMessage(gnutellaModel.getNetworkAddress(),
+                gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
+        messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
+      }
       return;
     }
 
-    byte newTtl = (byte) (hops + 1);
-    // dispatch our pong
+    // setup demultiplexing table
+    pingModel.setAcceptGuid(header.getGuid());
+    for (int i = 1; i <= maxTtl; i++) {
+      int needed = 0;
+      if (i <= header.getTtl()) {
+        needed = maxPongsSent / header.getTtl();
+      }
+      pingModel.getNeeded()[i].set(needed);
+    }
+
+    byte newTtl = (byte) (inHops + 1);
+    // dispatch our pong TODO: IF WE CAN ACCEPT CONNECTIONS
     {
       NetworkIdentity me = identityManager.getMe();
       GnutellaIdentityModel identityModel = (GnutellaIdentityModel) me.getModel(gnutella);
@@ -104,63 +160,50 @@ public class PingModule implements ProtocolModule {
       messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
     }
 
+    // send pongs that we have
+    if (inTtl > 1) {
 
-    // For crawler pings (hops==0, ttl=2) we have a special treatment...
-    // We reply with all our leaf connections... in case we have them as a
-    // ultrapeer...
-    if (hops == 0 && ttl == 2) {// crawler ping
-                                // respond with leaf nodes pongs, already "hoped" one step.
-                                // (ttl=1,hops=1)
-      Set<NetworkIdentity> leafs = identityManager.getTaggedIdentities(tagManager.getLeafKey());
+      List<GnutellaMessage> pongs = Lists.newArrayList();
 
-      for (NetworkIdentity leaf : leafs) {
-        if (leaf == identity) {
-          continue;
+      for (int ttl = 1; ttl <= header.getTtl(); ttl++) {
+        int needed = pingModel.getNeeded()[ttl].get();
+
+        synchronized (pongCache.getCacheLock()) {
+          List<CacheEntry> list = pongCache.getCache()[ttl];
+
+          for (int j = 0; needed > 0 && j < list.size(); j++) {
+            CacheEntry entry = list.get(j);
+            if (entry.identity == identity) {
+              continue;
+            }
+            pongs.add(new GnutellaMessage(new MessageHeader(header.getGuid(),
+                MessageHeader.F_PING_REPLY, (byte) 1, (byte) (ttl - 1)), entry.body));
+
+            needed = pingModel.getNeeded()[ttl].decrementAndGet();
+          }
         }
-        GnutellaIdentityModel gnutellaModel = (GnutellaIdentityModel) leaf.getModel(gnutella);
-        MessageHeader newHeader =
-            headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1, (byte) 1);
-        PongBody newBody =
-            bodyFactory.createPongMessage(gnutellaModel.getNetworkAddress(),
-                gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
-        messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
       }
-    } else if (ttl > 1) {
-      pongCache.filter(cacheTimeout);
 
-      // send cached pongs if we have enough, otherwise we dispatch to neighbors
-      if (pongCache.size() >= cacheThreshold) {
-        Iterable<PongBody> pongs = pongCache.getPongs(cacheThreshold);
-
-        for (PongBody body : pongs) {
-          MessageHeader newHeader =
-              headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, newTtl);
-          messageDispatcher.write(new GnutellaMessage(newHeader, body));
-        }
-      } else {
-        Set<NetworkIdentity> leafs = identityManager.getTaggedIdentities(tagManager.getLeafKey());
-
-        // TODO set up the ping routing here?
-        int i = 0;
-        for (NetworkIdentity leaf : leafs) {
-          if (i > cacheThreshold) {
-            break;
-          }
-          if (leaf == identity) {
-            continue;
-          }
-          MessageHeader newHeader =
-              headerFactory.create(header.getGuid(), MessageHeader.F_PING, (byte) (ttl - 1),
-                  (byte) (hops + 1), header.getPayloadLength());
-          messageDispatcher.write(leaf, new GnutellaMessage(newHeader, message.getBody()));
-          i++;
-        }
+      for (GnutellaMessage gnutellaMessage : pongs) {
+        messageDispatcher.write(gnutellaMessage);
       }
     }
   }
 
   public void pongMessageReceived(MessageReceivedEvent event) {
+    final GnutellaMessage message = event.getMessage();
+    final MessageHeader header = message.getHeader();
+    final PongBody body = (PongBody) message.getBody();
 
+    if (!GUID.isModernClient(header.getGuid())) {
+      pongCache.addToReservePongs(body);
+    }
+
+    synchronized (pongCache.getCacheLock()) {
+      pongCache.getCache()[header.getHops()].add(new CacheEntry(body, identity));
+    }
+    
+    // TODO: demultiplex, need to see all current connections
   }
 
 
