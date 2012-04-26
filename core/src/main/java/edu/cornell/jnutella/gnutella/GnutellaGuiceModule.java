@@ -34,7 +34,7 @@ public class GnutellaGuiceModule extends PluginGuiceModule {
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
     bind(GnutellaSessionModel.class).in(SessionScope.class);
-    bind(GnutellaIdentityModel.class).in(IdentityScope.class);
+    bind(GnutellaServantModel.class).in(IdentityScope.class);
 
     addProtocolConfig(GnutellaProtocolConfig.class);
     

@@ -12,7 +12,6 @@ import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionModel;
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.ProtocolSessionModel;
@@ -23,7 +22,6 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
 
   private final Provider<ChannelHandler[]> channelsProvider;
   private final Provider<GnutellaSessionModel> sessionModuleProvider;
-  private final Provider<GnutellaIdentityModel> identityModelProvider;
   private final Provider<GnutellaHttpRequestDecoder> decoderProvider;
   private final Provider<GnutellaHttpRequestEncoder> encoderProvider;
   private final Protocol protocol;
@@ -31,12 +29,10 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   @Inject
   public GnutellaProtocolConfig(@Gnutella Provider<ChannelHandler[]> channelsProvider,
       Provider<GnutellaSessionModel> sessionModuleProvider,
-      Provider<GnutellaIdentityModel> identityModelProvider,
       Provider<GnutellaHttpRequestDecoder> decoderProvider,
       Provider<GnutellaHttpRequestEncoder> encoderProvider) {
     this.channelsProvider = channelsProvider;
     this.sessionModuleProvider = sessionModuleProvider;
-    this.identityModelProvider = identityModelProvider;
     this.protocol = this.getClass().getAnnotation(Protocol.class);
     this.decoderProvider = decoderProvider;
     this.encoderProvider = encoderProvider;
@@ -50,11 +46,6 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   @Override
   public ChannelHandler[] createProtocolHandlers() {
     return channelsProvider.get();
-  }
-
-  @Override
-  public ProtocolIdentityModel createIdentityModel() {
-    return identityModelProvider.get();
   }
 
   @Override
@@ -76,7 +67,7 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   public Map<String, Object> getNettyBootstrapOptions() {
     return Maps.newHashMap();
   }
-  
+
   @Override
   public int getPort() {
     return 20;

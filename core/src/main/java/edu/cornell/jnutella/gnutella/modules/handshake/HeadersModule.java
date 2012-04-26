@@ -14,7 +14,6 @@ import com.google.inject.Inject;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.gnutella.Gnutella;
-import edu.cornell.jnutella.gnutella.GnutellaIdentityModel;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.guice.UserAgent;
 import edu.cornell.jnutella.identity.NetworkIdentity;
@@ -68,8 +67,7 @@ public class HeadersModule implements ProtocolModule {
           InetAddress address = InetAddresses.forString(remoteIP);
 
           NetworkIdentity me = identityManager.getMe();
-          GnutellaIdentityModel identityModel = (GnutellaIdentityModel) me.getModel(gnutella);
-          InetSocketAddress socketAddress = (InetSocketAddress) identityModel.getNetworkAddress();
+          InetSocketAddress socketAddress = (InetSocketAddress) me.getAddress(gnutella);
           if (!address.equals(socketAddress)) {
             Preconditions.checkState(socketAddress != null,
                 "We're in the middle of a gnutella connection, our host address can't be null!");

@@ -8,7 +8,6 @@ import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 
 import com.google.inject.Provider;
 
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.session.ProtocolSessionModel;
 
 public interface ProtocolConfig extends Provider<Protocol> {
@@ -21,8 +20,6 @@ public interface ProtocolConfig extends Provider<Protocol> {
   ProtocolSessionModel createSessionModel();
 
   ChannelHandler[] createProtocolHandlers();
-
-  ProtocolIdentityModel createIdentityModel();
 
   HttpMessageDecoder createRequestDecoder();
 

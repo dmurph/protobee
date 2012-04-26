@@ -16,7 +16,6 @@ import com.google.inject.Provider;
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.HandshakeFuture;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.session.SessionModel;
@@ -88,12 +87,11 @@ public class ProtocolMessageWriter {
     if (myIdentity == identity) {
       return write(message);
     }
-    ProtocolIdentityModel identityModel = identity.getModel(protocol);
-    if (identityModel.hasCurrentSession()) {
+    if (identity.hasCurrentSession(protocol)) {
       log.debug("Current session already running for identity '" + identity
           + "', dispatching in that session.");
-      SessionModel session = identityModel.getCurrentSession();
-      
+      SessionModel session = identity.getCurrentSession(protocol);
+
       final ChannelFuture messageFuture;
       try {
         descoper.descope();
@@ -139,7 +137,7 @@ public class ProtocolMessageWriter {
     }
 
     // we have to make a new connection
-    SocketAddress address = identityModel.getNetworkAddress();
+    SocketAddress address = identity.getAddress(protocol);
     if (address == null) {
       log.error("we have no address to connect to for " + protocol + " at " + identity);
       return null;
