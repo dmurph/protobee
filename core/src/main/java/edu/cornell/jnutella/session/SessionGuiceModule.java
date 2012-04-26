@@ -4,6 +4,7 @@ import org.jboss.netty.channel.Channel;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 import edu.cornell.jnutella.guice.PrescopedProvider;
@@ -19,6 +20,8 @@ public class SessionGuiceModule extends AbstractModule {
 
     bind(HandshakeInterruptor.class).to(HandshakeInterruptorImpl.class);
 
+    bind(SessionManager.class).in(Singleton.class);
+    
     bind(SessionUpstreamHandshaker.class).in(SessionScope.class);
     bind(SessionDownstreamHandshaker.class).in(SessionScope.class);
 

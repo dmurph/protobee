@@ -1,6 +1,7 @@
 package edu.cornell.jnutella.gnutella.modules.ping;
 
 import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.List;
 import java.util.Set;
 
@@ -8,10 +9,11 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.gnutella.Gnutella;
-import edu.cornell.jnutella.gnutella.GnutellaIdentityModel;
+import edu.cornell.jnutella.gnutella.GnutellaServantModel;
 import edu.cornell.jnutella.gnutella.RequestFilter;
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageBodyFactory;
@@ -29,7 +31,10 @@ import edu.cornell.jnutella.network.ProtocolMessageWriter;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.headers.CompatabilityHeader;
 import edu.cornell.jnutella.protocol.headers.Headers;
+import edu.cornell.jnutella.session.SessionManager;
+import edu.cornell.jnutella.session.SessionModel;
 import edu.cornell.jnutella.util.Clock;
+import edu.cornell.jnutella.util.Descoper;
 import edu.cornell.jnutella.util.GUID;
 
 @Headers(required = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requested = {})
@@ -39,11 +44,16 @@ public class PingModule implements ProtocolModule {
   private final RequestFilter filter;
   private final NetworkIdentityManager identityManager;
   private final IdentityTagManager tagManager;
+  private final SessionManager sessionManager;
+
   private final NetworkIdentity identity;
   private final ProtocolMessageWriter messageDispatcher;
   private final MessageBodyFactory bodyFactory;
   private final MessageHeader.Factory headerFactory;
   private final Protocol gnutella;
+  private final Descoper descoper;
+
+  private final Provider<GnutellaServantModel> servantModelProvider;
 
   private final Clock clock;
   private final AdvancedPongCache pongCache;
@@ -58,7 +68,8 @@ public class PingModule implements ProtocolModule {
       ProtocolMessageWriter messageDispatcher, MessageBodyFactory bodyFactory,
       MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella, PongCache cache,
       @MaxPongsSent int threshold, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
-      PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock) {
+      PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock, Descoper descoper,
+      Provider<GnutellaServantModel> servantProvider, SessionManager sessionManager) {
     this.filter = filter;
     this.identityManager = identityManager;
     this.tagManager = tagManager;
@@ -73,6 +84,9 @@ public class PingModule implements ProtocolModule {
     this.maxPongsSent = threshold;
     this.clock = clock;
     this.expireTime = expireTime;
+    this.descoper = descoper;
+    this.servantModelProvider = servantProvider;
+    this.sessionManager = sessionManager;
   }
 
   @Subscribe
@@ -86,6 +100,11 @@ public class PingModule implements ProtocolModule {
         pongMessageReceived(event);
         break;
     }
+  }
+
+  private GnutellaMessage createMePing(MessageHeader header) {
+    // TODO populate pong ggep
+    return new GnutellaMessage(header, bodyFactory.createPingMessage(null));
   }
 
   public void pingMessageRecieved(MessageReceivedEvent event) {
@@ -104,8 +123,15 @@ public class PingModule implements ProtocolModule {
     pingModel.setAcceptTime(now + expireTime);
 
     // responding
+
     if (pongCache.needsRebroadcasting()) {
       // get all current sessions, send pings to them with max ttl
+      Set<SessionModel> sessions = sessionManager.getCurrentSessions(gnutella);
+      for (SessionModel session : sessions) {
+        MessageHeader newHeader =
+            headerFactory.create(new GUID().getBytes(), MessageHeader.F_PING, (byte) maxTtl);
+        messageDispatcher.write(session.getIdentity(), createMePing(newHeader));
+      }
     }
 
     // For crawler pings (hops==0, ttl=2)
@@ -114,18 +140,28 @@ public class PingModule implements ProtocolModule {
       // respond with leaf nodes pongs, already "hoped" one step.
       // (ttl=1,hops=1)
       Set<NetworkIdentity> leafs = identityManager.getTaggedIdentities(tagManager.getLeafKey());
-
-      for (NetworkIdentity leaf : leafs) {
-        if (leaf == identity) {
-          continue;
+      try {
+        descoper.descope();
+        for (NetworkIdentity leaf : leafs) {
+          if (leaf == identity) {
+            continue;
+          }
+          try {
+            leaf.enterScope();
+            GnutellaServantModel gnutellaModel = servantModelProvider.get();
+            MessageHeader newHeader =
+                headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1,
+                    (byte) 1);
+            PongBody newBody =
+                bodyFactory.createPongMessage(leaf.getAddress(gnutella),
+                    gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
+            messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
+          } finally {
+            leaf.exitScope();
+          }
         }
-        GnutellaIdentityModel gnutellaModel = (GnutellaIdentityModel) leaf.getModel(gnutella);
-        MessageHeader newHeader =
-            headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1, (byte) 1);
-        PongBody newBody =
-            bodyFactory.createPongMessage(gnutellaModel.getNetworkAddress(),
-                gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
-        messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
+      } finally {
+        descoper.rescope();
       }
       return;
     }
@@ -143,21 +179,29 @@ public class PingModule implements ProtocolModule {
     byte newTtl = (byte) (inHops + 1);
     // dispatch our pong TODO: IF WE CAN ACCEPT CONNECTIONS
     {
+
       NetworkIdentity me = identityManager.getMe();
-      GnutellaIdentityModel identityModel = (GnutellaIdentityModel) me.getModel(gnutella);
-      InetSocketAddress address = (InetSocketAddress) identityModel.getNetworkAddress();
-      Preconditions.checkState(address != null, "Host address of program must be populated");
+      try {
+        descoper.descope();
+        me.enterScope();
 
+        GnutellaServantModel identityModel = servantModelProvider.get();
+        InetSocketAddress address = (InetSocketAddress) me.getAddress(gnutella);
+        Preconditions.checkState(address != null, "Host address of program must be populated");
 
-      MessageHeader newHeader =
-          headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, newTtl);
+        MessageHeader newHeader =
+            headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, newTtl);
 
-      GGEP ggep = new GGEP();
-      // TODO populate ggep
-      PongBody newBody =
-          bodyFactory.createPongMessage(address, identityModel.getFileCount(),
-              identityModel.getFileSizeInKB(), ggep);
-      messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
+        GGEP ggep = new GGEP();
+        // TODO populate ggep
+        PongBody newBody =
+            bodyFactory.createPongMessage(address, identityModel.getFileCount(),
+                identityModel.getFileSizeInKB(), ggep);
+        messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
+      } finally {
+        me.exitScope();
+        descoper.rescope();
+      }
     }
 
     // send pongs that we have
@@ -202,7 +246,7 @@ public class PingModule implements ProtocolModule {
     synchronized (pongCache.getCacheLock()) {
       pongCache.getCache()[header.getHops()].add(new CacheEntry(body, identity));
     }
-    
+
     // TODO: demultiplex, need to see all current connections
   }
 

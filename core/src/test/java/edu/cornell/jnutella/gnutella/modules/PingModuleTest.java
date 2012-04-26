@@ -15,7 +15,7 @@ import com.google.inject.Key;
 
 import edu.cornell.jnutella.AbstractTest;
 import edu.cornell.jnutella.extension.GGEP;
-import edu.cornell.jnutella.gnutella.GnutellaIdentityModel;
+import edu.cornell.jnutella.gnutella.GnutellaServantModel;
 import edu.cornell.jnutella.gnutella.RequestFilter;
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
@@ -108,7 +108,9 @@ public class PingModuleTest extends AbstractTest {
       int fileSize = i+1;
       identities[i] = manager.createNetworkIdentity();
       manager.setNetworkAddress(identities[i], gnutella, remoteAddress);
-      GnutellaIdentityModel identityModel = (GnutellaIdentityModel) identities[i].getModel(gnutella);
+      identities[i].enterScope();
+      GnutellaServantModel identityModel = inj.getInstance(GnutellaServantModel.class);
+      identities[i].exitScope();
       identityModel.setFileCount(fileCount);
       identityModel.setFileSizeInKB(fileSize);
       manager.tagIdentity(tags.getLeafKey(), identities[i]);

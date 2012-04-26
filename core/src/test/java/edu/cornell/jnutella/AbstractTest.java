@@ -20,13 +20,12 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 import edu.cornell.jnutella.gnutella.Gnutella;
-import edu.cornell.jnutella.gnutella.GnutellaIdentityModel;
+import edu.cornell.jnutella.gnutella.GnutellaServantModel;
 import edu.cornell.jnutella.guice.JnutellaMainModule;
 import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityFactory;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.plugin.PluginGuiceModule;
 import edu.cornell.jnutella.protocol.Protocol;
@@ -71,7 +70,6 @@ public abstract class AbstractTest {
   public static ProtocolConfig mockDefaultProtocolConfig() {
     ProtocolConfig config = mock(ProtocolConfig.class);
     when(config.get()).thenReturn(mock(Protocol.class));
-    when(config.createIdentityModel()).thenReturn(mock(ProtocolIdentityModel.class));
     when(config.createSessionModel()).thenReturn(mock(ProtocolSessionModel.class));
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
@@ -86,7 +84,6 @@ public abstract class AbstractTest {
 
     ProtocolConfig config = mock(ProtocolConfig.class);
     when(config.get()).thenReturn(mock(Protocol.class));
-    when(config.createIdentityModel()).thenReturn(mock(ProtocolIdentityModel.class));
     when(config.createSessionModel()).thenReturn(sessionModel);
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
@@ -94,15 +91,17 @@ public abstract class AbstractTest {
     return config;
   }
 
-  public static GnutellaIdentityModel initializeMe(Injector inj, SocketAddress address, int files,
+  public static GnutellaServantModel initializeMe(Injector inj, SocketAddress address, int files,
       int size) {
     NetworkIdentityManager manager = inj.getInstance(NetworkIdentityManager.class);
-    GnutellaIdentityModel me =
-        (GnutellaIdentityModel) manager.getMe().getModel(getGnutellaProtocol(inj));
-    me.setFileCount(10);
-    me.setFileSizeInKB(1001);
-    me.setNetworkAddress(address);
-    return me;
+    NetworkIdentity me = manager.getMe();
+    me.enterScope();
+    GnutellaServantModel servant = inj.getInstance(GnutellaServantModel.class);
+    me.exitScope();
+    servant.setFileCount(10);
+    servant.setFileSizeInKB(1001);
+    manager.setNetworkAddress(me, getGnutellaProtocol(inj), address);
+    return servant;
   }
 
   public static Protocol getGnutellaProtocol(Injector inj) {
@@ -121,7 +120,7 @@ public abstract class AbstractTest {
     SessionModelFactory sessionFactory = injector.getInstance(SessionModelFactory.class);
     SessionModel session = sessionFactory.create(protocol, "AbstractTest#createSession()");
     identity.exitScope();
-    identity.setCurrentSession(protocol.get(), session);
+    identity.registerNewSession(protocol.get(), session);
     return session;
   }
 
@@ -131,7 +130,7 @@ public abstract class AbstractTest {
     SessionModelFactory sessionFactory = injector.getInstance(SessionModelFactory.class);
     SessionModel session = sessionFactory.create(protocol, "AbstractTest#createSession()");
     identity.exitScope();
-    identity.setCurrentSession(protocol.get(), session);
+    identity.registerNewSession(protocol.get(), session);
     return session;
   }
 

@@ -93,7 +93,7 @@ public class HandshakeStateBootstrapper {
 
       session.enterScope();
 
-      identity.setCurrentSession(protocol, session);
+      identity.registerNewSession(protocol, session);
 
       ProtocolSessionModel protocolSessionModel = protocolSession.get();
 

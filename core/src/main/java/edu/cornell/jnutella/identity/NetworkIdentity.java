@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Sets;
@@ -17,7 +18,7 @@ import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.guice.IdentityScopeMap;
 import edu.cornell.jnutella.guice.JnutellaScopes;
 import edu.cornell.jnutella.protocol.Protocol;
-import edu.cornell.jnutella.protocol.ProtocolConfig;
+import edu.cornell.jnutella.session.SessionManager;
 import edu.cornell.jnutella.session.SessionModel;
 
 @IdentityScope
@@ -25,51 +26,73 @@ public class NetworkIdentity {
 
   @InjectLogger
   private Logger log;
-  private final Map<Protocol, ProtocolIdentityModel> protocolModels;
+  private final Map<Protocol, ProtocolData> protocolData;
   private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
+  private final SessionManager sessionManager;
   private String description;
 
   @Inject
-  public NetworkIdentity(Set<ProtocolConfig> configs,
-      @IdentityScopeMap Map<String, Object> identityScopeMap) {
+  public NetworkIdentity(Set<Protocol> protocols,
+      @IdentityScopeMap Map<String, Object> identityScopeMap, SessionManager sessions) {
+    this.sessionManager = sessions;
     this.identityScopeMap = identityScopeMap;
-    ImmutableMap.Builder<Protocol, ProtocolIdentityModel> builder = ImmutableMap.builder();
+    ImmutableMap.Builder<Protocol, ProtocolData> builder = ImmutableMap.builder();
 
-    for (ProtocolConfig config : configs) {
-      ProtocolIdentityModel identityModel = config.createIdentityModel();
-      if (identityModel == null) {
-        log.warn("No model for protocol: " + config.get());
-        continue;
-      }
-      builder.put(config.get(), identityModel);
+    for (Protocol protocol : protocols) {
+      builder.put(protocol, new ProtocolData());
     }
-    protocolModels = builder.build();
+    protocolData = builder.build();
     // this should happen automatically because this object is in the identity scope, but we'll keep
     // this here in case of subclasses
     JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
   }
 
-  public ProtocolIdentityModel getModel(Protocol protocol) {
-    return protocolModels.get(protocol);
+  private ProtocolData getProtocolData(Protocol protocol) {
+    ProtocolData data = protocolData.get(protocol);
+    Preconditions.checkArgument(data != null, "Protocol was not in injected set.");
+    return data;
   }
 
-  // these all just delegate... perhaps we shouldn't have the protocol identity model as an interface, instead just our own concrete class
-  // or just store the sessions + addresses here
   public void clearCurrentSession(Protocol protocol) {
-    protocolModels.get(protocol).clearCurrentSession();
+    ProtocolData data = getProtocolData(protocol);
+    synchronized (data) {
+      if (data.currentSession == null) {
+        return;
+      }
+      sessionManager.removeCurrentSession(protocol, data.currentSession);
+      data.currentSession = null;
+    }
   }
 
   public boolean hasCurrentSession(Protocol protocol) {
-    return protocolModels.get(protocol).hasCurrentSession();
+    ProtocolData data = getProtocolData(protocol);
+    return data.currentSession != null;
   }
 
   public SessionModel getCurrentSession(Protocol protocol) {
-    return protocolModels.get(protocol).getCurrentSession();
+    ProtocolData data = getProtocolData(protocol);
+    return data.currentSession;
   }
-  
-  public void setCurrentSession(Protocol protocol, SessionModel session) {
-    protocolModels.get(protocol).setCurrentSessionModel(session);
+
+  public void registerNewSession(Protocol protocol, SessionModel session) {
+    Preconditions.checkNotNull(session);
+    ProtocolData data = getProtocolData(protocol);
+    synchronized (data) {
+      Preconditions.checkState(data.currentSession == null, "There's already a current session");
+      protocolData.get(protocol).currentSession = session;
+      sessionManager.registerNewSession(protocol, session);
+    }
+  }
+
+  public SocketAddress getAddress(Protocol protocol) {
+    ProtocolData data = getProtocolData(protocol);
+    return data.address;
+  }
+
+  void setNewtorkAddress(Protocol protocol, SocketAddress address) {
+    ProtocolData data = getProtocolData(protocol);
+    data.address = address;
   }
 
   /**
@@ -84,17 +107,9 @@ public class NetworkIdentity {
   void addTag(Object tag) {
     tags.add(tag);
   }
-  
+
   public boolean hasTag(Object tag) {
     return tags.contains(tag);
-  }
-
-  void setNewtorkAddress(Protocol protocol, SocketAddress address) {
-    if (protocolModels.containsKey(protocol)) {
-      protocolModels.get(protocol).setNetworkAddress(address);
-    } else {
-      log.error("No protocol model for protocol: " + protocol);
-    }
   }
 
   Map<String, Object> getIdentityScopeMap() {
@@ -117,7 +132,7 @@ public class NetworkIdentity {
   @Override
   public String toString() {
     return "{ description: " + description + ", tags: " + tags.toString() + ", protocolModels: "
-        + protocolModels + "}";
+        + protocolData + "}";
   }
 
   public void enterScope() {
@@ -134,5 +149,10 @@ public class NetworkIdentity {
 
   public void exitScope() {
     JnutellaScopes.exitIdentityScope();
+  }
+
+  static class ProtocolData {
+    private SocketAddress address = null;
+    private SessionModel currentSession = null;
   }
 }
