@@ -81,7 +81,7 @@ public class PingModule implements ProtocolModule {
   public PingModule(RequestFilter filter, NetworkIdentityManager identityManager,
       IdentityTagManager tagManager, NetworkIdentity identity,
       ProtocolMessageWriter messageDispatcher, MessageBodyFactory bodyFactory,
-      MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella, PongCache cache,
+      MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella,
       @MaxPongsSent int threshold, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
       PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock, Descoper descoper,
       Provider<GnutellaServantModel> servantProvider, SessionManager sessionManager,

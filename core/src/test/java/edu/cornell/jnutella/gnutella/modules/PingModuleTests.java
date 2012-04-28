@@ -40,11 +40,14 @@ import edu.cornell.jnutella.gnutella.modules.ping.MaxPongsSent;
 import edu.cornell.jnutella.gnutella.modules.ping.PingModule;
 import edu.cornell.jnutella.gnutella.modules.ping.PingSessionModel;
 import edu.cornell.jnutella.gnutella.modules.ping.PongExpireTime;
+import edu.cornell.jnutella.gnutella.modules.ping.AdvancedPongCache.CacheEntry;
 import edu.cornell.jnutella.gnutella.session.MessageReceivedEvent;
 import edu.cornell.jnutella.identity.IdentityTagManager;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.network.ProtocolMessageWriter;
+import edu.cornell.jnutella.network.ProtocolMessageWriter.ConnectionOptions;
+import edu.cornell.jnutella.network.ProtocolMessageWriter.HandshakeOptions;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.SessionManager;
@@ -52,7 +55,7 @@ import edu.cornell.jnutella.session.SessionModel;
 import edu.cornell.jnutella.util.Clock;
 import edu.cornell.jnutella.util.GUID;
 
-public class PingModuleTest extends AbstractTest {
+public class PingModuleTests extends AbstractTest {
 
   @Test
   public void testBroadcastOnEmptyCache() {
@@ -497,5 +500,100 @@ public class PingModuleTest extends AbstractTest {
       }
       assertEquals(needed, pingSession.getNeeded()[ttlNum].get());
     }
+  }
+
+  @Test
+  public void testAddPongToCache() {
+    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final SessionManager sessionManager = mock(SessionManager.class);
+
+    Injector inj = getInjector(new AbstractModule() {
+      @Override
+      protected void configure() {
+        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(SessionManager.class).toInstance(sessionManager);
+      }
+    });
+
+    // no sessions
+    ProtocolConfig gnutellaConfig = getGnutellaProtocolConfig(inj);
+    when(sessionManager.getCurrentSessions(any(Protocol.class))).thenReturn(
+        Sets.<SessionModel>newHashSet());
+
+    SocketAddress remoteAddress = new InetSocketAddress(InetAddresses.forString("5.5.5.5"), 1613);
+    SessionModel pongSesson = createSession(inj, remoteAddress, gnutellaConfig);
+    NetworkIdentity remoteIdentity = pongSesson.getIdentity();
+
+    byte[] guid = GUID.generateGuid();
+    MessageHeader header = new MessageHeader(guid, MessageHeader.F_PING_REPLY, (byte) 1, (byte) 3);
+    PongBody pongBody = new PongBody(createAddress("2.43.3.1", 4), 3, 32, null);
+
+    remoteIdentity.enterScope();
+    pongSesson.enterScope();
+    PingModule module = inj.getInstance(PingModule.class);
+    module.messageReceived(new MessageReceivedEvent(null, new GnutellaMessage(header, pongBody)));
+    pongSesson.exitScope();
+    remoteIdentity.exitScope();
+
+    AdvancedPongCache cache = inj.getInstance(AdvancedPongCache.class);
+    CacheEntry entry = cache.getCache()[header.getHops() + 1].get(0);
+    assertEquals(remoteIdentity, entry.getIdentity());
+    assertEquals(pongBody, entry.getBody());
+  }
+
+  @Test
+  public void testPongDemultiplex() {
+    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final SessionManager sessionManager = mock(SessionManager.class);
+
+    Injector inj = getInjector(new AbstractModule() {
+      @Override
+      protected void configure() {
+        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(SessionManager.class).toInstance(sessionManager);
+      }
+    });
+    ProtocolConfig gnutellaConfig = getGnutellaProtocolConfig(inj);
+
+    byte targetHops = 3;
+    int wanted = 2;
+    byte[] askGuid = GUID.generateGuid();
+
+    SessionModel activeSession = createSession(inj, createAddress("1.2.3.4", 10), gnutellaConfig);
+    NetworkIdentity activeSessionIdentity = activeSession.getIdentity();
+
+    activeSessionIdentity.enterScope();
+    activeSession.enterScope();
+    PingSessionModel sessionModel = inj.getInstance(PingSessionModel.class);
+    sessionModel.getNeeded()[targetHops + 1].set(wanted);
+    sessionModel.setAcceptGuid(askGuid);
+    activeSession.exitScope();
+    activeSessionIdentity.exitScope();
+
+    Set<SessionModel> sessions = Sets.newHashSet(activeSession);
+    when(sessionManager.getCurrentSessions(any(Protocol.class))).thenReturn(sessions);
+
+    SocketAddress remoteAddress = new InetSocketAddress(InetAddresses.forString("5.5.5.5"), 1613);
+    SessionModel pongSesson = createSession(inj, remoteAddress, gnutellaConfig);
+    NetworkIdentity remoteIdentity = pongSesson.getIdentity();
+
+    byte[] guid = GUID.generateGuid();
+    MessageHeader header =
+        new MessageHeader(guid, MessageHeader.F_PING_REPLY, (byte) 1, (byte) targetHops);
+    PongBody pongBody = new PongBody(createAddress("2.43.3.1", 4), 3, 32, null);
+
+    remoteIdentity.enterScope();
+    pongSesson.enterScope();
+    PingModule module = inj.getInstance(PingModule.class);
+    module.messageReceived(new MessageReceivedEvent(null, new GnutellaMessage(header, pongBody)));
+    pongSesson.exitScope();
+    remoteIdentity.exitScope();
+
+    MessageHeader forwardedHeader =
+        new MessageHeader(askGuid, MessageHeader.F_PING_REPLY, (byte) 1, (byte) (targetHops + 1));
+
+    verify(writer).write(eq(activeSessionIdentity),
+        eq(new GnutellaMessage(forwardedHeader, pongBody)),
+        eq(ConnectionOptions.EXIT_IF_NO_CONNECTION), eq(HandshakeOptions.EXIT_IF_HANDSHAKING));
   }
 }
