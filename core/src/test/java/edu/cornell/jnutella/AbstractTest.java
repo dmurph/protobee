@@ -3,6 +3,7 @@ package edu.cornell.jnutella;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Set;
 
@@ -12,6 +13,7 @@ import org.junit.After;
 import org.junit.Before;
 
 import com.google.common.collect.Maps;
+import com.google.common.net.InetAddresses;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -91,6 +93,11 @@ public abstract class AbstractTest {
     return config;
   }
 
+  public static GnutellaServantModel initializeMe(Injector inj, int files, int size) {
+    return initializeMe(inj, new InetSocketAddress(InetAddresses.forString("127.0.0.1"), 101),
+        files, size);
+  }
+
   public static GnutellaServantModel initializeMe(Injector inj, SocketAddress address, int files,
       int size) {
     NetworkIdentityManager manager = inj.getInstance(NetworkIdentityManager.class);
@@ -98,8 +105,8 @@ public abstract class AbstractTest {
     me.enterScope();
     GnutellaServantModel servant = inj.getInstance(GnutellaServantModel.class);
     me.exitScope();
-    servant.setFileCount(10);
-    servant.setFileSizeInKB(1001);
+    servant.setFileCount(files);
+    servant.setFileSizeInKB(size);
     manager.setNetworkAddress(me, getGnutellaProtocol(inj), address);
     return servant;
   }
@@ -110,6 +117,10 @@ public abstract class AbstractTest {
 
   public static ProtocolConfig getGnutellaProtocolConfig(Injector inj) {
     return inj.getInstance(Key.get(ProtocolConfig.class, Gnutella.class));
+  }
+
+  public static InetSocketAddress createAddress(String ip, int port) {
+    return new InetSocketAddress(InetAddresses.forString(ip), port);
   }
 
   public static SessionModel createSession(Injector injector, SocketAddress address,

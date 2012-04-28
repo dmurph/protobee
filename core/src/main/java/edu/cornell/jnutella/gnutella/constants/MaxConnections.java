@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.gnutella.modules;
+package edu.cornell.jnutella.gnutella.constants;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -12,4 +12,4 @@ import com.google.inject.BindingAnnotation;
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @BindingAnnotation
-public @interface MaxTTL {}
+public @interface MaxConnections {}

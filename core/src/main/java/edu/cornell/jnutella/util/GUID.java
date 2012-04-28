@@ -110,6 +110,10 @@ public class GUID {
     public String toString(){
       return HexConverter.toHexString( bytes );
     }
+    
+    public static byte[] generateGuid() {
+      return new GUID().getBytes();
+    }
 
     public static class GUIDComparator implements Comparator<GUID>
     {

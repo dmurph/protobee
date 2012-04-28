@@ -26,6 +26,7 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.protocol.ProtocolGuiceModule;
 import edu.cornell.jnutella.session.SessionGuiceModule;
+import edu.cornell.jnutella.stats.StatsGuiceModule;
 import edu.cornell.jnutella.util.ProtocolConfigUtils;
 import edu.cornell.jnutella.util.UtilGuiceModule;
 
@@ -39,6 +40,7 @@ public class JnutellaMainModule extends AbstractModule {
     install(new UtilGuiceModule());
     install(new LogModule());
     install(new ProtocolGuiceModule());
+    install(new StatsGuiceModule());
     install(new SessionGuiceModule());
     install(new GnutellaGuiceModule());
     install(new ExecutorModule(new Provider<Executor>() {

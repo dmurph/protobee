@@ -43,6 +43,12 @@ public class SessionManager {
     }
   }
 
+  public int getCurrentSessionCount(Protocol protocol) {
+    Collection<SessionModel> models = currentSessions.get(protocol);
+    Preconditions.checkArgument(models != null, "Protocol not part of injected set");
+    return models.size();
+  }
+
   public boolean removeCurrentSession(Protocol protocol, SessionModel session) {
     Set<SessionModel> models = currentSessions.get(protocol);
     Preconditions.checkArgument(models != null, "Protocol not part of injected set");
