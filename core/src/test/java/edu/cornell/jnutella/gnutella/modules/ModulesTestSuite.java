@@ -5,5 +5,5 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({AdvancedPongCacheTest.class, PingModuleTest.class})
+@SuiteClasses({AdvancedPongCacheTest.class, PingModuleTests.class})
 public class ModulesTestSuite {}

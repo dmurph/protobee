@@ -3,6 +3,7 @@ package edu.cornell.jnutella.gnutella.modules.ping;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -88,6 +89,16 @@ public class AdvancedPongCache {
     public CacheEntry(PongBody body, NetworkIdentity identity) {
       this.body = body;
       this.identity = identity;
+    }
+    
+    @VisibleForTesting
+    public PongBody getBody() {
+      return body;
+    }
+    
+    @VisibleForTesting
+    public NetworkIdentity getIdentity() {
+      return identity;
     }
   }
 }
