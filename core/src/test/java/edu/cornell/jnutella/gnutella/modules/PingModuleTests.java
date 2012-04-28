@@ -52,10 +52,55 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.SessionManager;
 import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.stats.DropLog;
 import edu.cornell.jnutella.util.Clock;
 import edu.cornell.jnutella.util.GUID;
 
 public class PingModuleTests extends AbstractTest {
+
+  @Test
+  public void testDropOnFastRepeat() {
+    final DropLog dropLog = mock(DropLog.class);
+    final Clock clock = mock(Clock.class);
+    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+
+    final int expireTime = 6000;
+    final long firstAcceptTime = 3000;
+    final long firstTime = firstAcceptTime - 1;
+    Injector inj = getInjector(new AbstractModule() {
+      @Override
+      protected void configure() {
+        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(DropLog.class).toInstance(dropLog);
+        bind(Clock.class).toInstance(clock);
+        bindConstant().annotatedWith(PongExpireTime.class).to(expireTime);
+      }
+    });
+    when(clock.currentTimeMillis()).thenReturn(firstTime);
+
+    ProtocolConfig gnutellaConfig = getGnutellaProtocolConfig(inj);
+    SocketAddress address = createAddress("3.2.4.1", 50);
+    SessionModel session = createSession(inj, address, gnutellaConfig);
+    NetworkIdentity identity = session.getIdentity();
+
+    identity.enterScope();
+    session.enterScope();
+    PingSessionModel pingModel = inj.getInstance(PingSessionModel.class);
+    pingModel.setAcceptTime(firstAcceptTime);
+
+
+    PingModule module = inj.getInstance(PingModule.class);
+
+    GnutellaMessage message =
+        new GnutellaMessage(new MessageHeader(new byte[16], MessageHeader.F_PING, (byte) 1,
+            (byte) 0), null);
+    module.messageReceived(new MessageReceivedEvent(null, message));
+
+    session.exitScope();
+    identity.exitScope();
+
+    verify(dropLog).messageDropped(eq(address), eq(gnutellaConfig.get()), eq(message), any(String.class));
+  }
 
   @Test
   public void testBroadcastOnEmptyCache() {
@@ -193,21 +238,30 @@ public class PingModuleTests extends AbstractTest {
   }
 
   @Test
-  public void testDirectPing() {
+  public void testDirectPingAndAcceptTime() {
     final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
     final SessionManager sessionManager = mock(SessionManager.class);
     final SlotsController slots = mock(SlotsController.class);
+    final Clock clock = mock(Clock.class);
     when(slots.canAcceptNewConnection()).thenReturn(true);
     // so we can accept connections
 
+    final int expireTime = 6000;
+    final long clockTime = 3000;
+    final long afterTime = clockTime + expireTime;
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
         bind(ProtocolMessageWriter.class).toInstance(writer);
         bind(SessionManager.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
+        bind(Clock.class).toInstance(clock);
+        bindConstant().annotatedWith(PongExpireTime.class).to(expireTime);
       }
     });
+
+
+    when(clock.currentTimeMillis()).thenReturn(clockTime);
 
     // no sessions
     ProtocolConfig gnutellaConfig = getGnutellaProtocolConfig(inj);
@@ -224,6 +278,9 @@ public class PingModuleTests extends AbstractTest {
 
     remoteIdentity.enterScope();
     pingSesson.enterScope();
+    PingSessionModel pingModel = inj.getInstance(PingSessionModel.class);
+    pingModel.setAcceptTime(0);
+
     PingModule module = inj.getInstance(PingModule.class);
 
     final byte[] guid = GUID.generateGuid();
@@ -236,6 +293,7 @@ public class PingModuleTests extends AbstractTest {
     pingSesson.exitScope();
     remoteIdentity.exitScope();
 
+    assertEquals(afterTime, pingModel.getAcceptTime());
 
     // TODO add ggep checking when we populate it
     MessageHeader returnHeader =
