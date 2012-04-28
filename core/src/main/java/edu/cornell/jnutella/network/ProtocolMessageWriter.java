@@ -62,7 +62,6 @@ public class ProtocolMessageWriter {
   public ProtocolMessageWriter(Channel channel, NetworkIdentity myIdentity, Descoper descoper,
       ConnectionCreator networkManager, Protocol protocol, Provider<Channel> channelProvider,
       @HandshakeFuture Provider<ChannelFuture> handshakeFuture) {
-    super();
     this.channel = channel;
     this.myIdentity = myIdentity;
     this.descoper = descoper;

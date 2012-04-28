@@ -1,11 +1,9 @@
 package edu.cornell.jnutella.gnutella.modules.ping;
 
 import java.net.InetSocketAddress;
-import java.net.SocketAddress;
 import java.util.List;
 import java.util.Set;
 
-import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
@@ -15,7 +13,6 @@ import com.google.inject.Provider;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.gnutella.Gnutella;
 import edu.cornell.jnutella.gnutella.GnutellaServantModel;
-import edu.cornell.jnutella.gnutella.RequestFilter;
 import edu.cornell.jnutella.gnutella.SlotsController;
 import edu.cornell.jnutella.gnutella.constants.MaxTTL;
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
@@ -52,7 +49,6 @@ import edu.cornell.jnutella.util.GUID;
 @SessionScope
 public class PingModule implements ProtocolModule {
 
-  private final RequestFilter filter;
   private final NetworkIdentityManager identityManager;
   private final IdentityTagManager tagManager;
   private final SessionManager sessionManager;
@@ -78,15 +74,14 @@ public class PingModule implements ProtocolModule {
   private final DropLog dropLog;
 
   @Inject
-  public PingModule(RequestFilter filter, NetworkIdentityManager identityManager,
-      IdentityTagManager tagManager, NetworkIdentity identity,
-      ProtocolMessageWriter messageDispatcher, MessageBodyFactory bodyFactory,
-      MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella,
-      @MaxPongsSent int threshold, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
-      PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock, Descoper descoper,
-      Provider<GnutellaServantModel> servantProvider, SessionManager sessionManager,
-      SlotsController slots, DropLog dropLog, Provider<PingSessionModel> pingModelProvider) {
-    this.filter = filter;
+  public PingModule(NetworkIdentityManager identityManager, IdentityTagManager tagManager,
+      NetworkIdentity identity, ProtocolMessageWriter messageDispatcher,
+      MessageBodyFactory bodyFactory, MessageHeader.Factory headerFactory,
+      @Gnutella Protocol gnutella, @MaxPongsSent int threshold, @MaxTTL int maxTtl,
+      @PongExpireTime int expireTime, PingSessionModel pingModel, AdvancedPongCache pongCache,
+      Clock clock, Descoper descoper, Provider<GnutellaServantModel> servantProvider,
+      SessionManager sessionManager, SlotsController slots, DropLog dropLog,
+      Provider<PingSessionModel> pingModelProvider) {
     this.identityManager = identityManager;
     this.tagManager = tagManager;
     this.identity = identity;
@@ -136,7 +131,7 @@ public class PingModule implements ProtocolModule {
     // throttling
     long now = clock.currentTimeMillis();
     if (now < pingModel.getAcceptTime()) {
-      dropLog.messageDropped(event.getContext().getChannel().getRemoteAddress(), gnutella, message,
+      dropLog.messageDropped(identity.getAddress(gnutella), gnutella, message,
           "Ping was sent before min expire time after last ping");
       return;
     }
