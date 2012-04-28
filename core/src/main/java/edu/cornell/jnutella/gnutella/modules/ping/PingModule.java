@@ -30,6 +30,8 @@ import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.network.ProtocolMessageWriter;
+import edu.cornell.jnutella.network.ProtocolMessageWriter.ConnectionOptions;
+import edu.cornell.jnutella.network.ProtocolMessageWriter.HandshakeOptions;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.headers.CompatabilityHeader;
 import edu.cornell.jnutella.protocol.headers.Headers;
@@ -64,6 +66,7 @@ public class PingModule implements ProtocolModule {
   private final Descoper descoper;
 
   private final Provider<GnutellaServantModel> servantModelProvider;
+  private final Provider<PingSessionModel> pingModelProvider;
 
   private final Clock clock;
   private final AdvancedPongCache pongCache;
@@ -82,7 +85,7 @@ public class PingModule implements ProtocolModule {
       @MaxPongsSent int threshold, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
       PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock, Descoper descoper,
       Provider<GnutellaServantModel> servantProvider, SessionManager sessionManager,
-      SlotsController slots, DropLog dropLog) {
+      SlotsController slots, DropLog dropLog, Provider<PingSessionModel> pingModelProvider) {
     this.filter = filter;
     this.identityManager = identityManager;
     this.tagManager = tagManager;
@@ -102,6 +105,7 @@ public class PingModule implements ProtocolModule {
     this.sessionManager = sessionManager;
     this.slots = slots;
     this.dropLog = dropLog;
+    this.pingModelProvider = pingModelProvider;
   }
 
   @Subscribe
@@ -266,12 +270,30 @@ public class PingModule implements ProtocolModule {
       pongCache.addToReservePongs(body);
     }
 
+    byte hops = (byte) (header.getHops() + 1);
     synchronized (pongCache.getCacheLock()) {
-      pongCache.getCache()[header.getHops() + 1].add(new CacheEntry(body, identity));
+      pongCache.getCache()[hops].add(new CacheEntry(body, identity));
     }
 
-    // TODO: demultiplex, need to see all current connections
+    Set<SessionModel> sessions = sessionManager.getCurrentSessions(gnutella);
+    for (SessionModel sessionModel : sessions) {
+      if (sessionModel.getIdentity() == identity) {
+        continue;
+      }
+      descoper.descope();
+      sessionModel.enterScope();
+      PingSessionModel pingModel = pingModelProvider.get();
+      if (pingModel.getNeeded()[hops].get() > 0) {
+        pingModel.getNeeded()[hops].decrementAndGet();
+        GnutellaMessage newMessage =
+            new GnutellaMessage(headerFactory.create(pingModel.getAcceptGuid(),
+                MessageHeader.F_PING_REPLY, (byte) 1, hops), body);
+        messageDispatcher.write(sessionModel.getIdentity(), newMessage,
+            ConnectionOptions.EXIT_IF_NO_CONNECTION, HandshakeOptions.EXIT_IF_HANDSHAKING);
+      }
+      sessionModel.exitScope();
+      descoper.rescope();
+    }
   }
-
 
 }
