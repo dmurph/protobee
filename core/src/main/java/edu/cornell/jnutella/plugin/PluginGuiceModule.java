@@ -7,6 +7,7 @@ import com.google.inject.binder.ScopedBindingBuilder;
 import com.google.inject.multibindings.Multibinder;
 
 import edu.cornell.jnutella.gnutella.Gnutella;
+import edu.cornell.jnutella.gnutella.filters.GnutellaPreFilter;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.modules.ProtocolModule;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
@@ -21,6 +22,7 @@ public abstract class PluginGuiceModule extends AbstractModule {
 
   private Multibinder<ProtocolConfig> configBinder = null;
   private Multibinder<ProtocolModule> gnutellaModules = null;
+  private Multibinder<GnutellaPreFilter> prefilter = null;
 
   public Multibinder<ProtocolConfig> getConfigBinder() {
     if (configBinder == null) {
@@ -36,6 +38,13 @@ public abstract class PluginGuiceModule extends AbstractModule {
     return gnutellaModules;
   }
 
+  public Multibinder<GnutellaPreFilter> getPrefilterBinder() {
+    if (prefilter == null) {
+      prefilter = Multibinder.newSetBinder(binder(), GnutellaPreFilter.class);
+    }
+    return prefilter;
+  }
+
   public void addProtocolConfig(Class<? extends ProtocolConfig> klass) {
     getConfigBinder().addBinding().to(klass).in(Singleton.class);
   }
@@ -46,6 +55,10 @@ public abstract class PluginGuiceModule extends AbstractModule {
 
   public <T extends ProtocolModule> ScopedBindingBuilder addGnutellaModule(Class<T> klass) {
     return getGnutellaModulesBinder().addBinding().to(klass);
+  }
+
+  public <T extends GnutellaPreFilter> ScopedBindingBuilder addPreFilter(Class<T> klass) {
+    return getPrefilterBinder().addBinding().to(klass);
   }
 
   @VisibleForTesting

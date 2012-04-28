@@ -5,6 +5,7 @@ import java.net.SocketAddress;
 import java.util.List;
 import java.util.Set;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Lists;
 import com.google.common.eventbus.Subscribe;
@@ -15,11 +16,12 @@ import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.gnutella.Gnutella;
 import edu.cornell.jnutella.gnutella.GnutellaServantModel;
 import edu.cornell.jnutella.gnutella.RequestFilter;
+import edu.cornell.jnutella.gnutella.SlotsController;
+import edu.cornell.jnutella.gnutella.constants.MaxTTL;
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.PongBody;
-import edu.cornell.jnutella.gnutella.modules.MaxTTL;
 import edu.cornell.jnutella.gnutella.modules.ping.AdvancedPongCache.CacheEntry;
 import edu.cornell.jnutella.gnutella.session.MessageReceivedEvent;
 import edu.cornell.jnutella.guice.SessionScope;
@@ -33,10 +35,17 @@ import edu.cornell.jnutella.protocol.headers.CompatabilityHeader;
 import edu.cornell.jnutella.protocol.headers.Headers;
 import edu.cornell.jnutella.session.SessionManager;
 import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.stats.DropLog;
 import edu.cornell.jnutella.util.Clock;
 import edu.cornell.jnutella.util.Descoper;
 import edu.cornell.jnutella.util.GUID;
 
+/**
+ * Module for handling ping and pong messages. Preconditions: all messages are valid messages. We
+ * are in our respective session and identity scopes on injection
+ * 
+ * @author Daniel
+ */
 @Headers(required = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requested = {})
 @SessionScope
 public class PingModule implements ProtocolModule {
@@ -45,6 +54,7 @@ public class PingModule implements ProtocolModule {
   private final NetworkIdentityManager identityManager;
   private final IdentityTagManager tagManager;
   private final SessionManager sessionManager;
+  private final SlotsController slots;
 
   private final NetworkIdentity identity;
   private final ProtocolMessageWriter messageDispatcher;
@@ -62,6 +72,8 @@ public class PingModule implements ProtocolModule {
   private final int expireTime;
   private final int maxTtl;
 
+  private final DropLog dropLog;
+
   @Inject
   public PingModule(RequestFilter filter, NetworkIdentityManager identityManager,
       IdentityTagManager tagManager, NetworkIdentity identity,
@@ -69,7 +81,8 @@ public class PingModule implements ProtocolModule {
       MessageHeader.Factory headerFactory, @Gnutella Protocol gnutella, PongCache cache,
       @MaxPongsSent int threshold, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
       PingSessionModel pingModel, AdvancedPongCache pongCache, Clock clock, Descoper descoper,
-      Provider<GnutellaServantModel> servantProvider, SessionManager sessionManager) {
+      Provider<GnutellaServantModel> servantProvider, SessionManager sessionManager,
+      SlotsController slots, DropLog dropLog) {
     this.filter = filter;
     this.identityManager = identityManager;
     this.tagManager = tagManager;
@@ -87,6 +100,8 @@ public class PingModule implements ProtocolModule {
     this.descoper = descoper;
     this.servantModelProvider = servantProvider;
     this.sessionManager = sessionManager;
+    this.slots = slots;
+    this.dropLog = dropLog;
   }
 
   @Subscribe
@@ -107,7 +122,7 @@ public class PingModule implements ProtocolModule {
     return new GnutellaMessage(header, bodyFactory.createPingMessage(null));
   }
 
-  public void pingMessageRecieved(MessageReceivedEvent event) {
+  private void pingMessageRecieved(MessageReceivedEvent event) {
     final GnutellaMessage message = event.getMessage();
     final MessageHeader header = message.getHeader();
 
@@ -117,20 +132,24 @@ public class PingModule implements ProtocolModule {
     // throttling
     long now = clock.currentTimeMillis();
     if (now < pingModel.getAcceptTime()) {
-      // TODO: record drop
+      dropLog.messageDropped(event.getContext().getChannel().getRemoteAddress(), gnutella, message,
+          "Ping was sent before min expire time after last ping");
       return;
     }
     pingModel.setAcceptTime(now + expireTime);
 
     // responding
 
-    if (pongCache.needsRebroadcasting()) {
-      // get all current sessions, send pings to them with max ttl
-      Set<SessionModel> sessions = sessionManager.getCurrentSessions(gnutella);
-      for (SessionModel session : sessions) {
-        MessageHeader newHeader =
-            headerFactory.create(new GUID().getBytes(), MessageHeader.F_PING, (byte) maxTtl);
-        messageDispatcher.write(session.getIdentity(), createMePing(newHeader));
+    if (inTtl > 1) {
+      // only need other pongs if our ttl > 1
+      if (pongCache.needsRebroadcasting()) {
+        // get all current sessions, send pings to them with max ttl
+        Set<SessionModel> sessions = sessionManager.getCurrentSessions(gnutella);
+        for (SessionModel session : sessions) {
+          MessageHeader newHeader =
+              headerFactory.create(new GUID().getBytes(), MessageHeader.F_PING, (byte) maxTtl);
+          messageDispatcher.write(session.getIdentity(), createMePing(newHeader));
+        }
       }
     }
 
@@ -167,18 +186,22 @@ public class PingModule implements ProtocolModule {
     }
 
     // setup demultiplexing table
+    // we should only setting non-zero values when ttl is > 1
     pingModel.setAcceptGuid(header.getGuid());
     for (int i = 1; i <= maxTtl; i++) {
       int needed = 0;
-      if (i <= header.getTtl()) {
-        needed = maxPongsSent / header.getTtl();
+      // we do < because we need to 'shift' what the remote wants by one, to remove
+      // ttl = 1, which means just us.
+      if (i < header.getTtl()) {
+        // since i starts at one, header ttl has to be at least 2 here
+        needed = maxPongsSent / (header.getTtl() - 1);
       }
       pingModel.getNeeded()[i].set(needed);
     }
 
     byte newTtl = (byte) (inHops + 1);
-    // dispatch our pong TODO: IF WE CAN ACCEPT CONNECTIONS
-    {
+    // dispatch our pong
+    if (slots.canAcceptNewConnection()) {
 
       NetworkIdentity me = identityManager.getMe();
       try {
@@ -244,7 +267,7 @@ public class PingModule implements ProtocolModule {
     }
 
     synchronized (pongCache.getCacheLock()) {
-      pongCache.getCache()[header.getHops()].add(new CacheEntry(body, identity));
+      pongCache.getCache()[header.getHops() + 1].add(new CacheEntry(body, identity));
     }
 
     // TODO: demultiplex, need to see all current connections

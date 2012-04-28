@@ -4,7 +4,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import com.google.inject.Inject;
 
-import edu.cornell.jnutella.gnutella.modules.MaxTTL;
+import edu.cornell.jnutella.gnutella.constants.MaxTTL;
 import edu.cornell.jnutella.guice.SessionScope;
 
 @SessionScope
@@ -18,7 +18,7 @@ public class PingSessionModel {
   public PingSessionModel(@MaxTTL int maxTtl) {
     acceptTime = 0;
     acceptGuid = null;
-    needed = new AtomicInteger[maxTtl];
+    needed = new AtomicInteger[maxTtl + 1];
     for (int i = 0; i < needed.length; i++) {
       needed[i] = new AtomicInteger(0);
     }

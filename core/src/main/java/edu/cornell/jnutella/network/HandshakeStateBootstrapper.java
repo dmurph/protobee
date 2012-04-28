@@ -45,6 +45,9 @@ public class HandshakeStateBootstrapper {
   private final Provider<SessionModelFactory> sessionFactory;
   private final Provider<ProtocolSessionModel> protocolSession;
 
+  private final Provider<LoggingHandler> loggingHandler;
+  private final Provider<CleanupOnDisconnectHandler> cleanupHandler;
+
   private final Provider<EventBus> eventBus;
 
   @Inject
@@ -53,7 +56,8 @@ public class HandshakeStateBootstrapper {
       Provider<SessionUpstreamHandshaker> upShakerProvider,
       Provider<SessionDownstreamHandshaker> downShakerProvider,
       ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory, Provider<EventBus> eventBus,
-      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolSessionModel> protocolSession) {
+      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolSessionModel> protocolSession,
+      Provider<LoggingHandler> loggingHandler, Provider<CleanupOnDisconnectHandler> cleanupHandler) {
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;
     this.upShakerProvider = upShakerProvider;
@@ -62,10 +66,12 @@ public class HandshakeStateBootstrapper {
     this.eventBus = eventBus;
     this.sessionFactory = sessionFactory;
     this.protocolSession = protocolSession;
+    this.loggingHandler = loggingHandler;
+    this.cleanupHandler = cleanupHandler;
   }
 
-  /**.
-   * Precondition: not in any scope
+  /**
+   * . Precondition: not in any scope
    * 
    * @param protocolConfig
    * @param identity
@@ -79,7 +85,7 @@ public class HandshakeStateBootstrapper {
     Preconditions.checkNotNull(protocolConfig);
     Preconditions.checkNotNull(identity);
     Preconditions.checkNotNull(remoteAddress);
-    
+
     Protocol protocol = protocolConfig.get();
 
     SessionModel session = null;
@@ -117,14 +123,19 @@ public class HandshakeStateBootstrapper {
       ProtocolSessionBootstrapper protocolBootstrap = protocolBootstrapperFactory.create(handlers);
       session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class), protocolBootstrap);
 
-      handlers[0] = decoderFactory.get();
-      handlers[1] = encoderFactory.get();
-      handlers[2] = upShakerProvider.get();
-      handlers[3] = downShakerProvider.get();
+      handlers[0] = encoderFactory.get();
+      handlers[1] = decoderFactory.get();
+      handlers[2] = downShakerProvider.get();
+      handlers[3] = upShakerProvider.get();
 
       for (ChannelHandler handler : handlers) {
         pipeline.addLast(handler.toString(), handler);
       }
+      CleanupOnDisconnectHandler cleanup = cleanupHandler.get();
+      LoggingHandler logging = loggingHandler.get();
+      pipeline.addLast(cleanup.toString(), cleanup);
+      pipeline.addLast(logging.toString(), logging);
+
     } finally {
       if (session != null) {
         session.exitScope();

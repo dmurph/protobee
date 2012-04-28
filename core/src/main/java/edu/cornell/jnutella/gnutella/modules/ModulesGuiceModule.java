@@ -2,6 +2,7 @@ package edu.cornell.jnutella.gnutella.modules;
 
 import com.google.inject.Singleton;
 
+import edu.cornell.jnutella.gnutella.constants.MaxTTL;
 import edu.cornell.jnutella.gnutella.modules.handshake.HeadersModule;
 import edu.cornell.jnutella.gnutella.modules.ping.MaxPongsSent;
 import edu.cornell.jnutella.gnutella.modules.ping.PRSPongCache;
@@ -22,6 +23,5 @@ public class ModulesGuiceModule extends PluginGuiceModule {
 
     bindConstant().annotatedWith(PongExpireTime.class).to(3 * 1000);
     bindConstant().annotatedWith(MaxPongsSent.class).to(10);
-    bindConstant().annotatedWith(MaxTTL.class).to(8);
   }
 }

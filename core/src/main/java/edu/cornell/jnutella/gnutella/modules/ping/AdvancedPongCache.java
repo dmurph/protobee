@@ -4,12 +4,13 @@ import java.util.List;
 import java.util.Set;
 
 import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
+import edu.cornell.jnutella.gnutella.constants.MaxTTL;
 import edu.cornell.jnutella.gnutella.messages.PongBody;
-import edu.cornell.jnutella.gnutella.modules.MaxTTL;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.util.Clock;
 
@@ -26,13 +27,15 @@ public class AdvancedPongCache {
 
   @SuppressWarnings("unchecked")
   @Inject
-  public AdvancedPongCache(Clock clock, @MaxTTL int maxTtl, @PongExpireTime int expireTime,
-      @MaxPongsSent int maxSent) {
+  public AdvancedPongCache(Clock clock, @MaxTTL int maxTtl, @PongExpireTime int expireTime) {
     this.cache = (List<CacheEntry>[]) new List[maxTtl + 1];
+    for (int i = 0; i < cache.length; i++) {
+      cache[i] = Lists.newArrayList();
+    }
     this.reservePongs = Sets.newHashSet();
     this.clock = clock;
     this.expireTime = expireTime;
-    this.nextExpire = 0;
+    this.nextExpire = expireTime;
   }
 
   public Object getCacheLock() {
@@ -82,7 +85,7 @@ public class AdvancedPongCache {
     final PongBody body;
     final NetworkIdentity identity;
 
-    CacheEntry(PongBody body, NetworkIdentity identity) {
+    public CacheEntry(PongBody body, NetworkIdentity identity) {
       this.body = body;
       this.identity = identity;
     }
