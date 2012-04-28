@@ -40,6 +40,14 @@ import edu.cornell.jnutella.util.Descoper;
 @SessionScope
 public class ProtocolMessageWriter {
 
+  public static enum ConnectionOptions {
+    CAN_CREATE_CONNECTION, EXIT_IF_NO_CONNECTION
+  }
+
+  public static enum HandshakeOptions {
+    WAIT_FOR_HANDSHAKE, EXIT_IF_HANDSHAKING
+  }
+
   @InjectLogger
   private Logger log;
   private final Channel channel;
@@ -77,13 +85,30 @@ public class ProtocolMessageWriter {
 
   /**
    * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Waits for a pending handshake, and makes a new connnection if needed.
+   * session. Defaults with options {@link ConnectionOptions#CAN_CREATE_CONNECTION} and
+   * {@link HandshakeOptions#WAIT_FOR_HANDSHAKE}.
    * 
    * @param identity
    * @param message
    * @return
    */
   public ChannelFuture write(NetworkIdentity identity, final Object message) {
+    return write(identity, message, ConnectionOptions.CAN_CREATE_CONNECTION,
+        HandshakeOptions.WAIT_FOR_HANDSHAKE);
+  }
+
+  /**
+   * Writes the object to the given identity's session, using the the protocol of this object's
+   * session. Uses connection and handshake options
+   * 
+   * @param identity
+   * @param message
+   * @param connectionOptions
+   * @param handshakeOptions
+   * @return
+   */
+  public ChannelFuture write(NetworkIdentity identity, final Object message,
+      ConnectionOptions connectionOptions, HandshakeOptions handshakeOptions) {
     if (myIdentity == identity) {
       return write(message);
     }
@@ -102,6 +127,14 @@ public class ProtocolMessageWriter {
           messageFuture = write(channel, message);
         } else {
           messageFuture = new DefaultChannelFuture(channel, false);
+          if (handshakeOptions == HandshakeOptions.EXIT_IF_HANDSHAKING) {
+            log.info("In handshake state, exiting");
+            // TODO should we have a throwable here?
+            messageFuture.setFailure(null);
+            session.exitScope();
+            descoper.rescope();
+            return messageFuture;
+          }
           ChannelFuture handshakeFuture = handshakeFutureProvider.get();
           handshakeFuture.addListener(new ChannelFutureListener() {
             @Override
@@ -135,6 +168,13 @@ public class ProtocolMessageWriter {
 
       return messageFuture;
     }
+    final ChannelFuture messageFuture = new DefaultChannelFuture(channel, false);
+    if (connectionOptions == ConnectionOptions.EXIT_IF_NO_CONNECTION) {
+      log.info("No current connection, exiting");
+      // TODO should we have a throwable here?
+      messageFuture.setFailure(null);
+      return messageFuture;
+    }
 
     // we have to make a new connection
     SocketAddress address = identity.getAddress(protocol);
@@ -148,7 +188,7 @@ public class ProtocolMessageWriter {
     descoper.rescope();
 
     final Channel channel = handshakeFuture.getChannel();
-    final ChannelFuture messageFuture = new DefaultChannelFuture(channel, false);
+
     handshakeFuture.addListener(new ChannelFutureListener() {
 
       @Override
