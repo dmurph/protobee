@@ -244,7 +244,7 @@ public class PingModule implements ProtocolModule {
               continue;
             }
             pongs.add(new GnutellaMessage(new MessageHeader(header.getGuid(),
-                MessageHeader.F_PING_REPLY, (byte) 1, (byte) (ttl - 1)), entry.body));
+                MessageHeader.F_PING_REPLY, (byte) 1, (byte) ttl), entry.body));
 
             needed = pingModel.getNeeded()[ttl].decrementAndGet();
           }

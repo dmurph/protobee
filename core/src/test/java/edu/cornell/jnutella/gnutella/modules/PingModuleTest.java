@@ -12,11 +12,15 @@ import static org.mockito.Mockito.when;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Arrays;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
 import org.mockito.ArgumentMatcher;
 
+import com.google.common.collect.Lists;
+import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
 import com.google.common.net.InetAddresses;
 import com.google.inject.AbstractModule;
@@ -31,9 +35,11 @@ import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.PingBody;
 import edu.cornell.jnutella.gnutella.messages.PongBody;
+import edu.cornell.jnutella.gnutella.modules.ping.AdvancedPongCache;
 import edu.cornell.jnutella.gnutella.modules.ping.MaxPongsSent;
 import edu.cornell.jnutella.gnutella.modules.ping.PingModule;
 import edu.cornell.jnutella.gnutella.modules.ping.PingSessionModel;
+import edu.cornell.jnutella.gnutella.modules.ping.PongExpireTime;
 import edu.cornell.jnutella.gnutella.session.MessageReceivedEvent;
 import edu.cornell.jnutella.identity.IdentityTagManager;
 import edu.cornell.jnutella.identity.NetworkIdentity;
@@ -43,6 +49,7 @@ import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 import edu.cornell.jnutella.session.SessionManager;
 import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.util.Clock;
 import edu.cornell.jnutella.util.GUID;
 
 public class PingModuleTest extends AbstractTest {
@@ -234,7 +241,7 @@ public class PingModuleTest extends AbstractTest {
 
     verify(writer).write(eq(new GnutellaMessage(returnHeader, returnBody)));
   }
-  
+
   @Test
   public void testNoDirectPingWhenNoSlots() {
     final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
@@ -375,29 +382,71 @@ public class PingModuleTest extends AbstractTest {
     final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
     final SessionManager sessionManager = mock(SessionManager.class);
     final SlotsController slots = mock(SlotsController.class);
+    final Clock clock = mock(Clock.class);
+
     when(slots.canAcceptNewConnection()).thenReturn(false);
     // so we CANNOT accept connections
 
+    final int pongExpireTime = 1000;
+    final int maxTtl = 6;
+    final int maxPongs = 15;
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
         bind(ProtocolMessageWriter.class).toInstance(writer);
         bind(SessionManager.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
+        bind(Clock.class).toInstance(clock);
+        bindConstant().annotatedWith(PongExpireTime.class).to(pongExpireTime);
+        bindConstant().annotatedWith(MaxTTL.class).to(maxTtl);
+        bindConstant().annotatedWith(MaxPongsSent.class).to(maxPongs);
       }
     });
+    // so we don't expire the cache
+    when(clock.currentTimeMillis()).thenReturn(500l);
 
     // no sessions
     ProtocolConfig gnutellaConfig = getGnutellaProtocolConfig(inj);
-    Set<SessionModel> sessions = Sets.newHashSet();
-    when(sessionManager.getCurrentSessions(any(Protocol.class))).thenReturn(sessions);
+    when(sessionManager.getCurrentSessions(any(Protocol.class))).thenReturn(
+        Sets.<SessionModel>newHashSet());
 
 
-    SocketAddress remoteAddress = new InetSocketAddress(InetAddresses.forString("1.2.3.6"), 1613);
+    SocketAddress remoteAddress = new InetSocketAddress(InetAddresses.forString("5.5.5.5"), 1613);
     SessionModel pingSesson = createSession(inj, remoteAddress, gnutellaConfig);
     NetworkIdentity remoteIdentity = pingSesson.getIdentity();
 
-    SocketAddress address = createAddress("1.54.2.3", 8182);
+    // to quickly overview this:
+    // we are putting pongs in the cache, and sometimes using the requesting identity (when j == 1)
+    // later, we check to make sure that
+    // 1. we have used only the pongs in the cache that we 'needed'
+    // 2. we ignore pongs that come from the requesting identity
+    // 3. when we don't have enough pongs in the cache, needed array is populated correctly
+
+    AdvancedPongCache cache = inj.getInstance(AdvancedPongCache.class);
+    Map<Integer, List<SessionModel>> ttlToSessions = Maps.newHashMap();
+    for (int ttlNum = 1; ttlNum < maxTtl; ttlNum++) {
+      List<SessionModel> sessions = Lists.newArrayList();
+      ttlToSessions.put(ttlNum, sessions);
+      for (int j = 1; j <= ttlNum; j++) {
+        SessionModel session;
+        SocketAddress address;
+        if (j == 1) {
+          address = remoteAddress;
+          session = pingSesson;
+        } else {
+          address = createAddress("1.55.5." + j * ttlNum, j + 100);
+          session = createSession(inj, address, gnutellaConfig);
+        }
+        sessions.add(session);
+        GGEP ggep = new GGEP();
+        ggep.put("test", j);
+        PongBody pong = new PongBody(address, j, j * ttlNum + 1, ggep);
+        cache.getCache()[ttlNum].add(new AdvancedPongCache.CacheEntry(pong, session.getIdentity()));
+      }
+    }
+
+
+    SocketAddress address = createAddress("127.0.0.1", 8182);
     initializeMe(inj, address, 5, 1001);
 
     remoteIdentity.enterScope();
@@ -406,14 +455,47 @@ public class PingModuleTest extends AbstractTest {
 
     final byte[] guid = GUID.generateGuid();
     // send a direct ping, with hops = 0 and ttl = 1
-    MessageHeader header = new MessageHeader(guid, MessageHeader.F_PING, (byte) 1, (byte) 0);
+    MessageHeader header = new MessageHeader(guid, MessageHeader.F_PING, (byte) maxTtl, (byte) 0);
     PingBody ping = new PingBody(null);
 
     module.messageReceived(new MessageReceivedEvent(null, new GnutellaMessage(header, ping)));
 
+    PingSessionModel pingSession = inj.getInstance(PingSessionModel.class);
     pingSesson.exitScope();
     remoteIdentity.exitScope();
 
-    verify(writer, never()).write(any(GnutellaMessage.class));
+    int pongsPerGroup = maxPongs / (header.getTtl() - 1);
+
+    for (int ttlNum : ttlToSessions.keySet()) {
+      MessageHeader responseHeader =
+          new MessageHeader(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1, (byte) (ttlNum));
+      int needed = pongsPerGroup;
+      List<SessionModel> sessions = ttlToSessions.get(ttlNum);
+
+      int sent = 0;
+      for (int j = 1; j <= maxTtl; j++) {
+
+        SocketAddress pongAddress;
+        if (j == 1) {
+          pongAddress = remoteAddress;
+        } else {
+          pongAddress = createAddress("1.55.5." + j * ttlNum, j + 100);
+        }
+        GGEP ggep = new GGEP();
+        ggep.put("test", j);
+        PongBody pong = new PongBody(pongAddress, j, j * ttlNum + 1, ggep);
+
+        GnutellaMessage message = new GnutellaMessage(responseHeader, pong);
+        if (j <= sessions.size() && sent < pongsPerGroup
+            && sessions.get(j - 1).getIdentity() != remoteIdentity) {
+          verify(writer).write(eq(message));
+          needed--;
+          sent++;
+        } else {
+          verify(writer, never()).write(eq(message));
+        }
+      }
+      assertEquals(needed, pingSession.getNeeded()[ttlNum].get());
+    }
   }
 }
