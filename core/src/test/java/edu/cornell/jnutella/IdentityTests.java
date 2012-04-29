@@ -139,7 +139,7 @@ public class IdentityTests extends AbstractTest {
     SocketAddress address = new InetSocketAddress(80);
     NetworkIdentity identity = manager.getNetworkIdentityWithNewConnection(protocol, address);
 
-    assertEquals(address, identity.getAddress(protocol));
+    assertEquals(address, identity.getSendingAddress(protocol));
   }
 
   public void testErrorOnSameAddress() {
@@ -174,7 +174,8 @@ public class IdentityTests extends AbstractTest {
 
     NetworkIdentityManager manager = inj.getInstance(NetworkIdentityManager.class);
     SocketAddress address = new InetSocketAddress(80);
-    manager.getNetworkIdentityWithNewConnection(protocol, address);
+    NetworkIdentity identity = manager.getNetworkIdentityWithNewConnection(protocol, address);
+    createSession(identity, inj, config);
 
     SocketAddress address2 = new InetSocketAddress(80);
     boolean caught = false;

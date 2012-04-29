@@ -79,7 +79,7 @@ public class ProtocolMessageWriter {
    */
   public ChannelFuture write(Object message) {
     Preconditions.checkNotNull(message);
-    return write(channel, message);
+    return write(channel, message, myIdentity.getListeningAddress(protocol));
   }
 
   /**
@@ -106,24 +106,24 @@ public class ProtocolMessageWriter {
    * @param handshakeOptions
    * @return
    */
-  public ChannelFuture write(NetworkIdentity identity, final Object message,
+  public ChannelFuture write(final NetworkIdentity identity, final Object message,
       ConnectionOptions connectionOptions, HandshakeOptions handshakeOptions) {
     if (myIdentity == identity) {
       return write(message);
     }
+    ChannelFuture messageFuture = null;
     if (identity.hasCurrentSession(protocol)) {
       log.debug("Current session already running for identity '" + identity
           + "', dispatching in that session.");
       SessionModel session = identity.getCurrentSession(protocol);
 
-      final ChannelFuture messageFuture;
       try {
         descoper.descope();
         session.enterScope();
         final Channel channel = channelProvider.get();
 
         if (session.getSessionState() == SessionState.MESSAGES) {
-          messageFuture = write(channel, message);
+          messageFuture = write(channel, message, identity.getListeningAddress(protocol));
         } else {
           messageFuture = new DefaultChannelFuture(channel, false);
           if (handshakeOptions == HandshakeOptions.EXIT_IF_HANDSHAKING) {
@@ -135,24 +135,27 @@ public class ProtocolMessageWriter {
             return messageFuture;
           }
           ChannelFuture handshakeFuture = handshakeFutureProvider.get();
+
+          final ChannelFuture finalFuture = messageFuture;
           handshakeFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
               if (!future.isSuccess()) {
-                messageFuture.setFailure(future.getCause());
+                finalFuture.setFailure(future.getCause());
                 return;
               }
 
               if (future.isSuccess()) {
-                ChannelFuture writeFuture = write(channel, message);
+                ChannelFuture writeFuture =
+                    write(channel, message, identity.getListeningAddress(protocol));
                 writeFuture.addListener(new ChannelFutureListener() {
 
                   @Override
                   public void operationComplete(ChannelFuture future) throws Exception {
                     if (future.isSuccess()) {
-                      messageFuture.setSuccess();
+                      finalFuture.setSuccess();
                     } else {
-                      messageFuture.setFailure(future.getCause());
+                      finalFuture.setFailure(future.getCause());
                     }
                   }
                 });
@@ -160,6 +163,12 @@ public class ProtocolMessageWriter {
             }
           });
         }
+      } catch (Exception e) {
+        log.error("Exception while sending " + message + " to " + identity, e);
+        if (messageFuture == null) {
+          messageFuture = new DefaultChannelFuture(channel, false);
+        }
+        messageFuture.setFailure(e);
       } finally {
         session.exitScope();
         descoper.rescope();
@@ -167,7 +176,8 @@ public class ProtocolMessageWriter {
 
       return messageFuture;
     }
-    final ChannelFuture messageFuture = new DefaultChannelFuture(channel, false);
+
+    messageFuture = new DefaultChannelFuture(channel, false);
     if (connectionOptions == ConnectionOptions.EXIT_IF_NO_CONNECTION) {
       log.info("No current connection, exiting");
       // TODO should we have a throwable here?
@@ -176,7 +186,7 @@ public class ProtocolMessageWriter {
     }
 
     // we have to make a new connection
-    SocketAddress address = identity.getAddress(protocol);
+    SocketAddress address = identity.getListeningAddress(protocol);
     if (address == null) {
       log.error("we have no address to connect to for " + protocol + " at " + identity);
       return null;
@@ -188,36 +198,46 @@ public class ProtocolMessageWriter {
 
     final Channel channel = handshakeFuture.getChannel();
 
+    final ChannelFuture finalFuture = messageFuture;
     handshakeFuture.addListener(new ChannelFutureListener() {
 
       @Override
       public void operationComplete(ChannelFuture future) throws Exception {
         if (!future.isSuccess()) {
-          messageFuture.setFailure(future.getCause());
+          finalFuture.setFailure(future.getCause());
           return;
         }
 
-        if (future.isSuccess()) {
-          ChannelFuture writeFuture = write(channel, message);
-          writeFuture.addListener(new ChannelFutureListener() {
+        try {
+          if (future.isSuccess()) {
+            ChannelFuture writeFuture =
+                write(channel, message, identity.getListeningAddress(protocol));
+            writeFuture.addListener(new ChannelFutureListener() {
 
-            @Override
-            public void operationComplete(ChannelFuture future) throws Exception {
-              if (future.isSuccess()) {
-                messageFuture.setSuccess();
-              } else {
-                messageFuture.setFailure(future.getCause());
+              @Override
+              public void operationComplete(ChannelFuture future) throws Exception {
+                if (future.isSuccess()) {
+                  finalFuture.setSuccess();
+                } else {
+                  finalFuture.setFailure(future.getCause());
+                }
               }
-            }
-          });
+            });
+          }
+        } catch (Exception e) {
+          log.error("Exception while writing " + message + " to " + identity, e);
+          finalFuture.setFailure(e);
         }
       }
     });
     return messageFuture;
   }
 
-  protected ChannelFuture write(Channel channel, Object message) {
-    log.debug("Writing object '" + message + "' to channel " + channel);
-    return Channels.write(channel, message);
+  protected ChannelFuture write(Channel channel, Object message, SocketAddress address) {
+    Preconditions.checkNotNull(channel, "Channel address is null");
+    Preconditions.checkNotNull(message, "Message is null");
+    Preconditions.checkNotNull(address, "Remote address is null");
+    log.debug("Writing object '" + message + "' to address " + address);
+    return Channels.write(channel, message, address);
   }
 }

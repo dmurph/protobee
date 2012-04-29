@@ -31,7 +31,7 @@ import edu.cornell.jnutella.session.HandshakeCreator;
 import edu.cornell.jnutella.session.SessionModel;
 
 @Singleton
-public class ConnectionManagerImpl implements ConnectionCreator {
+public class ConnectionCreatorImpl implements ConnectionCreator {
 
   @InjectLogger
   private Logger log;
@@ -45,7 +45,7 @@ public class ConnectionManagerImpl implements ConnectionCreator {
   private final JnutellaChannels channels;
 
   @Inject
-  public ConnectionManagerImpl(Map<Protocol, ProtocolConfig> protocolConfigs,
+  public ConnectionCreatorImpl(Map<Protocol, ProtocolConfig> protocolConfigs,
       Provider<HandshakeCreator> handshakeCreator, NetworkIdentityManager identityManager,
       HandshakeStateBootstrapper handshakeBootstrapper, ChannelFactory channelFactory,
       Provider<Channel> channelProvider, JnutellaChannels channels) {
@@ -72,7 +72,7 @@ public class ConnectionManagerImpl implements ConnectionCreator {
         @Override
         public ChannelPipeline getPipeline() throws Exception {
           ChannelPipeline pipeline = Channels.pipeline();
-          handshakeBootstrapper.bootstrapSession(config, identity, remoteAddress, null, pipeline);
+          handshakeBootstrapper.bootstrapSession(config, identity, null, pipeline);
           return pipeline;
         }
       };

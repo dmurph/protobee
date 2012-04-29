@@ -58,8 +58,7 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
 
     NetworkIdentity identity =
         identityManager.getNetworkIdentityWithNewConnection(protocol, channel.getRemoteAddress());
-    handshakeBootstrap.bootstrapSession(protocolConfig, identity, channel.getRemoteAddress(),
-        channel, pipeline);
+    handshakeBootstrap.bootstrapSession(protocolConfig, identity, channel, pipeline);
 
     // this should be the only handler we added to this pipeline
     pipeline.remove(this);

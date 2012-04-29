@@ -131,7 +131,7 @@ public class PingModule implements ProtocolModule {
     // throttling
     long now = clock.currentTimeMillis();
     if (now < pingModel.getAcceptTime()) {
-      dropLog.messageDropped(identity.getAddress(gnutella), gnutella, message,
+      dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, message,
           "Ping was sent before min expire time after last ping");
       return;
     }
@@ -171,7 +171,7 @@ public class PingModule implements ProtocolModule {
                 headerFactory.create(header.getGuid(), MessageHeader.F_PING_REPLY, (byte) 1,
                     (byte) 1);
             PongBody newBody =
-                bodyFactory.createPongMessage(leaf.getAddress(gnutella),
+                bodyFactory.createPongMessage(leaf.getSendingAddress(gnutella),
                     gnutellaModel.getFileCount(), gnutellaModel.getFileSizeInKB(), null);
             messageDispatcher.write(new GnutellaMessage(newHeader, newBody));
           } finally {
@@ -208,7 +208,7 @@ public class PingModule implements ProtocolModule {
         me.enterScope();
 
         GnutellaServantModel identityModel = servantModelProvider.get();
-        InetSocketAddress address = (InetSocketAddress) me.getAddress(gnutella);
+        InetSocketAddress address = (InetSocketAddress) me.getListeningAddress(gnutella);
         Preconditions.checkState(address != null, "Host address of program must be populated");
 
         MessageHeader newHeader =
