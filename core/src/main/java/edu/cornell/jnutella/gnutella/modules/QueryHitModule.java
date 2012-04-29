@@ -67,7 +67,7 @@ public class QueryHitModule implements ProtocolModule {
     else{
       if (filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl())){
         pushRTManager.addRouting( queryHitBody.getServantID(), qgrPair.getHost() );
-        MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY, (byte) (header.getTtl() - 1), (byte) (header.getHops() - 1));
+        MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY, (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
         messageDispatcher.dispatchMessage(qgrPair.getHost(), new GnutellaMessage(newHeader, event.getMessage().getBody()));
       }
     }
