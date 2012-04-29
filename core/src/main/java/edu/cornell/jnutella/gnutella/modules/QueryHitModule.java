@@ -32,17 +32,20 @@ public class QueryHitModule implements ProtocolModule {
   private final MessageDispatcher messageDispatcher;
   private final NetworkIdentityManager identityManager;
   private final Protocol gnutella;
+  private final MessageHeader.Factory headerFactory;
 
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager, 
                         QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
-                        @Gnutella Protocol gnutella, MessageDispatcher messageDispatcher) {
+                        @Gnutella Protocol gnutella, MessageDispatcher messageDispatcher,
+                        MessageHeader.Factory headerFactory) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.queryHitRTManager = queryHitRTManager;
     this.identityManager = identityManager;
     this.gnutella = gnutella;
     this.messageDispatcher = messageDispatcher;
+    this.headerFactory = headerFactory;
   }
 
   // map message header to an null when originally sending query
@@ -57,14 +60,15 @@ public class QueryHitModule implements ProtocolModule {
     if (!filter.shouldAcceptQueryHitMessage(qgrPair, identityModel.getGuid(), queryHitBody.getServantID(), queryHash )) { return; }
 
     queryHitRTManager.addQueryHit(queryHash);
-    
+
     if (qgrPair.getHost() == identityManager.getMe()){ // if localhost, use locally
 
     }
     else{
       if (filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl())){
         pushRTManager.addRouting( queryHitBody.getServantID(), qgrPair.getHost() );
-        messageDispatcher.dispatchMessage(qgrPair.getHost(), new GnutellaMessage(header, event.getMessage().getBody()));
+        MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY, (byte) (header.getTtl() - 1), (byte) (header.getHops() - 1));
+        messageDispatcher.dispatchMessage(qgrPair.getHost(), new GnutellaMessage(newHeader, event.getMessage().getBody()));
       }
     }
   }

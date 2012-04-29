@@ -26,9 +26,10 @@ public class PushModule implements ProtocolModule {
   private final MessageDispatcher messageDispatcher;
   private final NetworkIdentity identity;
   private final Protocol gnutella;
+  private final MessageHeader.Factory headerFactory;
 
   @Inject
-  public PushModule(RequestFilter filter,
+  public PushModule(RequestFilter filter, MessageHeader.Factory headerFactory,
                     PushRoutingTableManager pushRTManager,
                     @Gnutella Protocol gnutella, MessageDispatcher messageDispatcher,
                     NetworkIdentity identity) {
@@ -37,6 +38,7 @@ public class PushModule implements ProtocolModule {
     this.gnutella = gnutella;
     this.messageDispatcher = messageDispatcher;
     this.identity = identity;
+    this.headerFactory = headerFactory;
   }
 
   // map message header to an null when originally sending query
@@ -51,8 +53,10 @@ public class PushModule implements ProtocolModule {
 
     if (!filter.shouldRoutePushMessage(header.getTtl(), identityModel.getGuid())){ return; }
 
+    MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_PUSH, (byte) (header.getTtl() - 1), (byte) (header.getHops() - 1));
+    
     // route push message
-    messageDispatcher.dispatchMessage(pushRTManager.findRouting(identityModel.getGuid()), new GnutellaMessage(header, event.getMessage().getBody()));
+    messageDispatcher.dispatchMessage(pushRTManager.findRouting(identityModel.getGuid()), new GnutellaMessage(newHeader, event.getMessage().getBody()));
   }
 
   @Subscribe

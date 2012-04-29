@@ -78,8 +78,7 @@ public class QueryHitDecoder implements MessageBodyDecoder<QueryHitBody> {
     Preconditions.checkArgument(buffer.readableBytes() == 16);
     
     byte[] servantID = new byte[16];
-    for (int i = 0; i < 16; i++)
-      servantID[i] = buffer.readByte();
+    buffer.readBytes(servantID);
     
     return bodyFactory.createQueryHitMessage( socketAddress, speed, hitList.toArray(new ResponseBody[hitList.size()]), 
       eqhd.getVendorCode(), eqhd.getFlags(), eqhd.getControls(),

@@ -32,9 +32,7 @@ public class PushDecoder implements MessageBodyDecoder<PushBody> {
     Preconditions.checkState(buffer.readableBytes() >= 26);
     
     byte[] servantID = new byte[16];
-    for (int i = 0; i < 16; i++){
-      servantID[i] = buffer.readByte();
-    }
+    buffer.readBytes(servantID);
     
     long index = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
     
