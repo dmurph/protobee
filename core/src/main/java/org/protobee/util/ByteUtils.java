@@ -4,12 +4,8 @@ import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.UnknownHostException;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.protobee.gnutella.messages.decoding.DecodingException;
 
 
 public class ByteUtils {
@@ -655,26 +651,6 @@ public class ByteUtils {
       default:
         throw new IllegalArgumentException("No bytes specified");
     }
-  }
-  
-  public static InetSocketAddress getInetSocketAddress(byte[] addr, int port) throws DecodingException{
-
-    int a = ByteUtils.ubyte2int(addr[0]);
-    int b = ByteUtils.ubyte2int(addr[1]);
-    int c = ByteUtils.ubyte2int(addr[2]);
-    int d = ByteUtils.ubyte2int(addr[3]);
-    String ip = (a + "." + b + "." + c + "." + d);
-    
-    InetAddress address;
-
-    try {
-      address = InetAddress.getByName(ip);
-    } catch (UnknownHostException e) {
-      throw new DecodingException("Host " + ip + " is unknown.");
-    }
-
-    return new InetSocketAddress(address, port);
-
   }
   
   /**
