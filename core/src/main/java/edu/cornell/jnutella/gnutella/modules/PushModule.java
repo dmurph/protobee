@@ -53,7 +53,7 @@ public class PushModule implements ProtocolModule {
 
     if (!filter.shouldRoutePushMessage(header.getTtl(), identityModel.getGuid())){ return; }
 
-    MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_PUSH, (byte) (header.getTtl() - 1), (byte) (header.getHops() - 1));
+    MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_PUSH, (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
     
     // route push message
     messageDispatcher.dispatchMessage(pushRTManager.findRouting(identityModel.getGuid()), new GnutellaMessage(newHeader, event.getMessage().getBody()));
