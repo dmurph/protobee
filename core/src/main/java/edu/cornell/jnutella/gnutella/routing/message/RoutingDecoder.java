@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.gnutella.routing;
+package edu.cornell.jnutella.gnutella.routing.message;
 
 import java.util.ArrayList;
 import java.util.List;

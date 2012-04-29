@@ -5,6 +5,7 @@ import java.util.Comparator;
 import java.util.Random;
 
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
+import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
 
 /**
  * <p><u>G</u>lobaly <u>U</u>nique <u>ID</u>entifier.</p>
@@ -55,6 +56,18 @@ public class GUID {
         // see http://groups.yahoo.com/group/the_gdf/message/1397
         bytes[8] = (byte) 0xFF;
         bytes[15] = 0;
+    }
+    
+    public GUID(byte[] bytes) throws InvalidMessageException {
+       // to meet current protocol standard set byte 9 to 0xFF and byte 16 to 0
+        // see http://groups.yahoo.com/group/the_gdf/message/1397
+        if (bytes[8] != (byte) 0xFF){
+          throw new InvalidMessageException("to meet current protocol standard, byte 8 must be 0xFF but is "+bytes[8]);
+        }
+        if (bytes[15] != 0){
+          throw new InvalidMessageException("to meet current protocol standard, byte 8 must be 0xFF but is "+bytes[8]);
+        }
+        this.bytes = bytes;
     }
     
     /**

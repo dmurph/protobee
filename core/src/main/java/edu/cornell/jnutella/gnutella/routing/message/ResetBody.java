@@ -1,7 +1,8 @@
-package edu.cornell.jnutella.gnutella.routing;
+package edu.cornell.jnutella.gnutella.routing.message;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+
 
 public class ResetBody extends RoutingBody {
 

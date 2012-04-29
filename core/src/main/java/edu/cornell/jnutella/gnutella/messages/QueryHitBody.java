@@ -11,6 +11,7 @@ import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.extension.GGEP;
+import edu.cornell.jnutella.extension.HUGEExtension;
 import edu.cornell.jnutella.util.GUID;
 import edu.cornell.jnutella.util.VendorCode;
 
@@ -28,6 +29,7 @@ public class QueryHitBody implements MessageBody {
   private byte[] xmlBytes;
   private byte[] privateArea2;
   private GUID servantID;
+  private HUGEExtension huge;
 
   // xmlBytes should be stored in GGEP - set to a constant for now
   @AssistedInject
@@ -68,6 +70,10 @@ public class QueryHitBody implements MessageBody {
 
   }
 
+  public HUGEExtension getHuge(){
+    return huge;
+  }
+  
   public static int getXmlMaxSize() {
     return XML_MAX_SIZE;
   }

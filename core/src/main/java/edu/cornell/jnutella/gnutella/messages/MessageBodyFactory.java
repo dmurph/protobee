@@ -8,8 +8,8 @@ import com.google.inject.assistedinject.Assisted;
 
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.HUGEExtension;
-import edu.cornell.jnutella.gnutella.routing.PatchBody;
-import edu.cornell.jnutella.gnutella.routing.ResetBody;
+import edu.cornell.jnutella.gnutella.routing.message.PatchBody;
+import edu.cornell.jnutella.gnutella.routing.message.ResetBody;
 import edu.cornell.jnutella.util.GUID;
 import edu.cornell.jnutella.util.VendorCode;
 

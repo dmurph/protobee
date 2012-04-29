@@ -1,9 +1,10 @@
-package edu.cornell.jnutella.gnutella.routing;
+package edu.cornell.jnutella.gnutella.routing.message;
 
 import java.util.Arrays;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
+
 
 public class PatchBody extends RoutingBody {
 
