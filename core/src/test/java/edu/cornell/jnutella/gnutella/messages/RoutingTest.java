@@ -12,10 +12,10 @@ import edu.cornell.jnutella.AbstractTest;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
 import edu.cornell.jnutella.gnutella.messages.encoding.EncodingException;
 import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
-import edu.cornell.jnutella.gnutella.routing.PatchBody;
-import edu.cornell.jnutella.gnutella.routing.ResetBody;
-import edu.cornell.jnutella.gnutella.routing.RoutingDecoder;
-import edu.cornell.jnutella.gnutella.routing.RoutingEncoder;
+import edu.cornell.jnutella.gnutella.routing.message.PatchBody;
+import edu.cornell.jnutella.gnutella.routing.message.ResetBody;
+import edu.cornell.jnutella.gnutella.routing.message.RoutingDecoder;
+import edu.cornell.jnutella.gnutella.routing.message.RoutingEncoder;
 
 public class RoutingTest extends AbstractTest {
 

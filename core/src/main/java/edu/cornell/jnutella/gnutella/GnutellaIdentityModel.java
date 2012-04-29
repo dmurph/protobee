@@ -2,9 +2,11 @@ package edu.cornell.jnutella.gnutella;
 
 import java.net.SocketAddress;
 
+import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
 import edu.cornell.jnutella.guice.IdentityScope;
 import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.util.GUID;
 
 @IdentityScope
 public class GnutellaIdentityModel implements ProtocolIdentityModel {
@@ -28,6 +30,10 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
 
   public byte[] getGuid() {
     return guid;
+  }
+  
+  public GUID getGUID() throws InvalidMessageException{
+    return new GUID(guid);
   }
 
   public void setGuid(byte[] guid) {

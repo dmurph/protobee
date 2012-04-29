@@ -1,4 +1,4 @@
-package edu.cornell.jnutella.gnutella.routing;
+package edu.cornell.jnutella.gnutella.routing.message;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 
