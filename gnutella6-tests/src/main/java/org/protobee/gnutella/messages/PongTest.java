@@ -9,9 +9,7 @@ import java.net.UnknownHostException;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
-import org.protobee.AbstractTest;
-import org.protobee.gnutella.messages.MessageBodyFactory;
-import org.protobee.gnutella.messages.PongBody;
+import org.protobee.gnutella.AbstractGnutellaTest;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.PongDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;
@@ -19,7 +17,7 @@ import org.protobee.gnutella.messages.encoding.PongEncoder;
 import org.protobee.util.ByteUtils;
 
 
-public class PongTest extends AbstractTest {
+public class PongTest extends AbstractGnutellaTest {
 
   @Test
   public void testPong() throws DecodingException, EncodingException, UnknownHostException {

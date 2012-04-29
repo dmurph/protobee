@@ -1,11 +1,5 @@
 package org.protobee.protocol;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandler;
-import org.protobee.annotation.LimeChat;
-import org.protobee.session.SessionModel;
-
-import com.google.inject.Provider;
 
 
 //@Protocol(name = "CHAT", version = "0.1", headerRegex = "^CHAT CONNECT/0\\.1$")

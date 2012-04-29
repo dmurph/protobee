@@ -9,6 +9,8 @@
 	<modules>
 		<module>core</module>
 		<module>gnutella6</module>
+		<module>core-tests</module>
+		<module>gnutella6-tests</module>
 	</modules>
 
 	<name>protobee</name>

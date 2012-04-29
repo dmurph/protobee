@@ -8,7 +8,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.protobee.AbstractTest;
-import org.protobee.gnutella.messages.ResponseBody;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.ResponseDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;

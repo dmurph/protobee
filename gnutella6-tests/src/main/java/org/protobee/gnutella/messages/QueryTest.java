@@ -7,16 +7,14 @@ import java.net.UnknownHostException;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
-import org.protobee.AbstractTest;
-import org.protobee.gnutella.messages.MessageBodyFactory;
-import org.protobee.gnutella.messages.QueryBody;
+import org.protobee.gnutella.AbstractGnutellaTest;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.QueryDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;
 import org.protobee.gnutella.messages.encoding.QueryEncoder;
 
 
-public class QueryTest extends AbstractTest {
+public class QueryTest extends AbstractGnutellaTest {
 
   @Test
   public void testQuery() throws DecodingException, EncodingException, UnknownHostException {

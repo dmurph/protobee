@@ -7,7 +7,7 @@ import java.io.IOException;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
-import org.protobee.AbstractTest;
+import org.protobee.gnutella.AbstractGnutellaTest;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.encoding.EncodingException;
 import org.protobee.gnutella.routing.InvalidMessageException;
@@ -17,7 +17,7 @@ import org.protobee.gnutella.routing.message.RoutingDecoder;
 import org.protobee.gnutella.routing.message.RoutingEncoder;
 
 
-public class RoutingTest extends AbstractTest {
+public class RoutingTest extends AbstractGnutellaTest {
 
   @Test
   public void testPatch() throws DecodingException, EncodingException, IOException, InvalidMessageException {

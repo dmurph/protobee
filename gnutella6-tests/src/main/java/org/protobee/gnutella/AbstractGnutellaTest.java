@@ -5,8 +5,6 @@ import java.net.SocketAddress;
 
 import org.junit.Before;
 import org.protobee.AbstractTest;
-import org.protobee.gnutella.Gnutella;
-import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.guice.JnutellaMainModule;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
