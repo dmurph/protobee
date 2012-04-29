@@ -70,7 +70,8 @@ public class NetworkIdentityManager {
       } else {
         identity = createNetworkIdentity();
       }
-      setNetworkAddress(identity, protocol, address);
+      setSendingAddress(identity, protocol, address);
+      setListeningAddress(identity, protocol, address);
     }
 
     return identity;
@@ -116,7 +117,7 @@ public class NetworkIdentityManager {
     return me;
   }
 
-  public void setNetworkAddress(NetworkIdentity identity, Protocol protocol, SocketAddress address) {
+  public void setSendingAddress(NetworkIdentity identity, Protocol protocol, SocketAddress address) {
     Preconditions.checkNotNull(identity, "Identity cannot be null");
     Preconditions.checkNotNull(protocol, "Protocol cannot be null");
     Preconditions.checkNotNull(address, "Address cannot be null");
@@ -126,13 +127,35 @@ public class NetworkIdentityManager {
         throw new IllegalStateException("Cannot tag an entity that isn't registered");
       }
 
-      if (identityLocationMap.containsKey(address)) {
+      NetworkIdentity currentIdentity = identityLocationMap.get(address);
+      if (currentIdentity != null && currentIdentity != identity) {
         log.error("Address '" + address + "' already has an identity assigned to it.");
         throw new IllegalStateException("Address '" + address
             + "' already has an identity assigned to it.");
       }
       identityLocationMap.put(address, identity);
-      identity.setNewtorkAddress(protocol, address);
+      identity.setSendingAddress(protocol, address);
+    }
+  }
+
+  public void setListeningAddress(NetworkIdentity identity, Protocol protocol, SocketAddress address) {
+    Preconditions.checkNotNull(identity, "Identity cannot be null");
+    Preconditions.checkNotNull(protocol, "Protocol cannot be null");
+    Preconditions.checkNotNull(address, "Address cannot be null");
+
+    synchronized (identitiesLock) {
+      if (!identities.contains(identity)) {
+        throw new IllegalStateException("Cannot tag an entity that isn't registered");
+      }
+
+      NetworkIdentity currentIdentity = identityLocationMap.get(address);
+      if (currentIdentity != null && currentIdentity != identity) {
+        log.error("Address '" + address + "' already has an identity assigned to it.");
+        throw new IllegalStateException("Address '" + address
+            + "' already has an identity assigned to it.");
+      }
+      identityLocationMap.put(address, identity);
+      identity.setListeningAddress(protocol, address);
     }
   }
 }

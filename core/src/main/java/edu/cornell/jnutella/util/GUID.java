@@ -17,6 +17,8 @@ import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
  * <a href="http://groups.yahoo.com/group/the_gdf/message/1397">
  * http://groups.yahoo.com/group/the_gdf/message/1397</a>.
  * </p>
+ * 
+ * TODO: make this a 'util' class, where we ask for a guid and get bytes
  */
 public class GUID {
     private static final int DATA_LENGTH = 16;
@@ -90,6 +92,10 @@ public class GUID {
       }
       bytes = b;
     }
+    
+    public static boolean isModernClient(byte[] guid) {
+      return guid[8] == (byte) 0xFF && (guid[15] == 0 || guid[15] == 1);
+    }
 
     public byte[] getBytes(){
       return bytes;
@@ -116,6 +122,10 @@ public class GUID {
     @Override 
     public String toString(){
       return HexConverter.toHexString( bytes );
+    }
+    
+    public static byte[] generateGuid() {
+      return new GUID().getBytes();
     }
 
     public static class GUIDComparator implements Comparator<GUID>

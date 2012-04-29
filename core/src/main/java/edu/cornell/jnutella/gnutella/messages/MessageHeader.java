@@ -1,5 +1,7 @@
 package edu.cornell.jnutella.gnutella.messages;
 
+import java.util.Arrays;
+
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
@@ -9,6 +11,10 @@ public class MessageHeader {
   public static interface Factory {
     MessageHeader create(byte[] guid, @Assisted("payloadType") byte payloadType,
         @Assisted("ttl") byte ttl, @Assisted("hops") byte hops, int payloadLength);
+    
+
+    MessageHeader create(byte[] guid, @Assisted("payloadType") byte payloadType,
+        @Assisted("ttl") byte ttl);
 
     MessageHeader create(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
         @Assisted("ttl") byte ttl, @Assisted("hops") byte hops);
@@ -62,6 +68,16 @@ public class MessageHeader {
     this.hops = hops;
     this.payloadLength = UNKNOWN_PAYLOAD_LENGTH;
   }
+  
+  @AssistedInject
+  public MessageHeader(@Assisted byte[] guid, @Assisted("payloadType") byte payloadType,
+      @Assisted("ttl") byte ttl) {
+    this.guid = guid;
+    this.payloadType = payloadType;
+    this.ttl = ttl;
+    this.hops = 0;
+    this.payloadLength = UNKNOWN_PAYLOAD_LENGTH;
+  }
 
   public byte getTtl() {
     return ttl;
@@ -74,7 +90,7 @@ public class MessageHeader {
   public int getPayloadLength() {
     return payloadLength;
   }
-  
+
   public void setPayloadLength(int payloadLength) {
     this.payloadLength = payloadLength;
   }
@@ -89,5 +105,37 @@ public class MessageHeader {
 
   public byte getPayloadType() {
     return payloadType;
+  }
+
+  @Override
+  public String toString() {
+    return "{ guid: " + guid + ", hops: " + hops + ", ttl: " + ttl + ", payloadType: "
+        + payloadType + ", payloadLength: " + payloadLength + "}";
+  }
+
+  @Override
+  public int hashCode() {
+    final int prime = 31;
+    int result = 1;
+    result = prime * result + Arrays.hashCode(guid);
+    result = prime * result + hops;
+    result = prime * result + payloadLength;
+    result = prime * result + payloadType;
+    result = prime * result + ttl;
+    return result;
+  }
+
+  @Override
+  public boolean equals(Object obj) {
+    if (this == obj) return true;
+    if (obj == null) return false;
+    if (getClass() != obj.getClass()) return false;
+    MessageHeader other = (MessageHeader) obj;
+    if (!Arrays.equals(guid, other.guid)) return false;
+    if (hops != other.hops) return false;
+    if (payloadLength != other.payloadLength) return false;
+    if (payloadType != other.payloadType) return false;
+    if (ttl != other.ttl) return false;
+    return true;
   }
 }
