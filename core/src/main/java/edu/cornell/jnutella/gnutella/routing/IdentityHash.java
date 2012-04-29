@@ -1,23 +1,24 @@
 package edu.cornell.jnutella.gnutella.routing;
 
-import edu.cornell.jnutella.util.GUID;
+import java.util.Arrays;
+
 import edu.cornell.jnutella.util.URN;
 
 public class IdentityHash {
-  private GUID guid;
+  private byte[] guid;
   private int urnHash;
 
-  public IdentityHash(GUID guid, UrnSet urns){
+  public IdentityHash(byte[] guid, UrnSet urns){
     this.guid = guid;
     this.urnHash = urns.hashCode();
   }
   
-  public IdentityHash(GUID guid, URN[] urns){
+  public IdentityHash(byte[] guid, URN[] urns){
     this.guid = guid;
     this.urnHash = (new UrnSet(urns)).hashCode();
   }
 
-  public GUID getGuid() {
+  public byte[] getGuid() {
     return guid;
   }
 
@@ -29,7 +30,7 @@ public class IdentityHash {
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((guid == null) ? 0 : guid.hashCode());
+    result = prime * result + Arrays.hashCode(guid);
     result = prime * result + urnHash;
     return result;
   }
@@ -40,9 +41,7 @@ public class IdentityHash {
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     IdentityHash other = (IdentityHash) obj;
-    if (guid == null) {
-      if (other.guid != null) return false;
-    } else if (!guid.equals(other.guid)) return false;
+    if (!Arrays.equals(guid, other.guid)) return false;
     if (urnHash != other.urnHash) return false;
     return true;
   }

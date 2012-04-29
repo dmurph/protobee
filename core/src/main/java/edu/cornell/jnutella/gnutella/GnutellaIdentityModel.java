@@ -31,10 +31,6 @@ public class GnutellaIdentityModel implements ProtocolIdentityModel {
   public byte[] getGuid() {
     return guid;
   }
-  
-  public GUID getGUID() throws InvalidMessageException{
-    return new GUID(guid);
-  }
 
   public void setGuid(byte[] guid) {
     this.guid = guid;

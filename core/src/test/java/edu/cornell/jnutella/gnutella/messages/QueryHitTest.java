@@ -29,10 +29,11 @@ public class QueryHitTest extends AbstractTest {
     byte[] privateArea1 = {(byte) 0x03, (byte) 0x04, (byte) 0x05};
     byte[] xmlBytes = {(byte) 0x06, (byte) 0x07, (byte) 0x08};
     byte[] privateArea2 = {(byte) 0x09, (byte) 0x10, (byte) 0x11};
+    GUID guid = new GUID();
 
     QueryHitBody queryHit = factory.createQueryHitMessage(new InetSocketAddress( InetAddress.getLocalHost(),
       (short) (Integer.MAX_VALUE + 1)), (long) Integer.MAX_VALUE + 1l, null, new VendorCode('L', 'I', 'M', 'E'), 
-      (byte) 0x01, (byte) 0x02, privateArea1, null, xmlBytes, privateArea2, new GUID());
+      (byte) 0x01, (byte) 0x02, privateArea1, null, xmlBytes, privateArea2, guid.getBytes());
 
     QueryHitEncoder encoder = injector.getInstance(QueryHitEncoder.class);
     encoder.encode(buffer, queryHit);

@@ -31,11 +31,10 @@ public class PushDecoder implements MessageBodyDecoder<PushBody> {
   public PushBody decode(ChannelBuffer buffer) throws DecodingException {
     Preconditions.checkState(buffer.readableBytes() >= 26);
     
-    byte[] sid = new byte[16];
+    byte[] servantID = new byte[16];
     for (int i = 0; i < 16; i++){
-      sid[i] = buffer.readByte();
+      servantID[i] = buffer.readByte();
     }
-    GUID servantID = new GUID(HexConverter.toHexString( sid ));
     
     long index = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
     

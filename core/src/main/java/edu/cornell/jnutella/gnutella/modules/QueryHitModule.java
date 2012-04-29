@@ -12,7 +12,6 @@ import edu.cornell.jnutella.gnutella.messages.QueryHitBody;
 import edu.cornell.jnutella.gnutella.routing.IdentityHash;
 import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
 import edu.cornell.jnutella.gnutella.routing.QueryGUIDRoutingPair;
-import edu.cornell.jnutella.gnutella.routing.managers.CoreRoutingTableManager;
 import edu.cornell.jnutella.gnutella.routing.managers.PushRoutingTableManager;
 import edu.cornell.jnutella.gnutella.routing.managers.QueryRoutingTableManager;
 import edu.cornell.jnutella.gnutella.session.MessageDispatcher;
@@ -30,20 +29,17 @@ public class QueryHitModule implements ProtocolModule {
   private final RequestFilter filter;
   private final PushRoutingTableManager pushRTManager;
   private final QueryRoutingTableManager queryHitRTManager;
-  private final CoreRoutingTableManager queryRTManager;
   private final MessageDispatcher messageDispatcher;
   private final NetworkIdentityManager identityManager;
   private final Protocol gnutella;
 
   @Inject
-  public QueryHitModule(RequestFilter filter,
-                        PushRoutingTableManager pushRTManager, QueryRoutingTableManager queryHitRTManager,
-                        CoreRoutingTableManager queryRTManager, NetworkIdentityManager identityManager,
+  public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager, 
+                        QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
                         @Gnutella Protocol gnutella, MessageDispatcher messageDispatcher) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.queryHitRTManager = queryHitRTManager;
-    this.queryRTManager = queryRTManager;
     this.identityManager = identityManager;
     this.gnutella = gnutella;
     this.messageDispatcher = messageDispatcher;
@@ -56,10 +52,12 @@ public class QueryHitModule implements ProtocolModule {
     QueryGUIDRoutingPair qgrPair = queryHitRTManager.findRoutingForQuerys(new GUID(header.getGuid()), queryHitBody.getNumHits());
     NetworkIdentity me = identityManager.getMe();
     GnutellaIdentityModel identityModel = (GnutellaIdentityModel) me.getModel(gnutella);
-    IdentityHash queryHash = new IdentityHash(header.getGUID(), queryHitBody.getHuge().getUrns());
+    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getHuge().getUrns());
 
-    if (!filter.shouldAcceptQueryHitMessage(qgrPair, new GUID(identityModel.getGuid()), queryHitBody.getServantID(), queryHash )) { return; }
+    if (!filter.shouldAcceptQueryHitMessage(qgrPair, identityModel.getGuid(), queryHitBody.getServantID(), queryHash )) { return; }
 
+    queryHitRTManager.addQueryHit(queryHash);
+    
     if (qgrPair.getHost() == identityManager.getMe()){ // if localhost, use locally
 
     }

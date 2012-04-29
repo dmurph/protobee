@@ -47,8 +47,7 @@ public class QueryHitEncoder implements MessageBodyEncoder {
     }
     
     buffer.writeBytes(toEncode.getPrivateArea2());
-    
-    buffer.writeBytes(toEncode.getServantID().getBytes());
+    buffer.writeBytes(toEncode.getServantID());
 
   }
 

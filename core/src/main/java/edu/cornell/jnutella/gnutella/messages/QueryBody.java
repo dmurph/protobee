@@ -7,7 +7,6 @@ import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.HUGEExtension;
-import edu.cornell.jnutella.gnutella.routing.DynamicQueryConstants;
 import edu.cornell.jnutella.util.ByteUtils;
 
 public class QueryBody implements MessageBody {
@@ -17,6 +16,7 @@ public class QueryBody implements MessageBody {
   public static final int MINSPEED_BITBASED_BIT = 15;
   public static final int MINSPEED_FIREWALL_BIT = 14;
   public static final int MINSPEED_XML_BIT = 13;
+  public static final int MIN_SEARCH_TERM_LENGTH = 2;
 
   /**
    * The legacy Minimum speed semantic has been deprecated. As a legacy servent should never send a
@@ -69,7 +69,7 @@ public class QueryBody implements MessageBody {
   }
   
   public boolean hasInvalidQuery(){
-    return query.length() < DynamicQueryConstants.MIN_SEARCH_TERM_LENGTH;
+    return query.length() < MIN_SEARCH_TERM_LENGTH;
   }
   
   public short getMinSpeed(){

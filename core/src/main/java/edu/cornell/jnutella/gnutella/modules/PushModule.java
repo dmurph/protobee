@@ -45,14 +45,14 @@ public class PushModule implements ProtocolModule {
     PushBody pushBody =  (PushBody) event.getMessage().getBody();
     GnutellaIdentityModel identityModel = (GnutellaIdentityModel) identity.getModel(gnutella);
 
-    if (pushBody.getServantID().equals(identityModel.getGUID())){
+    if (pushBody.getServantID().equals(identityModel.getGuid())){
       // use locally
     }
 
-    if (!filter.shouldRoutePushMessage(header.getTtl(), identityModel.getGUID())){ return; }
+    if (!filter.shouldRoutePushMessage(header.getTtl(), identityModel.getGuid())){ return; }
 
     // route push message
-    messageDispatcher.dispatchMessage(pushRTManager.findRouting(identityModel.getGUID()), new GnutellaMessage(header, event.getMessage().getBody()));
+    messageDispatcher.dispatchMessage(pushRTManager.findRouting(identityModel.getGuid()), new GnutellaMessage(header, event.getMessage().getBody()));
   }
 
   @Subscribe

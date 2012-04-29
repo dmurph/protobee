@@ -2,7 +2,7 @@ package edu.cornell.jnutella.gnutella.routing.message;
 
 import edu.cornell.jnutella.gnutella.messages.MessageBody;
 
-public class RoutingBody implements MessageBody {
+public abstract class RoutingBody implements MessageBody {
   
   public static final byte RESET_TABLE_VARIANT = 0x00;
   public static final byte PATCH_TABLE_VARIANT = 0x01;

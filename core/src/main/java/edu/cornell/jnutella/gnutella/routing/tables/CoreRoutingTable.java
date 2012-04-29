@@ -2,7 +2,6 @@ package edu.cornell.jnutella.gnutella.routing.tables;
 
 import java.util.BitSet;
 
-import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.util.ByteUtils;
@@ -28,6 +27,10 @@ public class CoreRoutingTable {
 
   public static final int A_INT = 0x4F1BBCDC;
 
+  public static interface Factory {
+    CoreRoutingTable create();
+  }
+  
   /**
    * The query routing table. A BitSet is used since the GDF decided that
    * QRP is only used between Leaf and Ultrapeers. The aggregated QRT
@@ -52,7 +55,19 @@ public class CoreRoutingTable {
   private BitSet resizedQRTable;
 
   @AssistedInject
-  public CoreRoutingTable( @Assisted int tableSize ) {
+  public CoreRoutingTable( ) {
+    this.qrTable = new BitSet( DEFAULT_TABLE_SIZE );
+    this.tableSize = DEFAULT_TABLE_SIZE;
+    this.infinity = DEFAULT_INFINITY_TTL;
+    this.tableBits = ByteUtils.calculateLog2( DEFAULT_TABLE_SIZE );
+    entryCount = 0;
+    sequenceSize = 0;
+    sequenceNumber = 0;
+    patchPosition = 0;
+    resizedQRTable = null;
+  }
+  
+  public CoreRoutingTable( int tableSize ) {
     this.qrTable = new BitSet( tableSize );
     this.tableSize = tableSize;
     this.infinity = DEFAULT_INFINITY_TTL;

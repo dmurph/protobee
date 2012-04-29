@@ -12,7 +12,6 @@ import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.HUGEExtension;
-import edu.cornell.jnutella.util.GUID;
 import edu.cornell.jnutella.util.VendorCode;
 
 public class QueryHitBody implements MessageBody {
@@ -28,7 +27,7 @@ public class QueryHitBody implements MessageBody {
   private GGEP ggep;
   private byte[] xmlBytes;
   private byte[] privateArea2;
-  private GUID servantID;
+  private byte[] servantID;
   private HUGEExtension huge;
 
   // xmlBytes should be stored in GGEP - set to a constant for now
@@ -37,17 +36,16 @@ public class QueryHitBody implements MessageBody {
                        @Nullable @Assisted ResponseBody[] hitList, @Assisted VendorCode vendorCode, @Assisted("flags") byte flags, 
                        @Assisted("controls") byte controls, @Assisted("privateArea1") byte[] privateArea1, 
                        @Nullable @Assisted GGEP ggep,  @Assisted("xmlBytes") byte[] xmlBytes, 
-                       @Assisted("privateArea2") byte[] privateArea2, @Assisted GUID servantID) {
+                       @Assisted("privateArea2") byte[] privateArea2, @Assisted("servantID") byte[] servantID) {
 
-    Preconditions.checkArgument((speed & 0xFFFFFFFF00000000l) == 0);
+    Preconditions.checkArgument((speed & 0xFFFFFFFF00000000l) == 0, "Speed "+speed+" exceeds maximum value");
     if (hitList == null){
       hitList = new ResponseBody[0];
     }
-    Preconditions.checkArgument(hitList.length < 256);
+    Preconditions.checkArgument(hitList.length < 256, "Histlist has too many hits. numHits="+hitList.length+". Only 255 are allowed.");
 
     // if ggep and huge will print out zero bytes, put concatenate private areas 1 and 2
-    if ((ggep == null || ggep.getHeaders().size() == 0 ) 
-        && privateArea2.length > 0){
+    if ((ggep == null || ggep.getHeaders().size() == 0 )  && privateArea2.length > 0){
       this.privateArea1 = new byte[privateArea1.length + privateArea2.length];
       System.arraycopy(privateArea1, 0, this.privateArea1, 0, privateArea1.length);
       System.arraycopy(privateArea2, 0, this.privateArea1, privateArea1.length, privateArea2.length);
@@ -122,7 +120,7 @@ public class QueryHitBody implements MessageBody {
     return privateArea2;
   }
 
-  public GUID getServantID() {
+  public byte[] getServantID() {
     return servantID;
   }
 
@@ -133,10 +131,11 @@ public class QueryHitBody implements MessageBody {
     result = prime * result + ((eqhd == null) ? 0 : eqhd.hashCode());
     result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
     result = prime * result + Arrays.hashCode(hitList);
+    result = prime * result + ((huge == null) ? 0 : huge.hashCode());
     result = prime * result + numHits;
     result = prime * result + Arrays.hashCode(privateArea1);
     result = prime * result + Arrays.hashCode(privateArea2);
-    result = prime * result + ((servantID == null) ? 0 : servantID.hashCode());
+    result = prime * result + Arrays.hashCode(servantID);
     result = prime * result + ((socketAddress == null) ? 0 : socketAddress.hashCode());
     result = prime * result + (int) (speed ^ (speed >>> 32));
     result = prime * result + Arrays.hashCode(xmlBytes);
@@ -156,12 +155,13 @@ public class QueryHitBody implements MessageBody {
       if (other.ggep != null) return false;
     } else if (!ggep.equals(other.ggep)) return false;
     if (!Arrays.equals(hitList, other.hitList)) return false;
+    if (huge == null) {
+      if (other.huge != null) return false;
+    } else if (!huge.equals(other.huge)) return false;
     if (numHits != other.numHits) return false;
     if (!Arrays.equals(privateArea1, other.privateArea1)) return false;
     if (!Arrays.equals(privateArea2, other.privateArea2)) return false;
-    if (servantID == null) {
-      if (other.servantID != null) return false;
-    } else if (!servantID.equals(other.servantID)) return false;
+    if (!Arrays.equals(servantID, other.servantID)) return false;
     if (socketAddress == null) {
       if (other.socketAddress != null) return false;
     } else if (!socketAddress.equals(other.socketAddress)) return false;

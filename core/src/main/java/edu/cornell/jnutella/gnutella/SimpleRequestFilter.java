@@ -1,31 +1,28 @@
 package edu.cornell.jnutella.gnutella;
 
+import java.util.Arrays;
 import java.util.Set;
 
-import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.gnutella.messages.GnutellaMessage;
-import edu.cornell.jnutella.gnutella.messages.MessageBodyFactory;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.messages.QueryBody;
 import edu.cornell.jnutella.gnutella.routing.IdentityHash;
-import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
 import edu.cornell.jnutella.gnutella.routing.QueryGUIDRoutingPair;
 import edu.cornell.jnutella.gnutella.routing.managers.CoreRoutingTableManager;
 import edu.cornell.jnutella.gnutella.routing.managers.PingRoutingTableManager;
 import edu.cornell.jnutella.gnutella.routing.managers.PushRoutingTableManager;
 import edu.cornell.jnutella.gnutella.routing.managers.QueryRoutingTableManager;
-import edu.cornell.jnutella.gnutella.session.MessageDispatcher;
 import edu.cornell.jnutella.identity.IdentityTagManager;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
-import edu.cornell.jnutella.protocol.Protocol;
-import edu.cornell.jnutella.util.GUID;
 
 @Singleton
 public class SimpleRequestFilter implements RequestFilter {
 
+  // TODO move parts to prefilters 
+  
   private static final int MAX_ROUTED_QUERY_RESULTS = 200;
 
   private final PingRoutingTableManager pingRTManager;
@@ -37,7 +34,17 @@ public class SimpleRequestFilter implements RequestFilter {
   private final NetworkIdentity identity;
 
 
-  @Inject
+  // @Inject
+  public SimpleRequestFilter(){ 
+    this.pingRTManager = null;
+    this.pushRTManager = null;
+    this.queryRTManager = null;
+    this.coreRTManager = null;
+    this.identityManager = null;
+    this.tagManager = null;
+    this.identity = null;
+  };
+  
   public SimpleRequestFilter(PingRoutingTableManager pingRTManager, PushRoutingTableManager pushRTManager, 
                              QueryRoutingTableManager queryHitRTManager, CoreRoutingTableManager queryRTManager,
                              NetworkIdentityManager identityManager, IdentityTagManager tagManager,
@@ -54,11 +61,8 @@ public class SimpleRequestFilter implements RequestFilter {
   @Override
   public boolean shouldAcceptPing(GnutellaMessage ping) {
     MessageHeader header = ping.getHeader();
-    byte ttl = header.getTtl();
-    byte hops = header.getHops();
 
-    if ((ttl + hops > 2)/* && !hostMgr.areIncommingSlotsAdvertised() */) {
-      // TODO return false
+    if ((header.getTtl() + header.getHops() > 2)/* && !hostMgr.areIncommingSlotsAdvertised() */) {
       return true;
     }
     return true;
@@ -71,7 +75,7 @@ public class SimpleRequestFilter implements RequestFilter {
   }
 
   @Override
-  public boolean shouldAcceptQueryMessage(GUID messageGUID, byte hops, QueryBody body) {
+  public boolean shouldAcceptQueryMessage(byte[] messageGUID, byte hops, QueryBody body) {
     
     // Drop already seen query
     if (queryRTManager.isRouted(messageGUID)) {
@@ -90,20 +94,20 @@ public class SimpleRequestFilter implements RequestFilter {
   }
 
   @Override 
-  public boolean shouldAcceptQueryHitMessage(QueryGUIDRoutingPair qgrPair, GUID localGUID, GUID responderGUID, IdentityHash queryHash) {
+  public boolean shouldAcceptQueryHitMessage(QueryGUIDRoutingPair qgrPair, byte[] localGUID, byte[] responderGUID, IdentityHash queryHash) {
     if (qgrPair == null){
       return false;
     }
-    if (localGUID == responderGUID){ // My query response should never reach me
+    if (Arrays.equals(localGUID, responderGUID)){ // My query response should never reach me
       return false;
     }
-    if(responderGUID == queryHash.getGuid()){ // Message id can't equal servent id
+    if(Arrays.equals(responderGUID, queryHash.getGuid())){ // Message id can't equal servent id
       return false;
     }
     if(responderGUID == null){ // servent id cant be null
       return false;
     }
-    return (queryRTManager.checkAndAddQueryHit(queryHash));
+    return (!queryRTManager.hasQueryHit(queryHash));
   }
 
   @Override
@@ -115,7 +119,7 @@ public class SimpleRequestFilter implements RequestFilter {
   }
 
   @Override
-  public boolean shouldRoutePushMessage(byte ttl, GUID serventGUID) {
+  public boolean shouldRoutePushMessage(byte ttl, byte[] serventGUID) {
     if (ttl <= 0){
       return false;
     }

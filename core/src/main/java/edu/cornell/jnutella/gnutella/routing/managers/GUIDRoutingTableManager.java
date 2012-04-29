@@ -2,14 +2,16 @@ package edu.cornell.jnutella.gnutella.routing.managers;
 
 import java.util.concurrent.ConcurrentHashMap;
 
+import com.google.inject.Inject;
+
 import edu.cornell.jnutella.gnutella.routing.tables.GUIDRoutingTable;
 import edu.cornell.jnutella.gnutella.routing.tables.GUIDRoutingTable.Entry;
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.util.GUID;
 
-public class GUIDRoutingTableManager {
+public abstract class GUIDRoutingTableManager {
   protected GUIDRoutingTable grtable;
-
+  
+  @Inject
   public GUIDRoutingTableManager(GUIDRoutingTable grtable) {
     this.grtable = grtable;
   }
@@ -20,14 +22,14 @@ public class GUIDRoutingTableManager {
    * @param host the route destination.
    * @precondition guid is not in table (isRouted returned false)
    */
-  public void addRouting( GUID messageGuid, NetworkIdentity identity ) {
+  public void addRouting( byte[] messageGuid, NetworkIdentity identity ) {
     checkForSwitch();
     grtable.putInCurrentMap(messageGuid, createNewEntry(getIdForHost( identity )));
   }
 
   // keeps guid in current table
   // returns true if is ready, false if routing must be added
-  public boolean isRouted(GUID messageGUID){
+  public boolean isRouted(byte[] messageGUID){
 
     boolean inCurrentTable = (grtable.getCurrentMap().get(messageGUID) != null);
     boolean inLastTable = (grtable.getLastMap().get(messageGUID) != null);
@@ -53,7 +55,7 @@ public class GUIDRoutingTableManager {
    * @param guid the GUID for the reply route to find.
    * @return the Host to route the reply for.
    */
-  public NetworkIdentity findRouting( GUID guid ) {
+  public NetworkIdentity findRouting( byte[] guid ) {
     Entry entry = grtable.getCurrentMap().get( guid );
     if ( entry == null ) {
       entry = grtable.getLastMap().get( guid );
@@ -89,7 +91,7 @@ public class GUIDRoutingTableManager {
       return;
     }
 
-    ConcurrentHashMap<GUID, Entry> temp = grtable.getLastMap();
+    ConcurrentHashMap<byte[], Entry> temp = grtable.getLastMap();
     grtable.setLastMap(grtable.getCurrentMap());
     grtable.setCurrentMap(temp);
     grtable.setNextReplaceTime(currentTime+grtable.getLifetime());

@@ -3,9 +3,6 @@ package edu.cornell.jnutella.gnutella.messages;
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;
 
-import edu.cornell.jnutella.gnutella.routing.InvalidMessageException;
-import edu.cornell.jnutella.util.GUID;
-
 
 public class MessageHeader {
 
@@ -88,10 +85,6 @@ public class MessageHeader {
 
   public byte[] getGuid() {
     return guid;
-  }
-  
-  public GUID getGUID() throws InvalidMessageException{
-    return new GUID(guid);
   }
 
   public byte getPayloadType() {

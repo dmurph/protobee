@@ -55,7 +55,6 @@ public class GnutellaGuiceModule extends AbstractModule {
 
     bind(RequestFilter.class).to(SimpleRequestFilter.class).in(Singleton.class);
 
-
     bind(PongCache.class).to(PRSPongCache.class).in(Singleton.class);
 
   }
