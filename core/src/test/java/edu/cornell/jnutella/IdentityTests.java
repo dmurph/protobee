@@ -3,7 +3,6 @@ package edu.cornell.jnutella;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
-import static org.mockito.Mockito.*;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -13,6 +12,7 @@ import java.util.Set;
 import org.junit.Test;
 
 import com.google.common.collect.ImmutableMap;
+import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
@@ -27,7 +27,6 @@ import edu.cornell.jnutella.guice.LogModule;
 import edu.cornell.jnutella.identity.IdentityTagManager;
 import edu.cornell.jnutella.identity.NetworkIdentity;
 import edu.cornell.jnutella.identity.NetworkIdentityManager;
-import edu.cornell.jnutella.identity.ProtocolIdentityModel;
 import edu.cornell.jnutella.protocol.Protocol;
 import edu.cornell.jnutella.protocol.ProtocolConfig;
 
@@ -50,6 +49,20 @@ public class IdentityTests extends AbstractTest {
       @Singleton
       public Map<Protocol, ProtocolConfig> getConfigMap() {
         return ImmutableMap.of();
+      }
+
+      @SuppressWarnings("unused")
+      @Provides
+      @Singleton
+      public Set<ProtocolConfig> getProtocols() {
+        return ImmutableSet.of();
+      }
+
+      @SuppressWarnings("unused")
+      @Provides
+      @Singleton
+      public Set<Protocol> getProtocolss() {
+        return ImmutableSet.of();
       }
 
       @SuppressWarnings("unused")
@@ -118,7 +131,6 @@ public class IdentityTests extends AbstractTest {
   @Test
   public void testAddressSet() {
     ProtocolConfig config = mockDefaultProtocolConfig();
-    ProtocolIdentityModel mockedModel = config.createIdentityModel();
     Protocol protocol = config.get();
 
     Injector inj = getInjectorWithProtocolConfig(config);
@@ -127,8 +139,7 @@ public class IdentityTests extends AbstractTest {
     SocketAddress address = new InetSocketAddress(80);
     NetworkIdentity identity = manager.getNetworkIdentityWithNewConnection(protocol, address);
 
-    assertEquals(mockedModel, identity.getModel(protocol));
-    verify(mockedModel).setNetworkAddress(address);
+    assertEquals(address, identity.getSendingAddress(protocol));
   }
 
   public void testErrorOnSameAddress() {
@@ -157,16 +168,14 @@ public class IdentityTests extends AbstractTest {
   @Test
   public void testErrorOnCurrentSession() {
     ProtocolConfig config = mockDefaultProtocolConfig();
-    ProtocolIdentityModel mockedModel = config.createIdentityModel();
-    when(mockedModel.hasCurrentSession()).thenReturn(true);
     Protocol protocol = config.get();
 
     Injector inj = getInjectorWithProtocolConfig(config);
 
     NetworkIdentityManager manager = inj.getInstance(NetworkIdentityManager.class);
     SocketAddress address = new InetSocketAddress(80);
-    manager.getNetworkIdentityWithNewConnection(protocol, address);
-
+    NetworkIdentity identity = manager.getNetworkIdentityWithNewConnection(protocol, address);
+    createSession(identity, inj, config);
 
     SocketAddress address2 = new InetSocketAddress(80);
     boolean caught = false;

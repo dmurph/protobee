@@ -19,12 +19,12 @@ public class HeadersImpl implements Headers {
   }
 
   @Override
-  public CompatabilityHeader[] requiredCompatabilities() {
+  public CompatabilityHeader[] required() {
     return required;
   }
 
   @Override
-  public CompatabilityHeader[] requestedCompatabilities() {
+  public CompatabilityHeader[] requested() {
     return requested;
   }
 

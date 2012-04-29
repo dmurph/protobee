@@ -37,6 +37,7 @@ public class DependencyGraphGenerator {
       String s = baos.toString("UTF-8");
       s = fixGrapherBug(s);
       s = hideClassPaths(s);
+      s = removeArguments(s);
       out.write(s);
       out.close();
 
@@ -59,5 +60,9 @@ public class DependencyGraphGenerator {
   public static String fixGrapherBug(String s) {
     s = s.replaceAll("style=invis", "style=solid");
     return s;
+  }
+  
+  public static String removeArguments(String s) {
+    return s.replaceAll("\\(([a-zA-Z]+, )*([a-zA-Z]+)\\)", "(...)");
   }
 }

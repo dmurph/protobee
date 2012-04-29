@@ -17,10 +17,10 @@ import edu.cornell.jnutella.protocol.headers.Headers;
 
 public class ProtocolModuleFilterTests {
 
-  @Headers(requiredCompatabilities = {@CompatabilityHeader(name = "a", minVersion = "1", maxVersion = "2")}, requestedCompatabilities = {})
+  @Headers(required = {@CompatabilityHeader(name = "a", minVersion = "1", maxVersion = "2")}, requested = {})
   private static class a12 implements ProtocolModule {}
 
-  @Headers(requiredCompatabilities = {@CompatabilityHeader(name = "a", minVersion = "2", maxVersion = "+")}, requestedCompatabilities = {})
+  @Headers(required = {@CompatabilityHeader(name = "a", minVersion = "2", maxVersion = "+")}, requested = {})
   private static class a2plus implements ProtocolModule {}
 
   @Test

@@ -1,29 +1,53 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
-	<groupId>com.dmurph</groupId>
-	<artifactId>jnutella</artifactId>
+	<groupId>org.protobee</groupId>
+	<artifactId>protobee</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<packaging>pom</packaging>
+	
 	<modules>
 		<module>core</module>
-		<module>extensions</module>
+		<module>gnutella6</module>
 	</modules>
+
+	<name>protobee</name>
+	<description>an ultra-modular java framework for creating and using arbitrary network protocols</description>
+	<url>http://www.protobee.org</url>
+	<licenses>
+		<license>
+			<name>The BSD 2-Clause License</name>
+			<url>http://opensource.org/licenses/BSD-2-Clause</url>
+			<distribution>repo</distribution>
+		</license>
+	</licenses>
+
+	<developers>
+		<developer>
+			<name>Daniel Murphy</name>
+			<email>daniel@dmurph.com</email>
+			<url>http://www.dmurph.com</url>
+		</developer>
+		<developer>
+			<name>Deanna Surma</name>
+			<email>dms424@cornell.edu</email>
+		</developer>
+	</developers>
+
+	<scm>
+		<connection>scm:hg:http://code.google.com/p/protobee</connection>
+		<developerConnection>scm:hg:https://code.google.com/p/protobee</developerConnection>
+		<url>http://code.google.com/p/protobee</url>
+	</scm>
 
 	<properties>
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-		<annotation.generated.dir>target/generated</annotation.generated.dir>
 	</properties>
 
 	<dependencies>
 		<dependency>
 			<groupId>org.slf4j</groupId>
 			<artifactId>slf4j-api</artifactId>
-			<version>1.6.4</version>
-		</dependency>
-		<dependency>
-			<groupId>org.slf4j</groupId>
-			<artifactId>slf4j-log4j12</artifactId>
 			<version>1.6.4</version>
 		</dependency>
 		<dependency>
@@ -52,10 +76,19 @@
 			<version>3.4.0.Alpha2</version>
 			<type>jar</type>
 		</dependency>
+
+
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
 			<version>4.10</version>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.slf4j</groupId>
+			<artifactId>slf4j-log4j12</artifactId>
+			<version>1.6.4</version>
 			<scope>test</scope>
 		</dependency>
 

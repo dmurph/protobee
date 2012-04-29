@@ -1,5 +1,6 @@
 package edu.cornell.jnutella.session;
 
+import java.net.SocketAddress;
 import java.util.Map;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -13,6 +14,7 @@ import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.slf4j.Logger;
 
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
@@ -126,6 +128,11 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
     sessionModel.exitScope();
     identity.exitScope();
 
-    Channels.write(ctx.getChannel(), response);
+    SocketAddress address = identity.getListeningAddress(protocol);
+    
+    Preconditions.checkState(address != null, "Listening address for identity " + identity + " with protocol " + protocol
+      + " is null");
+
+    Channels.write(ctx.getChannel(), response, address);
   }
 }

@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 
-import edu.cornell.jnutella.guice.PrescopedProvider;
 import edu.cornell.jnutella.guice.SessionScope;
 import edu.cornell.jnutella.protocol.headers.CompatabilityHeaderMerger;
 
