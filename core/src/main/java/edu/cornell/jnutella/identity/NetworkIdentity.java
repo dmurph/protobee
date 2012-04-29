@@ -48,7 +48,7 @@ public class NetworkIdentity {
     JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
   }
 
-  private ProtocolData getProtocolData(Protocol protocol) {
+  public ProtocolData getProtocolData(Protocol protocol) {
     ProtocolData data = protocolData.get(protocol);
     Preconditions.checkArgument(data != null, "Protocol was not in injected set.");
     return data;
@@ -85,14 +85,24 @@ public class NetworkIdentity {
     }
   }
 
-  public SocketAddress getAddress(Protocol protocol) {
+  public SocketAddress getSendingAddress(Protocol protocol) {
     ProtocolData data = getProtocolData(protocol);
-    return data.address;
+    return data.sendingAddress;
+  }
+  
+  public SocketAddress getListeningAddress(Protocol protocol) {
+    ProtocolData data = getProtocolData(protocol);
+    return data.listeningAddress;
   }
 
-  void setNewtorkAddress(Protocol protocol, SocketAddress address) {
+  void setSendingAddress(Protocol protocol, SocketAddress address) {
     ProtocolData data = getProtocolData(protocol);
-    data.address = address;
+    data.sendingAddress = address;
+  }
+
+  void setListeningAddress(Protocol protocol, SocketAddress address) {
+    ProtocolData data = getProtocolData(protocol);
+    data.listeningAddress = address;
   }
 
   /**
@@ -131,7 +141,7 @@ public class NetworkIdentity {
 
   @Override
   public String toString() {
-    return "{ description: " + description + ", tags: " + tags.toString() + ", protocolModels: "
+    return "{ description: " + description + ", tags: " + tags.toString() + ", protocolData: "
         + protocolData + "}";
   }
 
@@ -151,8 +161,21 @@ public class NetworkIdentity {
     JnutellaScopes.exitIdentityScope();
   }
 
-  static class ProtocolData {
-    private SocketAddress address = null;
+  public static class ProtocolData {
+    private SocketAddress sendingAddress = null;
+    private SocketAddress listeningAddress = null;
     private SessionModel currentSession = null;
+
+    public SessionModel getCurrentSession() {
+      return currentSession;
+    }
+
+    public SocketAddress getListeningAddress() {
+      return listeningAddress;
+    }
+
+    public SocketAddress getSendingAddress() {
+      return sendingAddress;
+    }
   }
 }

@@ -385,7 +385,8 @@ public class PingModuleTests extends AbstractTest {
       int fileCount = i;
       int fileSize = i + 1;
       identities[i] = manager.createNetworkIdentity();
-      manager.setNetworkAddress(identities[i], gnutella, remoteAddress);
+      manager.setSendingAddress(identities[i], gnutella, remoteAddress);
+      manager.setListeningAddress(identities[i], gnutella, remoteAddress);
       identities[i].enterScope();
       GnutellaServantModel identityModel = inj.getInstance(GnutellaServantModel.class);
       identities[i].exitScope();

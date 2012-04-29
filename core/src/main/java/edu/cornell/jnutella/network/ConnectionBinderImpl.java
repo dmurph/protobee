@@ -63,7 +63,7 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     InetSocketAddress localAddress = new InetSocketAddress(config.getPort());
     // yes, this means our address will be a localhost address for a little bit. This should change
     // when we get the 'Remote-IP' header for the first time
-    identityManager.setNetworkAddress(identityManager.getMe(), config.get(), localAddress);
+    identityManager.setListeningAddress(identityManager.getMe(), config.get(), localAddress);
 
     Channel channel = bootstrap.bind(localAddress);
     log.info("Port " + config.getPort() + " bound for protocol " + config);
@@ -96,7 +96,7 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     // when we get the 'Remote-IP' header for the first time
     NetworkIdentity me = identityManager.getMe();
     for (ProtocolConfig protocolConfig : configs) {
-      identityManager.setNetworkAddress(me, protocolConfig.get(), localAddress);
+      identityManager.setListeningAddress(me, protocolConfig.get(), localAddress);
     }
     Channel channel = bootstrap.bind(new InetSocketAddress(port));
     channels.addChannel(channel, ProtocolConfigUtils.getProtocolSet(configs));

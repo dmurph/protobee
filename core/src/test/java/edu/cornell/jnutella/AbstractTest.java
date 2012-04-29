@@ -107,7 +107,7 @@ public abstract class AbstractTest {
     me.exitScope();
     servant.setFileCount(files);
     servant.setFileSizeInKB(size);
-    manager.setNetworkAddress(me, getGnutellaProtocol(inj), address);
+    manager.setListeningAddress(me, getGnutellaProtocol(inj), address);
     return servant;
   }
 

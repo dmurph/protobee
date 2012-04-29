@@ -27,7 +27,7 @@ public class NetworkGuiceModule extends AbstractModule {
     bind(HandshakeHttpMessageDecoder.class).in(SessionScope.class);
     bind(HandshakeHttpMessageEncoder.class).in(SessionScope.class);
 
-    bind(ConnectionCreator.class).to(ConnectionManagerImpl.class).in(Singleton.class);
+    bind(ConnectionCreator.class).to(ConnectionCreatorImpl.class).in(Singleton.class);
     bind(ConnectionBinder.class).to(ConnectionBinderImpl.class).in(Singleton.class);
     bind(JnutellaServantBootstrapper.class).in(Singleton.class);
   }

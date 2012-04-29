@@ -67,7 +67,7 @@ public class HeadersModule implements ProtocolModule {
           InetAddress address = InetAddresses.forString(remoteIP);
 
           NetworkIdentity me = identityManager.getMe();
-          InetSocketAddress socketAddress = (InetSocketAddress) me.getAddress(gnutella);
+          InetSocketAddress socketAddress = (InetSocketAddress) me.getListeningAddress(gnutella);
           if (!address.equals(socketAddress)) {
             Preconditions.checkState(socketAddress != null,
                 "We're in the middle of a gnutella connection, our host address can't be null!");
@@ -75,7 +75,7 @@ public class HeadersModule implements ProtocolModule {
             InetSocketAddress newAddress = new InetSocketAddress(address, socketAddress.getPort());
             log.info("Setting new address from Remote-IP header.  Was " + socketAddress
                 + ", now we're " + newAddress);
-            identityManager.setNetworkAddress(me, gnutella, newAddress);
+            identityManager.setListeningAddress(me, gnutella, newAddress);
           }
         }
 

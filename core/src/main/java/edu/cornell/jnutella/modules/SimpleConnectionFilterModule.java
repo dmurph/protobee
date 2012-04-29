@@ -3,8 +3,13 @@ package edu.cornell.jnutella.modules;
 import java.util.Map;
 import java.util.Set;
 
-import org.jboss.netty.handler.codec.http.HttpMessage;
+import javax.annotation.Nullable;
 
+import org.jboss.netty.handler.codec.http.HttpMessage;
+import org.jboss.netty.handler.codec.http.HttpResponseStatus;
+import org.slf4j.Logger;
+
+import com.google.common.base.Preconditions;
 import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableMultimap;
@@ -13,43 +18,84 @@ import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Singleton;
 
+import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.gnutella.messages.MessageHeader;
 import edu.cornell.jnutella.gnutella.session.GnutellaSessionState;
 import edu.cornell.jnutella.guice.SessionScope;
+import edu.cornell.jnutella.session.HandshakeInterruptor;
 import edu.cornell.jnutella.session.HandshakeReceivedEvent;
 import edu.cornell.jnutella.session.SessionModel;
+import edu.cornell.jnutella.session.SessionState;
+import edu.cornell.jnutella.util.PreFilter;
+import edu.cornell.jnutella.util.VersionComparator;
 
 // not complete
 public abstract class SimpleConnectionFilterModule implements ProtocolModule {
 
+  @InjectLogger
+  protected Logger log;
   private final Set<ClassFilterEntry> classRules;
-  private final Set<HeaderFilterEntry> headerRules;
-  private final Set<Predicate<HttpMessage>> customRules;
+  private final Map<SessionState, Set<HeaderFilterEntry>> headerRules;
+  private final Map<SessionState, Set<CustomFilterEntry>> customRules;
   private final SessionModel session;
+  private final VersionComparator comp;
 
-  public SimpleConnectionFilterModule(Set<HeaderFilterEntry> headerFilters,
-      Set<ClassFilterEntry> classFilters, Set<Predicate<HttpMessage>> customFilters,
-      SessionModel session) {
-    this.classRules = ImmutableSet.copyOf(classFilters);
-    this.headerRules = ImmutableSet.copyOf(headerFilters);
-    this.customRules = ImmutableSet.copyOf(customFilters);
+  protected SimpleConnectionFilterModule(SessionModel session, VersionComparator comp,
+      @Nullable Map<SessionState, Set<HeaderFilterEntry>> headerFilters,
+      @Nullable Set<ClassFilterEntry> classFilters,
+      @Nullable Map<SessionState, Set<CustomFilterEntry>> customFilters) {
+    this.classRules =
+        classFilters != null ? ImmutableSet.copyOf(classFilters) : ImmutableSet
+            .<ClassFilterEntry>of();
+    this.headerRules =
+        headerFilters != null ? ImmutableMap.copyOf(headerFilters) : ImmutableMap
+            .<SessionState, Set<HeaderFilterEntry>>of();
+    this.customRules =
+        customFilters != null ? ImmutableMap.copyOf(customFilters) : ImmutableMap
+            .<SessionState, Set<CustomFilterEntry>>of();
+
+    this.comp = comp;
     this.session = session;
   }
 
   @Subscribe
   public void handshakeReceived(HandshakeReceivedEvent event) {
-    switch (session.getSessionState()) {
-      case HANDSHAKE_0:
-      case HANDSHAKE_1:
-        
-        break;
-        
-      case HANDSHAKE_2:
-        
-        break;
+    SessionState state = session.getSessionState();
 
-      default:
-        break;
+    Set<HeaderFilterEntry> headerFilters = headerRules.get(state);
+    Set<CustomFilterEntry> customFilters = customRules.get(state);
+    HttpMessage message = event.getMessage();
+    HandshakeInterruptor interruptor = event.getInterruptor();
+
+    if (customFilters != null) {
+      for (CustomFilterEntry customFilter : customFilters) {
+        String error = customFilter.allowed.shouldFilter(message);
+        if (error != null) {
+          log.info("Rejecting connection by custom filter, reason: " + error);
+          interruptor.disconnectWithStatus(new HttpResponseStatus(customFilter.code, error));
+        }
+      }
+    }
+    if (headerFilters != null) {
+      for (HeaderFilterEntry headerFilterEntry : headerFilters) {
+        FilterHeader filterHeader = headerFilterEntry.filterHeader;
+        String value = message.getHeader(filterHeader.name);
+        if (value == null) {
+          if (headerFilterEntry.type == FilterType.INCLUSION) {
+            interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
+                headerFilterEntry.reason));
+          }
+          continue;
+        }
+        if (!comp.isValidVersionString(value)) {
+          log.info("Not a valid version string '" + value + "' for header " + filterHeader.name
+              + ".  Rejecting.");
+          interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
+            headerFilterEntry.reason));
+        }
+
+
+      }
     }
   }
 
@@ -63,7 +109,7 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
      */
     EXCLUSION
   }
-  
+
   public static class FilterHeader {
     private final String name;
     private final String minVersion;
@@ -83,33 +129,63 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
       this.maxVersion = maxVersion;
     }
   }
-  
+
   public static class HeaderFilterEntry {
     private final FilterType type;
     private final FilterHeader filterHeader;
+    private final int code;
+    private final String reason;
 
     public HeaderFilterEntry(FilterType type, FilterHeader filterHeader) {
+      this(type, filterHeader, 503, "");
+    }
+
+    public HeaderFilterEntry(FilterType type, FilterHeader filterHeader, int code, String reason) {
+      Preconditions.checkNotNull(type);
+      Preconditions.checkNotNull(filterHeader);
+      Preconditions.checkNotNull(reason);
       this.type = type;
       this.filterHeader = filterHeader;
+      this.code = code;
+      this.reason = reason;
     }
   }
 
   public static class ClassFilterEntry {
     private final FilterType type;
     private final Class<? extends ProtocolModule> moduleClass;
+    private final int code;
+    private final String reason;
 
-    public ClassFilterEntry(FilterType type, GnutellaSessionState state, Class<? extends ProtocolModule> moduleClass) {
-      super();
+    public ClassFilterEntry(FilterType type, GnutellaSessionState state,
+        Class<? extends ProtocolModule> moduleClass) {
+      this(type, moduleClass, 503, "");
+    }
+
+    public ClassFilterEntry(FilterType type, Class<? extends ProtocolModule> moduleClass, int code,
+        String reason) {
+      Preconditions.checkNotNull(type);
+      Preconditions.checkNotNull(moduleClass);
+      Preconditions.checkNotNull(reason);
       this.type = type;
       this.moduleClass = moduleClass;
+      this.code = code;
+      this.reason = reason;
     }
   }
 
   public static class CustomFilterEntry {
-    private final Predicate<HttpMessage> allowed;
+    private final PreFilter<HttpMessage> allowed;
+    private final int code;
 
-    public CustomFilterEntry(Predicate<HttpMessage> allowed) {
+    public CustomFilterEntry(PreFilter<HttpMessage> allowed) {
+      this(allowed, 503);
+    }
+
+    public CustomFilterEntry(PreFilter<HttpMessage> allowed, int code) {
+      Preconditions.checkNotNull(allowed);
       this.allowed = allowed;
+      this.code = code;
     }
   }
 }

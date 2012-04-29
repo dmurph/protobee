@@ -1,6 +1,5 @@
 package edu.cornell.jnutella.network;
 
-import java.net.SocketAddress;
 import java.util.Set;
 
 import javax.annotation.Nullable;
@@ -71,7 +70,8 @@ public class HandshakeStateBootstrapper {
   }
 
   /**
-   * . Precondition: not in any scope
+   * Preconditions: not in any scope, identity already has sending and listening addresses set
+   * 
    * 
    * @param protocolConfig
    * @param identity
@@ -80,11 +80,9 @@ public class HandshakeStateBootstrapper {
    * @param pipeline
    * @return
    */
-  public void bootstrapSession(ProtocolConfig protocolConfig, NetworkIdentity identity,
-      SocketAddress remoteAddress, @Nullable Channel channel, ChannelPipeline pipeline) {
+  public void bootstrapSession(ProtocolConfig protocolConfig, NetworkIdentity identity, @Nullable Channel channel, ChannelPipeline pipeline) {
     Preconditions.checkNotNull(protocolConfig);
     Preconditions.checkNotNull(identity);
-    Preconditions.checkNotNull(remoteAddress);
 
     Protocol protocol = protocolConfig.get();
 
@@ -92,7 +90,7 @@ public class HandshakeStateBootstrapper {
     try {
       identity.enterScope();
       // create session
-      session = sessionFactory.get().create(protocolConfig, remoteAddress.toString());
+      session = sessionFactory.get().create(protocolConfig, identity.getSendingAddress(protocol).toString());
       if (channel != null) {
         session.addObjectToScope(Key.get(Channel.class), channel);
       }
