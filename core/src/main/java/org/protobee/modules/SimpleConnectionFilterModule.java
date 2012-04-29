@@ -8,9 +8,6 @@ import javax.annotation.Nullable;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.gnutella.messages.MessageHeader;
-import org.protobee.gnutella.session.GnutellaSessionState;
-import org.protobee.guice.SessionScope;
 import org.protobee.session.HandshakeInterruptor;
 import org.protobee.session.HandshakeReceivedEvent;
 import org.protobee.session.SessionModel;
@@ -20,13 +17,9 @@ import org.protobee.util.VersionComparator;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Multimap;
 import com.google.common.eventbus.Subscribe;
-import com.google.inject.Singleton;
 
 
 // not complete
@@ -91,7 +84,7 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
           log.info("Not a valid version string '" + value + "' for header " + filterHeader.name
               + ".  Rejecting.");
           interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
-            headerFilterEntry.reason));
+              headerFilterEntry.reason));
         }
 
 
@@ -157,8 +150,7 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
     private final int code;
     private final String reason;
 
-    public ClassFilterEntry(FilterType type, GnutellaSessionState state,
-        Class<? extends ProtocolModule> moduleClass) {
+    public ClassFilterEntry(FilterType type, Class<? extends ProtocolModule> moduleClass) {
       this(type, moduleClass, 503, "");
     }
 

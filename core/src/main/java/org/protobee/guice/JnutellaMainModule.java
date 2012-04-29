@@ -8,7 +8,6 @@ import java.util.concurrent.Executors;
 import org.jboss.netty.handler.execution.OrderedDownstreamThreadPoolExecutor;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
-import org.protobee.gnutella.GnutellaGuiceModule;
 import org.protobee.guice.netty.ExecutorModule;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.NetworkGuiceModule;
@@ -42,7 +41,6 @@ public class JnutellaMainModule extends AbstractModule {
     install(new ProtocolGuiceModule());
     install(new StatsGuiceModule());
     install(new SessionGuiceModule());
-    install(new GnutellaGuiceModule());
     install(new ExecutorModule(new Provider<Executor>() {
       @Override
       public Executor get() {

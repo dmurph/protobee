@@ -1,11 +1,5 @@
 package org.protobee.protocol;
 
-import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelHandler;
-import org.protobee.gnutella.Gnutella;
-import org.protobee.session.SessionModel;
-
-import com.google.inject.Provider;
 
 
 //@Protocol(name = "GET", version = "1.1", headerRegex = "^GET /[\\d]+/[^\\\\/:\\*\\\"<>\\|]+ HTTP/1.1$")
