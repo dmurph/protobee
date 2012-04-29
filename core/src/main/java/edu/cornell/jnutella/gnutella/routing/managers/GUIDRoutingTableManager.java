@@ -1,6 +1,6 @@
 package edu.cornell.jnutella.gnutella.routing.managers;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import com.google.inject.Inject;
 
@@ -91,7 +91,7 @@ public abstract class GUIDRoutingTableManager {
       return;
     }
 
-    ConcurrentHashMap<byte[], Entry> temp = grtable.getLastMap();
+    ConcurrentMap<byte[], Entry> temp = grtable.getLastMap();
     grtable.setLastMap(grtable.getCurrentMap());
     grtable.setCurrentMap(temp);
     grtable.setNextReplaceTime(currentTime+grtable.getLifetime());

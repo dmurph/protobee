@@ -31,7 +31,6 @@ public class ResponseDecoder implements PartDecoder<ResponseBody> {
     Preconditions.checkState(buffer.readableBytes() >= 8);
     // sets writer index for later use
     buffer.writerIndex(buffer.readableBytes());
-    
     long fileIndex = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
     long fileSize = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
     

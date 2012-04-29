@@ -36,6 +36,6 @@ public interface MessageBodyFactory {
                                 @Assisted("sequenceSize") byte sequenceSize,
                                 @Assisted("compressor") byte compressor,
                                 @Assisted("entryBits") byte entryBits,
-                                @Assisted byte[] data );
+                                byte[] data );
 
 }

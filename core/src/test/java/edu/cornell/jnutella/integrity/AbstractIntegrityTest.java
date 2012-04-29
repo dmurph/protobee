@@ -5,7 +5,7 @@ import org.junit.Before;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import edu.cornell.jnutella.Jnutella;
+import edu.cornell.jnutella.JNutella;
 
 public class AbstractIntegrityTest {
 
@@ -13,6 +13,6 @@ public class AbstractIntegrityTest {
 
   @Before
   public void setup() {
-    injector = Guice.createInjector(Jnutella.getCombinedModules());
+    injector = Guice.createInjector(JNutella.getCombinedModules());
   }
 }
