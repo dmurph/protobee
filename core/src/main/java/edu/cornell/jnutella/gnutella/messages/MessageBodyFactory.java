@@ -10,7 +10,6 @@ import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.HUGEExtension;
 import edu.cornell.jnutella.gnutella.routing.message.PatchBody;
 import edu.cornell.jnutella.gnutella.routing.message.ResetBody;
-import edu.cornell.jnutella.util.GUID;
 import edu.cornell.jnutella.util.VendorCode;
 
 public interface MessageBodyFactory {
@@ -19,19 +18,19 @@ public interface MessageBodyFactory {
   PongBody createPongMessage( InetSocketAddress address, @Assisted("fileCount") long fileCount, 
                               @Assisted("fileSizeInKB") long fileSizeInKB, @Assisted("ggep") GGEP ggep);
 
-  QueryBody createQueryMessage(short minSpeed, String query, @Assisted @Nullable HUGEExtension huge, @Assisted @Nullable GGEP ggep);
+  QueryBody createQueryMessage( short minSpeed, String query, @Assisted @Nullable HUGEExtension huge, @Assisted @Nullable GGEP ggep);
 
-  PushBody createPushMessage(GUID servantID, long index, 
+  PushBody createPushMessage(byte[] servantID, long index, 
                              InetSocketAddress socketAddress, @Assisted @Nullable GGEP ggep);
 
-  QueryHitBody createQueryHitMessage( InetSocketAddress socketAddress, @Assisted long speed, 
-                                      @Nullable @Assisted ResponseBody[] hitList, @Assisted VendorCode vendorCode,
+  QueryHitBody createQueryHitMessage( InetSocketAddress socketAddress, long speed, 
+                                      @Nullable @Assisted ResponseBody[] hitList, VendorCode vendorCode,
                                       @Assisted("flags") byte flags, @Assisted("controls") byte controls, 
                                       @Assisted("privateArea1") byte[] privateArea1, @Nullable @Assisted GGEP ggep,
                                       @Assisted("xmlBytes") byte[] xmlBytes, @Assisted("privateArea2") byte[] privateArea2,
-                                      @Assisted GUID servantID);
+                                      @Assisted("servantID") byte[] servantID);
 
-  ResetBody createResetMessage( @Assisted long tableLength, @Assisted byte infinity);
+  ResetBody createResetMessage( long tableLength, byte infinity);
 
   PatchBody createPatchMessage( @Assisted("sequenceNum") byte sequenceNum,
                                 @Assisted("sequenceSize") byte sequenceSize,

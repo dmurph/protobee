@@ -16,16 +16,19 @@ import edu.cornell.jnutella.util.GUID;
 @Singleton
 public class QueryRoutingTableManager extends GUIDRoutingTableManager {
 
+  // holds from 5-10 minutes of query GUIDs
+  private static long DEFAULT_LIFETIME = 5 * 60 * 1000;
+
   @InjectLogger
   private Logger log;
 
   @Inject
-  public QueryRoutingTableManager(QueryGUIDRoutingTable qgrtable) {
-    super(qgrtable);
+  public QueryRoutingTableManager(QueryGUIDRoutingTable.Factory factory) {
+    super(factory.create(DEFAULT_LIFETIME));
   }
 
   @Override
-  public NetworkIdentity findRouting( GUID guid ) {
+  public NetworkIdentity findRouting( byte[] guid ) {
     log.error("Use findRoutingForQuerys().");
     throw new UnsupportedOperationException( "Use findRoutingForQuerys()." );
   }
@@ -34,13 +37,12 @@ public class QueryRoutingTableManager extends GUIDRoutingTableManager {
    * return true if not double 
    * return false if identity hash is already in table
    */
-  public boolean checkAndAddQueryHit(IdentityHash hash){
+  public boolean hasQueryHit(IdentityHash hash){
+    return ((QueryGUIDRoutingTable) this.grtable).hasQueryHit(hash);
+  }
 
-    Integer value = ((QueryGUIDRoutingTable) this.grtable).putInUniqueQueryHitMap(hash, 1);
-    if (value == null){
-      return true;
-    }
-    return false;
+  public void addQueryHit(IdentityHash hash){
+    ((QueryGUIDRoutingTable) this.grtable).putInUniqueQueryHitMap(hash, 1);
   }
 
   /**

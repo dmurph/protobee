@@ -11,6 +11,7 @@ import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import com.google.inject.Singleton;
 
 import edu.cornell.jnutella.annotation.InjectLogger;
 import edu.cornell.jnutella.gnutella.messages.QueryBody;
@@ -22,18 +23,19 @@ import edu.cornell.jnutella.gnutella.routing.tables.CoreRoutingTable;
 import edu.cornell.jnutella.util.IOUtils;
 import edu.cornell.jnutella.util.URN;
 
+@Singleton
 public class CoreRoutingTableManager {
 
   @InjectLogger
   private Logger log;
   private final IOUtils ioUtils;
   private CoreRoutingTable qrtable;
-
+  
   @Inject
-  public CoreRoutingTableManager(IOUtils ioUtils, CoreRoutingTable qrtable) {
+  public CoreRoutingTableManager(IOUtils ioUtils, CoreRoutingTable.Factory factory) {
     this.ioUtils = ioUtils;
-    this.qrtable = qrtable;
-  } 
+    this.qrtable = factory.create();
+  }
 
   public void update(RoutingBody message) throws InvalidMessageException {
     if ( message.getVariant() == RoutingBody.RESET_TABLE_VARIANT ) {
@@ -47,8 +49,10 @@ public class CoreRoutingTableManager {
 
       // checks
       Preconditions.checkArgument(compressor == PatchBody.COMPRESSOR_ZLIB
-          || compressor == PatchBody.COMPRESSOR_NONE);
-      Preconditions.checkArgument(entryBits != 8);
+          || compressor == PatchBody.COMPRESSOR_NONE, 
+          new InvalidMessageException("compressor is not a known compressor: "+compressor));
+      Preconditions.checkArgument(entryBits != 8, 
+          new InvalidMessageException("entry bits cannot equal 8: "+entryBits));
 
       // Validate message info...
       byte msgSequenceSize = patchMessage.getSequenceSize();
@@ -71,7 +75,8 @@ public class CoreRoutingTableManager {
         } catch (IOException e) {
           throw new InvalidMessageException("Can't inflate patch data" );
         }
-        Preconditions.checkArgument(patchData != null);
+        Preconditions.checkArgument(patchData != null, 
+            new InvalidMessageException("patchData cannot be null: "+patchData));
       }
 
       // expand patch data.. this consumes extra memory... can't we do
@@ -134,8 +139,7 @@ public class CoreRoutingTableManager {
         qrtable.setSequenceSize((byte) 0x0);
         qrtable.setSequenceNumber((byte) 0x0);
         qrtable.setPatchPosition((byte) 0x0);
-        log.debug( null, CoreRoutingTable.class,
-          "Updated QRT: " + qrtable.getEntryCount() + " / " + qrtable.getTableSize() );
+        log.debug( "Updated QRT: " + qrtable.getEntryCount() + " / " + qrtable.getTableSize() );
       }
       else {
         qrtable.augmentSequenceNumber();

@@ -30,9 +30,9 @@ public class QueryModule implements ProtocolModule {
 
   private void queryMessageRecieved(MessageReceivedEvent event, MessageHeader header) throws InvalidMessageException {
 
-    if (!filter.shouldAcceptQueryMessage( header.getGUID(), header.getHops(), (QueryBody) event.getMessage().getBody())) { return; }
+    if (!filter.shouldAcceptQueryMessage( header.getGuid(), header.getHops(), (QueryBody) event.getMessage().getBody())) { return; }
 
-    queryRTManager.addRouting(header.getGUID(), identity);
+    queryRTManager.addRouting(header.getGuid(), identity);
 
     // respond to query
 

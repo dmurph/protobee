@@ -2,6 +2,7 @@ package edu.cornell.jnutella.gnutella.messages;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.Arrays;
 
 import javax.annotation.Nullable;
 
@@ -11,19 +12,18 @@ import com.google.inject.assistedinject.AssistedInject;
 import edu.cornell.jnutella.extension.GGEP;
 import edu.cornell.jnutella.extension.GGEPKeys;
 import edu.cornell.jnutella.gnutella.messages.decoding.DecodingException;
-import edu.cornell.jnutella.util.GUID;
 
 public class PushBody implements MessageBody {
 
   public static final long FW_TRANS_INDEX = Integer.MAX_VALUE - 2;
-  private GUID servantID;
+  private byte[] servantID;
   private long index;
   private InetSocketAddress socketAddress;
   private int port;
   private GGEP ggep;
 
   @AssistedInject
-  public PushBody(@Assisted GUID servantID, @Assisted long index,
+  public PushBody(@Assisted byte[] servantID, @Assisted long index,
                   @Assisted InetSocketAddress socketAddress, 
                   @Nullable @Assisted GGEP ggep) throws DecodingException {
     this.servantID = servantID;
@@ -32,7 +32,7 @@ public class PushBody implements MessageBody {
     this.ggep = ggep;
   }
 
-  public GUID getServantID() {
+  public byte[] getServantID() {
     return servantID;
   }
 
@@ -75,7 +75,7 @@ public class PushBody implements MessageBody {
     result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
     result = prime * result + (int) (index ^ (index >>> 32));
     result = prime * result + port;
-    result = prime * result + ((servantID == null) ? 0 : servantID.hashCode());
+    result = prime * result + Arrays.hashCode(servantID);
     result = prime * result + ((socketAddress == null) ? 0 : socketAddress.hashCode());
     return result;
   }
@@ -91,9 +91,7 @@ public class PushBody implements MessageBody {
     } else if (!ggep.equals(other.ggep)) return false;
     if (index != other.index) return false;
     if (port != other.port) return false;
-    if (servantID == null) {
-      if (other.servantID != null) return false;
-    } else if (!servantID.equals(other.servantID)) return false;
+    if (!Arrays.equals(servantID, other.servantID)) return false;
     if (socketAddress == null) {
       if (other.socketAddress != null) return false;
     } else if (!socketAddress.equals(other.socketAddress)) return false;

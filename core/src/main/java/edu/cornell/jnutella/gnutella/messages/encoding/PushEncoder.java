@@ -22,8 +22,8 @@ public class PushEncoder implements MessageBodyEncoder {
   }
 
   public void encode(ChannelBuffer buffer, PushBody toEncode) throws EncodingException{
-    Preconditions.checkArgument(toEncode.getServantID().getBytes().length == 16);
-    buffer.writeBytes(toEncode.getServantID().getBytes());
+    Preconditions.checkArgument(toEncode.getServantID().length == 16);
+    buffer.writeBytes(toEncode.getServantID());
     buffer.writerIndex(16);
     
     ByteUtils.int2leb((int) toEncode.getIndex(), buffer);

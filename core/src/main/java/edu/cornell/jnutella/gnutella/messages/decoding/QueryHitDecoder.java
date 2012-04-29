@@ -77,11 +77,10 @@ public class QueryHitDecoder implements MessageBodyDecoder<QueryHitBody> {
     
     Preconditions.checkArgument(buffer.readableBytes() == 16);
     
-    byte[] sid = new byte[16];
+    byte[] servantID = new byte[16];
     for (int i = 0; i < 16; i++)
-      sid[i] = buffer.readByte();
-    GUID servantID = new GUID(HexConverter.toHexString( sid ));
-
+      servantID[i] = buffer.readByte();
+    
     return bodyFactory.createQueryHitMessage( socketAddress, speed, hitList.toArray(new ResponseBody[hitList.size()]), 
       eqhd.getVendorCode(), eqhd.getFlags(), eqhd.getControls(),
       privateArea1, ggep, new byte[4], privateArea2, servantID);

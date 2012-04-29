@@ -22,11 +22,12 @@ public class PushTest extends AbstractTest {
 
   @Test
   public void testPush() throws DecodingException, EncodingException, UnknownHostException, UnsupportedEncodingException {
-    ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
-
-    MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
     
-    PushBody push = factory.createPushMessage(new GUID(), 
+    ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
+    MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
+    GUID guid = new GUID();
+    
+    PushBody push = factory.createPushMessage(guid.getBytes(), 
       (long) Integer.MAX_VALUE + 1l, new InetSocketAddress(InetAddress.getLocalHost(), 
       (int) Short.MAX_VALUE + 1), null);
 

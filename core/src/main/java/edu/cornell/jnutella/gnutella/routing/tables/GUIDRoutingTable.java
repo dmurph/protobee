@@ -1,9 +1,12 @@
 package edu.cornell.jnutella.gnutella.routing.tables;
 
-import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
+import com.google.common.collect.MapMaker;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
 
 import edu.cornell.jnutella.identity.NetworkIdentity;
-import edu.cornell.jnutella.util.GUID;
 
 /**
  * This GUIDRoutingTable is used to route replies coming from the GNet
@@ -36,43 +39,51 @@ public class GUIDRoutingTable {
    * allows us to accomplish a very fast and efficient FIFO behavior that stores
    * at least n to 2n seconds of GUID mappings.
    */
-  protected ConcurrentHashMap<GUID, Entry> currentMap;
-  protected ConcurrentHashMap<GUID, Entry> lastMap;
+  protected ConcurrentMap<byte[], Entry> currentMap ;
+  protected ConcurrentMap<byte[], Entry> lastMap;
 
-  protected ConcurrentHashMap<Integer, NetworkIdentity> idToIdentityMap;
-  protected ConcurrentHashMap<NetworkIdentity, Integer> identityToIdMap;
+  protected ConcurrentMap<Integer, NetworkIdentity> idToIdentityMap;
+  protected ConcurrentMap<NetworkIdentity, Integer> identityToIdMap;
 
   private long lifetime;            /** The lifetime of a map in millis */
   private long nextReplaceTime;     /** The time when the lastMap will be replaced by the currentMap. */
   private int nextId;               /** The next id to return for a host. */
 
+  public static interface Factory {
+    GUIDRoutingTable create(long lifetime);
+  }
+  
   /**
    * The routing table will store at least lifetime to 2 * lifetime of GUID mappings.
    * @param lifetime the lifetime in millis of a map. After this time is passed
    * the lastMap will be replaced by the currentMap.
-   */
-  public GUIDRoutingTable( long lifetime ) {
+   */ 
+  @AssistedInject
+  public GUIDRoutingTable( @Assisted long lifetime ) {
     this.lifetime = lifetime;
     nextId = 0;
-    currentMap = new ConcurrentHashMap<GUID, Entry>(); //  new GUID.GUIDComparator()
-    lastMap = new ConcurrentHashMap<GUID, Entry>(); //  new GUID.GUIDComparator()
-    idToIdentityMap = new ConcurrentHashMap<Integer, NetworkIdentity>();
-    identityToIdMap = new ConcurrentHashMap<NetworkIdentity, Integer>();
+    
+    // TODO making it a guice constant w/ an annotation 
+    currentMap = (new MapMaker().concurrencyLevel(4).makeMap());
+    lastMap = (new MapMaker().concurrencyLevel(4).makeMap());
+    idToIdentityMap = (new MapMaker().concurrencyLevel(4).makeMap());
+    identityToIdMap = (new MapMaker().concurrencyLevel(4).makeMap());
+    
   }
 
-  public ConcurrentHashMap<GUID, Entry> getCurrentMap() {
+  public ConcurrentMap<byte[], Entry> getCurrentMap() {
     return currentMap;
   }
 
-  public ConcurrentHashMap<GUID, Entry> getLastMap() {
+  public ConcurrentMap<byte[], Entry> getLastMap() {
     return lastMap;
   }
 
-  public ConcurrentHashMap<Integer, NetworkIdentity> getIdToIdentityMap() {
+  public ConcurrentMap<Integer, NetworkIdentity> getIdToIdentityMap() {
     return idToIdentityMap;
   }
 
-  public ConcurrentHashMap<NetworkIdentity, Integer> getIdentityToIdMap() {
+  public ConcurrentMap<NetworkIdentity, Integer> getIdentityToIdMap() {
     return identityToIdMap;
   }
 
@@ -88,28 +99,28 @@ public class GUIDRoutingTable {
     return nextId;
   }
 
-  public void setCurrentMap(ConcurrentHashMap<GUID, Entry> currentMap) {
+  public void setCurrentMap(ConcurrentMap<byte[], Entry> currentMap) {
     if (lastMap == null){
       return;
     }
     this.currentMap = currentMap;
   }
 
-  public void setLastMap(ConcurrentHashMap<GUID, Entry> lastMap) {
+  public void setLastMap(ConcurrentMap<byte[], Entry> lastMap) {
     if (lastMap == null){
       return;
     }
     this.lastMap = lastMap;
   }
 
-  public void setIdToIdentityMap(ConcurrentHashMap<Integer, NetworkIdentity> idToIdentityMap) {
+  public void setIdToIdentityMap(ConcurrentMap<Integer, NetworkIdentity> idToIdentityMap) {
     if (lastMap == null){
       return;
     }
     this.idToIdentityMap = idToIdentityMap;
   }
 
-  public void setIdentityToIdMap(ConcurrentHashMap<NetworkIdentity, Integer> identityToIdMap) {
+  public void setIdentityToIdMap(ConcurrentMap<NetworkIdentity, Integer> identityToIdMap) {
     if (lastMap == null){
       return;
     }
@@ -129,11 +140,11 @@ public class GUIDRoutingTable {
   }
 
   // alter maps
-  public Entry removefromCurrentMap(GUID guid){
+  public Entry removefromCurrentMap(byte[] guid){
     return this.currentMap.remove(guid);
   }
 
-  public Entry removefromLasttMap(GUID guid){
+  public Entry removefromLasttMap(byte[] guid){
     return this.lastMap.remove(guid);
   }
 
@@ -145,11 +156,11 @@ public class GUIDRoutingTable {
     return this.idToIdentityMap.remove(id);
   }
 
-  public void putInCurrentMap(GUID guid, Entry entry){
+  public void putInCurrentMap(byte[] guid, Entry entry){
     this.currentMap.put(guid, entry);
   }
 
-  public void putInLasttMap(GUID guid, Entry entry){
+  public void putInLasttMap(byte[] guid, Entry entry){
     this.lastMap.put(guid, entry);
   }
 
