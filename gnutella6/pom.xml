@@ -5,9 +5,7 @@
 	<groupId>org.protobee</groupId>
     <version>0.0.1-SNAPSHOT</version>
   </parent>
-  <groupId>org.protobee</groupId>
   <artifactId>protobee-gnutella6</artifactId>
-  <version>0.0.1-SNAPSHOT</version>
   <name>gnutella6</name>
   <dependencies>
   	<dependency>

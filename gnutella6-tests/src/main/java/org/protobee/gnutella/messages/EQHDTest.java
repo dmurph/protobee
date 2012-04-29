@@ -6,7 +6,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.protobee.AbstractTest;
-import org.protobee.gnutella.messages.EQHDBody;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.EQHDDecoder;
 import org.protobee.gnutella.messages.encoding.EQHDEncoder;

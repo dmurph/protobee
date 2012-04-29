@@ -9,9 +9,7 @@ import java.net.UnknownHostException;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
-import org.protobee.AbstractTest;
-import org.protobee.gnutella.messages.MessageBodyFactory;
-import org.protobee.gnutella.messages.QueryHitBody;
+import org.protobee.gnutella.AbstractGnutellaTest;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.QueryHitDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;
@@ -20,7 +18,7 @@ import org.protobee.gnutella.util.GUID;
 import org.protobee.gnutella.util.VendorCode;
 
 
-public class QueryHitTest extends AbstractTest {
+public class QueryHitTest extends AbstractGnutellaTest {
 
   @Test
   public void testQueryHit() throws DecodingException, EncodingException, UnknownHostException {
