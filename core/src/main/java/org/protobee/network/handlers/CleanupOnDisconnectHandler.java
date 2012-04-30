@@ -1,4 +1,4 @@
-package org.protobee.network;
+package org.protobee.network.handlers;
 
 import java.net.SocketAddress;
 
@@ -6,6 +6,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.protobee.annotation.InjectLogger;
+import org.protobee.guice.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionModel;
@@ -21,6 +22,7 @@ import com.google.inject.Inject;
  * 
  * @author Daniel
  */
+@SessionScope
 public class CleanupOnDisconnectHandler extends SimpleChannelUpstreamHandler {
 
   @InjectLogger

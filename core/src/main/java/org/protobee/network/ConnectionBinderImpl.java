@@ -6,19 +6,22 @@ import java.util.Set;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
+import org.protobee.network.handlers.MultipleRequestReceiver;
+import org.protobee.network.handlers.SingleRequestReceiver;
+import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.util.ProtocolConfigUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 
@@ -28,17 +31,17 @@ public class ConnectionBinderImpl implements ConnectionBinder {
   @InjectLogger
   private Logger log;
   private final NetworkIdentityManager identityManager;
-  private final ChannelFactory channelFactory;
+  private final Provider<ServerBootstrap> bootstrapProvider;
   private final MultipleRequestReceiver.Factory requestMultiplexerFactory;
   private final SingleRequestReceiver.Factory requestHandlerFactory;
   private final ProtobeeChannels channels;
 
   @Inject
   public ConnectionBinderImpl(NetworkIdentityManager identityManager,
-      ChannelFactory channelFactory, MultipleRequestReceiver.Factory multiplexer,
+      Provider<ServerBootstrap> bootstrapProvider, MultipleRequestReceiver.Factory multiplexer,
       SingleRequestReceiver.Factory requestHandlerFactory, ProtobeeChannels channels) {
     this.identityManager = identityManager;
-    this.channelFactory = channelFactory;
+    this.bootstrapProvider = bootstrapProvider;
     this.requestMultiplexerFactory = multiplexer;
     this.requestHandlerFactory = requestHandlerFactory;
     this.channels = channels;
@@ -56,14 +59,23 @@ public class ConnectionBinderImpl implements ConnectionBinder {
       }
     };
 
-    ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
+    ServerBootstrap bootstrap = bootstrapProvider.get();
     bootstrap.setOptions(config.getNettyBootstrapOptions());
     bootstrap.setPipelineFactory(factory);
 
-    InetSocketAddress localAddress = new InetSocketAddress(config.getPort());
     // yes, this means our address will be a localhost address for a little bit. This should change
     // when we get the 'Remote-IP' header for the first time
-    identityManager.setListeningAddress(identityManager.getMe(), config.get(), localAddress);
+    int port = config.getPort();
+    Protocol protocol = config.get();
+    NetworkIdentity me = identityManager.getMe();
+
+    InetSocketAddress localAddress = (InetSocketAddress) me.getListeningAddress(protocol);
+    if (localAddress == null) {
+      localAddress = new InetSocketAddress(port);
+    } else {
+      localAddress = new InetSocketAddress(localAddress.getAddress(), port);
+    }
+    identityManager.setListeningAddress(me, protocol, localAddress);
 
     Channel channel = bootstrap.bind(localAddress);
     log.info("Port " + config.getPort() + " bound for protocol " + config);
@@ -86,16 +98,23 @@ public class ConnectionBinderImpl implements ConnectionBinder {
       }
     };
 
-    ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
+    ServerBootstrap bootstrap = bootstrapProvider.get();
     bootstrap.setOptions(options);
     bootstrap.setPipelineFactory(factory);
 
-    InetSocketAddress localAddress = new InetSocketAddress(port);
-
-    // yes, this means our address will be a localhost address for a little bit. This should change
-    // when we get the 'Remote-IP' header for the first time
-    NetworkIdentity me = identityManager.getMe();
+    // yes, this means our address might be a localhost address for a little bit. This should be
+    // changed
+    // by the protocol when it knows our address
     for (ProtocolConfig protocolConfig : configs) {
+      Protocol protocol = protocolConfig.get();
+      NetworkIdentity me = identityManager.getMe();
+
+      InetSocketAddress localAddress = (InetSocketAddress) me.getListeningAddress(protocol);
+      if (localAddress == null) {
+        localAddress = new InetSocketAddress(port);
+      } else {
+        localAddress = new InetSocketAddress(localAddress.getAddress(), port);
+      }
       identityManager.setListeningAddress(me, protocolConfig.get(), localAddress);
     }
     Channel channel = bootstrap.bind(new InetSocketAddress(port));

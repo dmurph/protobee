@@ -1,6 +1,7 @@
-package org.protobee.network;
+package org.protobee.network.handlers;
 
 import org.protobee.identity.NetworkIdentityManager;
+import org.protobee.network.ProtobeeChannels;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.handshake.HandshakeStateBootstrapper;
 
