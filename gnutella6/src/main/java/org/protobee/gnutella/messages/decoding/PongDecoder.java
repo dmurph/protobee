@@ -1,5 +1,6 @@
 package org.protobee.gnutella.messages.decoding;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
@@ -12,9 +13,7 @@ import org.protobee.gnutella.session.ForMessageType;
 import org.protobee.util.ByteUtils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.net.InetAddresses;
 import com.google.inject.Inject;
-
 
 @ForMessageType(MessageHeader.F_PING_REPLY)
 public class PongDecoder implements MessageBodyDecoder<PongBody> {
@@ -32,10 +31,12 @@ public class PongDecoder implements MessageBodyDecoder<PongBody> {
     Preconditions.checkState(buffer.readableBytes() >= 14);
 
     int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
-    byte[] address = {buffer.readByte(), buffer.readByte(), buffer.readByte(), buffer.readByte()};
+    byte[] address = new byte[4];
+    buffer.readBytes(address);
+    
     InetSocketAddress socketAddress;
     try {
-      socketAddress = new InetSocketAddress(InetAddresses.fromLittleEndianByteArray(address), port);
+      socketAddress = new InetSocketAddress(InetAddress.getByAddress(address), port);
     } catch (UnknownHostException e) {
       throw new DecodingException(e);
     }

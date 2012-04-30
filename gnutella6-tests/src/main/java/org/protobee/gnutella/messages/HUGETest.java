@@ -8,7 +8,6 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.protobee.AbstractTest;
-import org.protobee.gnutella.extension.GGEP;
 import org.protobee.gnutella.extension.HUGEExtension;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.HUGEDecoder;
@@ -21,7 +20,7 @@ public class HUGETest extends AbstractTest {
 
   @Test
   public void testHUGE() throws EncodingException, DecodingException, IOException {
-    GGEP ggep = null;
+    
     URN[] urns = new URN[5];
     urns[0] = new URN("urn:sha1:ANCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
     urns[1] = new URN("urn:sha1:BBCKHTQCWBTRNJIV4WNAE52SJUQCZO5F");
@@ -29,7 +28,7 @@ public class HUGETest extends AbstractTest {
     urns[3] = new URN("urn:sha1:DNCKHTQCWBTRNJIV4WNAE52SJUQCZO5H");
     urns[4] = new URN("urn:sha1:ENCKHTQCWABCNJIV4WNAE52SJUQCZO5J");
 
-    HUGEExtension huge = new HUGEExtension(urns, ggep);
+    HUGEExtension huge = new HUGEExtension(urns);
 
     ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
 

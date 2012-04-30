@@ -12,7 +12,6 @@ import org.protobee.util.ByteUtils;
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
-
 @ForMessageType(MessageHeader.F_QUERY_REPLY)
 public class QueryHitEncoder implements MessageBodyEncoder {
   private final GGEPEncoder ggepEncoder;

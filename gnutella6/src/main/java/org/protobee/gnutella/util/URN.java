@@ -12,29 +12,27 @@ public final class URN  {
   }
 
   public URN(String urnString) {
-
+    
     String[] urn = urnString.split(":");
+    this.urnString = urnString;
     urnType = null;
 
     if (urn.length >= 2){
       if (urn[1].equals("Invalid")){
         urnType = Type.INVALID;
-        urnString = "";
       }
     }
 
     if (urn.length == 3){
       for (Type type: Type.values()){
-        if (urn[1].equals(type.getDescriptor()) && urn[1].length() == type.getLength()){
+        if (urn[1].equals(type.getDescriptor()) && (urn[2].length() == type.getLength())){
           this.urnType = type;
-          this.urnString = urn[1];
         }
       }
     }
 
     if (!urn[0].equals("urn") || urnType == null){
       urnType = Type.ANY_TYPE;
-      this.urnString = urnString;
     }
   }
 
@@ -50,9 +48,8 @@ public final class URN  {
   public String toString() {
     return urnString;
   }
-
-
-@Override
+  
+  @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
@@ -75,33 +72,35 @@ public final class URN  {
   }
 
 
-/** The range of all types for URNs. */
-public static enum Type {        
-  SHA1("sha1",32), // 32
-  BITPRINT("bitprint",72), // 72
-  TTROOT("ttroot",39), // 39
-  ANY_TYPE("",-1), // -1
-  INVALID("Invalid",-1), // -1
-  GUID("guid",32); // 32
 
-  public static final String URN_NAMESPACE_ID = "urn:";
-  private final String descriptor;
-  private final int length;
 
-  private Type(String descriptor, int length) {
-    this.descriptor = descriptor;
-    this.length = length;
+  /** The range of all types for URNs. */
+  public static enum Type {        
+    SHA1("sha1",32),
+    BITPRINT("bitprint",72),
+    TTROOT("ttroot",39),
+    ANY_TYPE("",-1),
+    INVALID("Invalid",-1),
+    GUID("guid",32);
+
+    public static final String URN_NAMESPACE_ID = "urn:";
+    private final String descriptor;
+    private final int length;
+
+    private Type(String descriptor, int length) {
+      this.descriptor = descriptor;
+      this.length = length;
+    }
+
+    public String getDescriptor() {
+      return descriptor;
+    }
+
+    public int getLength(){
+      return length;
+    }
+
   }
-
-  public String getDescriptor() {
-    return descriptor;
-  }
-
-  public int getLength(){
-    return length;
-  }
-
-}
 
 
 }

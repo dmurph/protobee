@@ -1,24 +1,23 @@
 package org.protobee.gnutella.messages;
 
 import org.protobee.gnutella.extension.GGEP;
-import org.protobee.gnutella.util.URN;
+import org.protobee.gnutella.extension.HUGEExtension;
 
 public class ResponseBody {
 
   private long fileIndex;
   private long fileSize;
   private String fileName;
-  private URN urn;
+  private HUGEExtension huge;
   private GGEP ggep;
   
-  public ResponseBody(long fileIndex, long fileSize, String fileName, URN urn, GGEP ggep) {
+  public ResponseBody(long fileIndex, long fileSize, String fileName, HUGEExtension huge, GGEP ggep) {
     this.fileIndex = fileIndex;
     this.fileSize = fileSize;
     this.fileName = fileName;
-    this.urn = urn;
+    this.huge = huge;
     this.ggep = ggep;
   }
-
 
   public long getFileIndex() {
     return fileIndex;
@@ -40,8 +39,8 @@ public class ResponseBody {
   }
 
 
-  public URN getURN() {
-    return urn;
+  public HUGEExtension getHUGE() {
+    return huge;
   }
 
 
@@ -53,10 +52,9 @@ public class ResponseBody {
     result = prime * result + ((fileName == null) ? 0 : fileName.hashCode());
     result = prime * result + (int) (fileSize ^ (fileSize >>> 32));
     result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
-    result = prime * result + ((urn == null) ? 0 : urn.hashCode());
+    result = prime * result + ((huge == null) ? 0 : huge.hashCode());
     return result;
   }
-
 
   @Override
   public boolean equals(Object obj) {
@@ -72,9 +70,9 @@ public class ResponseBody {
     if (ggep == null) {
       if (other.ggep != null) return false;
     } else if (!ggep.equals(other.ggep)) return false;
-    if (urn == null) {
-      if (other.urn != null) return false;
-    } else if (!urn.equals(other.urn)) return false;
+    if (huge == null) {
+      if (other.huge != null) return false;
+    } else if (!huge.equals(other.huge)) return false;
     return true;
   }
   
