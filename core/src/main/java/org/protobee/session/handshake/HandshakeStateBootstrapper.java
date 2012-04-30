@@ -1,4 +1,4 @@
-package org.protobee.network;
+package org.protobee.session.handshake;
 
 import java.util.Set;
 
@@ -10,14 +10,14 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
+import org.protobee.network.CleanupOnDisconnectHandler;
+import org.protobee.network.LoggingHandler;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.ProtocolSessionBootstrapper;
-import org.protobee.session.ProtocolSessionModel;
-import org.protobee.session.SessionDownstreamHandshaker;
+import org.protobee.session.ProtocolModulesHolder;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionModelFactory;
-import org.protobee.session.SessionUpstreamHandshaker;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -42,7 +42,7 @@ public class HandshakeStateBootstrapper {
   private final Provider<SessionDownstreamHandshaker> downShakerProvider;
   private final ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory;
   private final Provider<SessionModelFactory> sessionFactory;
-  private final Provider<ProtocolSessionModel> protocolSession;
+  private final Provider<ProtocolModulesHolder> protocolSession;
 
   private final Provider<LoggingHandler> loggingHandler;
   private final Provider<CleanupOnDisconnectHandler> cleanupHandler;
@@ -55,7 +55,7 @@ public class HandshakeStateBootstrapper {
       Provider<SessionUpstreamHandshaker> upShakerProvider,
       Provider<SessionDownstreamHandshaker> downShakerProvider,
       ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory, Provider<EventBus> eventBus,
-      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolSessionModel> protocolSession,
+      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolModulesHolder> protocolSession,
       Provider<LoggingHandler> loggingHandler, Provider<CleanupOnDisconnectHandler> cleanupHandler) {
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;
@@ -99,7 +99,7 @@ public class HandshakeStateBootstrapper {
 
       identity.registerNewSession(protocol, session);
 
-      ProtocolSessionModel protocolSessionModel = protocolSession.get();
+      ProtocolModulesHolder protocolSessionModel = protocolSession.get();
 
       Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
       if (modules.size() == 0) {

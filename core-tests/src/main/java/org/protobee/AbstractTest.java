@@ -11,7 +11,6 @@ import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import org.junit.After;
 import org.junit.Before;
-import org.protobee.guice.JnutellaMainModule;
 import org.protobee.guice.JnutellaScopes;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityFactory;
@@ -20,7 +19,7 @@ import org.protobee.modules.ProtocolModule;
 import org.protobee.plugin.PluginGuiceModule;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.ProtocolSessionModel;
+import org.protobee.session.ProtocolModulesHolder;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionModelFactory;
 
@@ -39,11 +38,11 @@ public abstract class AbstractTest {
 
   @Before
   public void setup() {
-    injector = Guice.createInjector(new JnutellaMainModule());
+    injector = Guice.createInjector(new ProtobeeGuiceModule());
   }
 
   public Injector getInjector(Module overridingModule) {
-    return Guice.createInjector(Modules.override(new JnutellaMainModule()).with(overridingModule));
+    return Guice.createInjector(Modules.override(new ProtobeeGuiceModule()).with(overridingModule));
   }
 
   public static NetworkIdentity createIdentity(Injector inj) {
@@ -69,7 +68,7 @@ public abstract class AbstractTest {
   public static ProtocolConfig mockDefaultProtocolConfig() {
     ProtocolConfig config = mock(ProtocolConfig.class);
     when(config.get()).thenReturn(mock(Protocol.class));
-    when(config.createSessionModel()).thenReturn(mock(ProtocolSessionModel.class));
+    when(config.createSessionModel()).thenReturn(mock(ProtocolModulesHolder.class));
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
     when(config.getNettyBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
@@ -78,7 +77,7 @@ public abstract class AbstractTest {
 
   public static ProtocolConfig mockDefaultProtocolConfig(Set<ProtocolModule> sessionModules) {
 
-    ProtocolSessionModel sessionModel = mock(ProtocolSessionModel.class);
+    ProtocolModulesHolder sessionModel = mock(ProtocolModulesHolder.class);
     when(sessionModel.getMutableModules()).thenReturn(sessionModules);
 
     ProtocolConfig config = mock(ProtocolConfig.class);

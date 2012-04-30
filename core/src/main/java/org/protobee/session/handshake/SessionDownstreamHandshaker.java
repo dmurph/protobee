@@ -1,4 +1,4 @@
-package org.protobee.session;
+package org.protobee.session.handshake;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.Channels;
@@ -8,6 +8,9 @@ import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.guice.SessionScope;
 import org.protobee.identity.NetworkIdentity;
+import org.protobee.session.ProtocolSessionBootstrapper;
+import org.protobee.session.SessionModel;
+import org.protobee.session.SessionState;
 import org.slf4j.Logger;
 
 import com.google.common.eventbus.EventBus;

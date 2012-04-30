@@ -1,4 +1,4 @@
-package org.protobee.session;
+package org.protobee.session.handshake;
 
 import java.net.SocketAddress;
 import java.util.Map;
@@ -18,6 +18,10 @@ import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.headers.CompatabilityHeaderMerger;
+import org.protobee.session.ProtocolSessionBootstrapper;
+import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.SessionModel;
+import org.protobee.session.SessionState;
 import org.protobee.util.ProtocolModuleFilter;
 import org.slf4j.Logger;
 
@@ -37,7 +41,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   @InjectLogger
   private Logger log;
   private final SessionModel sessionModel;
-  private final ProtocolSessionModel protocolSessionModel;
+  private final ProtocolModulesHolder protocolSessionModel;
   private final CompatabilityHeaderMerger headerMerger;
   private final HandshakeInterruptor interruptor;
   private final EventBus eventBus;
@@ -50,7 +54,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   public SessionUpstreamHandshaker(SessionModel session, CompatabilityHeaderMerger headerMerger,
       HandshakeInterruptor interruptor, ProtocolModuleFilter filter, EventBus eventBus,
       ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity, Protocol protocol,
-      ProtocolSessionModel protocolSessionModel) {
+      ProtocolModulesHolder protocolSessionModel) {
     this.sessionModel = session;
     this.headerMerger = headerMerger;
     this.interruptor = interruptor;

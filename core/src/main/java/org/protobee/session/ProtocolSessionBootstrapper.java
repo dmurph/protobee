@@ -23,17 +23,17 @@ import com.google.inject.assistedinject.AssistedInject;
 public class ProtocolSessionBootstrapper {
 
   public static interface Factory {
-    ProtocolSessionBootstrapper create(ChannelHandler[] handshakeHandlers);
+    ProtocolSessionBootstrapper create(ChannelHandler[] handshakeHandlersForRemoval);
   }
 
-  private final ChannelHandler[] handshakeHandlers;
+  private final ChannelHandler[] removingHandshakeHandlers;
   private final ProtocolConfig config;
   private final Provider<ChannelFuture> handshakeComplete;
 
   @AssistedInject
-  public ProtocolSessionBootstrapper(@Assisted ChannelHandler[] handshakeHandlers,
+  public ProtocolSessionBootstrapper(@Assisted ChannelHandler[] handshakeHandlersForRemoval,
       ProtocolConfig config, @HandshakeFuture Provider<ChannelFuture> handshakeComplete) {
-    this.handshakeHandlers = handshakeHandlers;
+    this.removingHandshakeHandlers = handshakeHandlersForRemoval;
     this.config = config;
     this.handshakeComplete = handshakeComplete;
   }
@@ -45,7 +45,7 @@ public class ProtocolSessionBootstrapper {
       pipeline.addLast(handler.toString(), handler);
     }
     // remove handshaker handlers
-    for (ChannelHandler handler : handshakeHandlers) {
+    for (ChannelHandler handler : removingHandshakeHandlers) {
       pipeline.remove(handler);
     }
     ChannelFuture handshake = handshakeComplete.get();

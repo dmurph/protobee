@@ -1,4 +1,4 @@
-package org.protobee.session;
+package org.protobee.session.handshake;
 
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 

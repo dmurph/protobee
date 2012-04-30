@@ -45,8 +45,8 @@ public class SessionModelFactory {
     JnutellaScopes.putObjectInScope(Key.get(ProtocolConfig.class), pconfig, map);
     JnutellaScopes.enterSessionScope(map);
 
-    ProtocolSessionModel protocolSessionModel = pconfig.createSessionModel();
-    JnutellaScopes.putObjectInScope(Key.get(ProtocolSessionModel.class), protocolSessionModel, map);
+    ProtocolModulesHolder protocolSessionModel = pconfig.createSessionModel();
+    JnutellaScopes.putObjectInScope(Key.get(ProtocolModulesHolder.class), protocolSessionModel, map);
     
     SessionModel sessionModel = sessionModelProvider.get();
     

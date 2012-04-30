@@ -10,6 +10,7 @@ import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.session.handshake.HandshakeStateBootstrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

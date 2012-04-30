@@ -5,6 +5,10 @@ import org.protobee.guice.PrescopedProvider;
 import org.protobee.guice.SessionScope;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.session.handshake.HandshakeInterruptor;
+import org.protobee.session.handshake.HandshakeInterruptorImpl;
+import org.protobee.session.handshake.SessionDownstreamHandshaker;
+import org.protobee.session.handshake.SessionUpstreamHandshaker;
 
 import com.google.common.eventbus.EventBus;
 import com.google.inject.AbstractModule;
@@ -20,12 +24,12 @@ public class SessionGuiceModule extends AbstractModule {
 
     bind(HandshakeInterruptor.class).to(HandshakeInterruptorImpl.class);
 
-    bind(SessionManager.class).in(Singleton.class);
+    bind(SessionManager.class).to(SessionManagerImpl.class).in(Singleton.class);
     
     bind(SessionUpstreamHandshaker.class).in(SessionScope.class);
     bind(SessionDownstreamHandshaker.class).in(SessionScope.class);
 
-    bind(ProtocolSessionModel.class).toProvider(new PrescopedProvider<ProtocolSessionModel>()).in(
+    bind(ProtocolModulesHolder.class).toProvider(new PrescopedProvider<ProtocolModulesHolder>()).in(
         SessionScope.class);
 
     bind(EventBus.class).toProvider(new PrescopedProvider<EventBus>()).in(SessionScope.class);

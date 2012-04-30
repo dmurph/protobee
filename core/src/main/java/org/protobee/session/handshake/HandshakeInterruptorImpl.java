@@ -1,4 +1,4 @@
-package org.protobee.session;
+package org.protobee.session.handshake;
 
 import java.util.Set;
 

@@ -3,21 +3,24 @@ package org.protobee.session;
 import java.util.Map;
 
 import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ScopeHolder;
 import org.protobee.guice.SessionScope;
 import org.protobee.guice.SessionScopeMap;
 import org.protobee.identity.NetworkIdentity;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
 
 /**
  * On construction, puts itself and the network identity into it's scope map
+ * Preconditions for injection: we're in the respective identity scope
  * 
  * @author Daniel
  */
 @SessionScope
-public class SessionModel {
+public class SessionModel implements ScopeHolder {
 
   private final NetworkIdentity identity;
   private final Map<String, Object> sessionScopeMap;
@@ -50,6 +53,7 @@ public class SessionModel {
   }
 
   public void enterScope() {
+    Preconditions.checkState(!JnutellaScopes.isInSessionScope(), "Already in a session scope");
     JnutellaScopes.enterSessionScope(sessionScopeMap);
   }
 

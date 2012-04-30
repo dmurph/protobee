@@ -19,8 +19,9 @@ import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.protocol.HandshakeFuture;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.HandshakeCreator;
 import org.protobee.session.SessionModel;
+import org.protobee.session.handshake.HandshakeCreator;
+import org.protobee.session.handshake.HandshakeStateBootstrapper;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;

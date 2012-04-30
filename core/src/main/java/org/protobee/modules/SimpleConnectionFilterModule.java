@@ -8,38 +8,45 @@ import javax.annotation.Nullable;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.session.HandshakeInterruptor;
-import org.protobee.session.HandshakeReceivedEvent;
+import org.protobee.session.ProtocolModulesHolder;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionState;
+import org.protobee.session.handshake.HandshakeInterruptor;
+import org.protobee.session.handshake.HandshakeReceivedEvent;
 import org.protobee.util.PreFilter;
 import org.protobee.util.VersionComparator;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
-import com.google.common.collect.ImmutableSet;
+import com.google.common.collect.Sets;
 import com.google.common.eventbus.Subscribe;
 
-
-// not complete
+/**
+ * Module for filtering incoming connections during the handshake state based on headers, modules
+ * loaded, and custom filters.
+ * 
+ * @author Daniel
+ */
 public abstract class SimpleConnectionFilterModule implements ProtocolModule {
 
   @InjectLogger
   protected Logger log;
-  private final Set<ClassFilterEntry> classRules;
+  private final Map<Class<? extends ProtocolModule>, ClassFilterEntry> classRules;
   private final Map<SessionState, Set<HeaderFilterEntry>> headerRules;
   private final Map<SessionState, Set<CustomFilterEntry>> customRules;
   private final SessionModel session;
   private final VersionComparator comp;
+  private final ProtocolModulesHolder modules;
 
-  protected SimpleConnectionFilterModule(SessionModel session, VersionComparator comp,
+  protected SimpleConnectionFilterModule(ProtocolModulesHolder protocolModulesHolder,
+      SessionModel session, VersionComparator comp,
       @Nullable Map<SessionState, Set<HeaderFilterEntry>> headerFilters,
-      @Nullable Set<ClassFilterEntry> classFilters,
+      @Nullable Map<Class<? extends ProtocolModule>, ClassFilterEntry> classFilters,
       @Nullable Map<SessionState, Set<CustomFilterEntry>> customFilters) {
     this.classRules =
-        classFilters != null ? ImmutableSet.copyOf(classFilters) : ImmutableSet
-            .<ClassFilterEntry>of();
+        classFilters != null ? ImmutableMap.copyOf(classFilters) : ImmutableMap
+            .<Class<? extends ProtocolModule>, ClassFilterEntry>of();
     this.headerRules =
         headerFilters != null ? ImmutableMap.copyOf(headerFilters) : ImmutableMap
             .<SessionState, Set<HeaderFilterEntry>>of();
@@ -47,6 +54,7 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
         customFilters != null ? ImmutableMap.copyOf(customFilters) : ImmutableMap
             .<SessionState, Set<CustomFilterEntry>>of();
 
+    this.modules = protocolModulesHolder;
     this.comp = comp;
     this.session = session;
   }
@@ -75,19 +83,58 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
         String value = message.getHeader(filterHeader.name);
         if (value == null) {
           if (headerFilterEntry.type == FilterType.INCLUSION) {
+            log.info("Rejecting connection by header filter, reason: " + headerFilterEntry.reason);
             interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
                 headerFilterEntry.reason));
           }
           continue;
         }
-        if (!comp.isValidVersionString(value)) {
+        if (!VersionComparator.isValidVersionString(value)) {
           log.info("Not a valid version string '" + value + "' for header " + filterHeader.name
               + ".  Rejecting.");
           interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
               headerFilterEntry.reason));
         }
 
+        if (comp.compare(filterHeader.minVersion, value) <= 0
+            && (filterHeader.maxVersion.equals("+") || comp.compare(filterHeader.maxVersion, value) >= 0)) {
+          if (headerFilterEntry.type == FilterType.EXCLUSION) {
+            log.info("Rejecting connection by header filter, reason: " + headerFilterEntry.reason);
+            interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
+                headerFilterEntry.reason));
+          }
+          continue;
+        }
+        if (headerFilterEntry.type == FilterType.INCLUSION) {
+          log.info("Rejecting connection by header filter, reason: " + headerFilterEntry.reason);
+          interruptor.disconnectWithStatus(new HttpResponseStatus(headerFilterEntry.code,
+              headerFilterEntry.reason));
+        }
+      }
+    }
 
+    if (classRules != null) {
+      Set<ProtocolModule> pmodules = modules.getMutableModules();
+
+      Set<Class<? extends ProtocolModule>> classesChecked = Sets.newHashSet();
+      for (ProtocolModule protocolModule : pmodules) {
+        ClassFilterEntry entry = classRules.get(protocolModule.getClass());
+        if (entry == null) {
+          continue;
+        }
+        if (entry.type == FilterType.EXCLUSION) {
+          interruptor.disconnectWithStatus(new HttpResponseStatus(entry.code, entry.reason));
+        }
+        classesChecked.add(protocolModule.getClass());
+      }
+      for (Class<? extends ProtocolModule> klass : classRules.keySet()) {
+        if (classesChecked.contains(klass)) {
+          continue;
+        }
+        ClassFilterEntry entry = classRules.get(klass);
+        if (entry.type == FilterType.INCLUSION) {
+          interruptor.disconnectWithStatus(new HttpResponseStatus(entry.code, entry.reason));
+        }
       }
     }
   }
@@ -117,6 +164,13 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
     }
 
     public FilterHeader(String name, String minVersion, String maxVersion) {
+      Preconditions.checkNotNull(name);
+      Preconditions.checkNotNull(minVersion);
+      Preconditions.checkArgument(VersionComparator.isValidVersionString(minVersion),
+          "minVersion is not a valid version string");
+      Preconditions.checkArgument(
+          VersionComparator.isValidVersionString(maxVersion) || maxVersion.equals("+"),
+          "maxVersion is not a valid version string or '+'");
       this.name = name;
       this.minVersion = minVersion;
       this.maxVersion = maxVersion;
@@ -146,21 +200,17 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
 
   public static class ClassFilterEntry {
     private final FilterType type;
-    private final Class<? extends ProtocolModule> moduleClass;
     private final int code;
     private final String reason;
 
-    public ClassFilterEntry(FilterType type, Class<? extends ProtocolModule> moduleClass) {
-      this(type, moduleClass, 503, "");
+    public ClassFilterEntry(FilterType type) {
+      this(type, 503, "");
     }
 
-    public ClassFilterEntry(FilterType type, Class<? extends ProtocolModule> moduleClass, int code,
-        String reason) {
+    public ClassFilterEntry(FilterType type, int code, String reason) {
       Preconditions.checkNotNull(type);
-      Preconditions.checkNotNull(moduleClass);
       Preconditions.checkNotNull(reason);
       this.type = type;
-      this.moduleClass = moduleClass;
       this.code = code;
       this.reason = reason;
     }

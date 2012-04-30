@@ -5,7 +5,7 @@ import java.util.Map;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
-import org.protobee.session.ProtocolSessionModel;
+import org.protobee.session.ProtocolModulesHolder;
 
 import com.google.inject.Provider;
 
@@ -17,7 +17,7 @@ public interface ProtocolConfig extends Provider<Protocol> {
    * 
    * @return
    */
-  ProtocolSessionModel createSessionModel();
+  ProtocolModulesHolder createSessionModel();
 
   ChannelHandler[] createProtocolHandlers();
 

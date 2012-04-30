@@ -6,16 +6,16 @@ import java.net.SocketAddress;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
+import org.protobee.annotation.UserAgent;
 import org.protobee.gnutella.Gnutella;
 import org.protobee.guice.SessionScope;
-import org.protobee.guice.UserAgent;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
-import org.protobee.session.HandshakeReceivedEvent;
-import org.protobee.session.HandshakeSendingEvent;
 import org.protobee.session.SessionModel;
+import org.protobee.session.handshake.HandshakeReceivedEvent;
+import org.protobee.session.handshake.HandshakeSendingEvent;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;

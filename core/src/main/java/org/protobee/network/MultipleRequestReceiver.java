@@ -4,6 +4,7 @@ import java.util.Set;
 
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.session.handshake.HandshakeStateBootstrapper;
 
 import com.google.inject.assistedinject.Assisted;
 import com.google.inject.assistedinject.AssistedInject;

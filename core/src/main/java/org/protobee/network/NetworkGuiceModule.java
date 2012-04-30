@@ -7,6 +7,8 @@ import org.protobee.JnutellaServantBootstrapper;
 import org.protobee.guice.SessionScope;
 import org.protobee.guice.netty.NioServerSocketChannelFactoryProvider;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.session.handshake.HandshakeHttpMessageDecoder;
+import org.protobee.session.handshake.HandshakeHttpMessageEncoder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;

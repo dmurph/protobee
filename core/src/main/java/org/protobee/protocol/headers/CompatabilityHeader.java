@@ -11,5 +11,5 @@ public @interface CompatabilityHeader {
 
   String minVersion();
 
-  String maxVersion();
+  String maxVersion(); 
 }

@@ -1,4 +1,4 @@
-package org.protobee.network;
+package org.protobee.session.handshake;
 
 import org.jboss.netty.channel.ChannelDownstreamHandler;
 import org.jboss.netty.channel.ChannelEvent;

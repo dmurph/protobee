@@ -6,7 +6,7 @@ import java.util.Map;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.session.ProtocolSessionModel;
+import org.protobee.session.ProtocolModulesHolder;
 import org.protobee.util.VersionComparator;
 import org.slf4j.Logger;
 
@@ -26,7 +26,7 @@ public class CompatabilityHeaderMerger {
   private final VersionComparator comp;
 
   @Inject
-  public CompatabilityHeaderMerger(VersionComparator comparator, ProtocolSessionModel session) {
+  public CompatabilityHeaderMerger(VersionComparator comparator, ProtocolModulesHolder session) {
     comp = comparator;
 
     ImmutableMultimap.Builder<String, CompatabilityHeader> requiredVersionsBuilder =

@@ -1,4 +1,4 @@
-package org.protobee.guice;
+package org.protobee.annotation;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -18,5 +18,4 @@ import com.google.inject.BindingAnnotation;
 @Target({ElementType.FIELD, ElementType.PARAMETER, ElementType.METHOD})
 @BindingAnnotation
 public @interface UserAgent {
-
 }

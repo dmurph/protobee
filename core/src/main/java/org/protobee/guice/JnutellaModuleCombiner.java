@@ -3,6 +3,7 @@ package org.protobee.guice;
 import java.util.List;
 import java.util.ServiceLoader;
 
+import org.protobee.ProtobeeGuiceModule;
 import org.protobee.plugin.OverridingModule;
 import org.protobee.plugin.PluginGuiceModule;
 
@@ -22,7 +23,7 @@ public class JnutellaModuleCombiner {
     List<Module> modules = Lists.newArrayList();
     List<Module> overridingModules = Lists.newArrayList();
 
-    modules.add(new JnutellaMainModule());
+    modules.add(new ProtobeeGuiceModule());
 
     ServiceLoader<PluginGuiceModule> pluginModules = ServiceLoader.load(PluginGuiceModule.class);
     for (PluginGuiceModule pluginModule : pluginModules) {

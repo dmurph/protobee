@@ -4,14 +4,13 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
-import org.protobee.annotation.InjectLogger;
 import org.protobee.guice.IdentityScope;
 import org.protobee.guice.IdentityScopeMap;
 import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ScopeHolder;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
-import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -20,12 +19,15 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
-
+/**
+ * An identity on the network. This class is a scope holder for it's identity scope, and also
+ * contains {@link ProtocolData} for each protocol registered in protobee.
+ * 
+ * @author Daniel
+ */
 @IdentityScope
-public class NetworkIdentity {
+public class NetworkIdentity implements ScopeHolder {
 
-  @InjectLogger
-  private Logger log;
   private final Map<Protocol, ProtocolData> protocolData;
   private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
@@ -89,7 +91,7 @@ public class NetworkIdentity {
     ProtocolData data = getProtocolData(protocol);
     return data.sendingAddress;
   }
-  
+
   public SocketAddress getListeningAddress(Protocol protocol) {
     ProtocolData data = getProtocolData(protocol);
     return data.listeningAddress;
@@ -146,6 +148,7 @@ public class NetworkIdentity {
   }
 
   public void enterScope() {
+    Preconditions.checkState(!JnutellaScopes.isInIdentityScope(), "Already in a session scope");
     JnutellaScopes.enterIdentityScope(identityScopeMap);
   }
 

@@ -1,4 +1,4 @@
-package org.protobee.guice;
+package org.protobee;
 
 import java.util.Map;
 import java.util.Set;
@@ -8,6 +8,13 @@ import java.util.concurrent.Executors;
 import org.jboss.netty.handler.execution.OrderedDownstreamThreadPoolExecutor;
 import org.jboss.netty.logging.InternalLoggerFactory;
 import org.jboss.netty.logging.Slf4JLoggerFactory;
+import org.protobee.annotation.UserAgent;
+import org.protobee.guice.IdentityScope;
+import org.protobee.guice.IdentityScopeMap;
+import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.LogModule;
+import org.protobee.guice.SessionScope;
+import org.protobee.guice.SessionScopeMap;
 import org.protobee.guice.netty.ExecutorModule;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.NetworkGuiceModule;
@@ -29,7 +36,7 @@ import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
 
-public class JnutellaMainModule extends AbstractModule {
+public class ProtobeeGuiceModule extends AbstractModule {
 
   public static final String USER_AGENT_STRING = "Jnutella/0.1";
   
