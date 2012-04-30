@@ -8,6 +8,8 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.frame.FrameDecoder;
 
+import com.google.common.annotations.VisibleForTesting;
+
 public abstract class FrameDecoderLE extends FrameDecoder {
 
   public FrameDecoderLE() {
@@ -19,7 +21,8 @@ public abstract class FrameDecoderLE extends FrameDecoder {
   }
 
   @Override
-  protected ChannelBuffer newCumulationBuffer(ChannelHandlerContext ctx, int minimumCapacity) {
+  @VisibleForTesting
+  public ChannelBuffer newCumulationBuffer(ChannelHandlerContext ctx, int minimumCapacity) {
     ChannelBufferFactory factory = ctx.getChannel().getConfig().getBufferFactory();
     return ChannelBuffers.dynamicBuffer(ByteOrder.LITTLE_ENDIAN, Math.max(minimumCapacity, 256),
         factory);
