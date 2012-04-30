@@ -1,4 +1,4 @@
-package org.protobee.network;
+package org.protobee.network.handlers;
 
 import java.nio.ByteOrder;
 

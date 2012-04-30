@@ -1,4 +1,4 @@
-package org.protobee.network;
+package org.protobee.network.handlers;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
@@ -8,8 +8,7 @@ import org.jboss.netty.channel.WriteCompletionEvent;
 import org.protobee.annotation.InjectLogger;
 import org.slf4j.Logger;
 
-
-public class LoggingHandler extends SimpleChannelUpstreamHandler {
+public class LoggingUpstreamHandler extends SimpleChannelUpstreamHandler {
 
   @InjectLogger
   private Logger log;

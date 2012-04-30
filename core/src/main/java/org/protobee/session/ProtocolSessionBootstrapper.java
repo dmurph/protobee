@@ -1,5 +1,7 @@
 package org.protobee.session;
 
+import java.util.Set;
+
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -7,11 +9,11 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.protobee.guice.SessionScope;
 import org.protobee.protocol.HandshakeFuture;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.session.handshake.HandshakeHandlers;
 
 import com.google.common.eventbus.EventBus;
+import com.google.inject.Inject;
 import com.google.inject.Provider;
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
 
 
 /**
@@ -22,18 +24,15 @@ import com.google.inject.assistedinject.AssistedInject;
 @SessionScope
 public class ProtocolSessionBootstrapper {
 
-  public static interface Factory {
-    ProtocolSessionBootstrapper create(ChannelHandler[] handshakeHandlersForRemoval);
-  }
-
-  private final ChannelHandler[] removingHandshakeHandlers;
   private final ProtocolConfig config;
   private final Provider<ChannelFuture> handshakeComplete;
+  private final Provider<Set<ChannelHandler>> handshakeHandlersToRemove;
 
-  @AssistedInject
-  public ProtocolSessionBootstrapper(@Assisted ChannelHandler[] handshakeHandlersForRemoval,
+  @Inject
+  public ProtocolSessionBootstrapper(
+      @HandshakeHandlers Provider<Set<ChannelHandler>> handshakeHandlersToRemove,
       ProtocolConfig config, @HandshakeFuture Provider<ChannelFuture> handshakeComplete) {
-    this.removingHandshakeHandlers = handshakeHandlersForRemoval;
+    this.handshakeHandlersToRemove = handshakeHandlersToRemove;
     this.config = config;
     this.handshakeComplete = handshakeComplete;
   }
@@ -45,12 +44,13 @@ public class ProtocolSessionBootstrapper {
       pipeline.addLast(handler.toString(), handler);
     }
     // remove handshaker handlers
-    for (ChannelHandler handler : removingHandshakeHandlers) {
+    Set<ChannelHandler> handlersToRemove = handshakeHandlersToRemove.get();
+    for (ChannelHandler handler : handlersToRemove) {
       pipeline.remove(handler);
     }
     ChannelFuture handshake = handshakeComplete.get();
     handshake.setSuccess();
-    
+
     // post event
     eventBus.post(new ProtocolHandlersLoadedEvent(context));
   }

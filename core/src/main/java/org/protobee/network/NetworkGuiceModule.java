@@ -1,14 +1,17 @@
 package org.protobee.network;
 
+import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
-import org.protobee.JnutellaServantBootstrapper;
 import org.protobee.guice.SessionScope;
 import org.protobee.guice.netty.NioServerSocketChannelFactoryProvider;
+import org.protobee.network.handlers.CleanupOnDisconnectHandler;
+import org.protobee.network.handlers.CloseOnExceptionHandler;
+import org.protobee.network.handlers.LoggingUpstreamHandler;
+import org.protobee.network.handlers.MultipleRequestReceiver;
+import org.protobee.network.handlers.SingleRequestReceiver;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.handshake.HandshakeHttpMessageDecoder;
-import org.protobee.session.handshake.HandshakeHttpMessageEncoder;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
@@ -26,12 +29,12 @@ public class NetworkGuiceModule extends AbstractModule {
 
     bind(ChannelFactory.class).toProvider(NioServerSocketChannelFactoryProvider.class).in(Singleton.class);
 
-    bind(HandshakeHttpMessageDecoder.class).in(SessionScope.class);
-    bind(HandshakeHttpMessageEncoder.class).in(SessionScope.class);
-
     bind(ConnectionCreator.class).to(ConnectionCreatorImpl.class).in(Singleton.class);
     bind(ConnectionBinder.class).to(ConnectionBinderImpl.class).in(Singleton.class);
-    bind(JnutellaServantBootstrapper.class).in(Singleton.class);
+    
+    bind(CleanupOnDisconnectHandler.class).in(SessionScope.class);
+    bind(CloseOnExceptionHandler.class).in(Singleton.class);
+    bind(LoggingUpstreamHandler.class).in(Singleton.class);
   }
 
   @Provides
@@ -46,5 +49,10 @@ public class NetworkGuiceModule extends AbstractModule {
   @SessionScope
   public HttpMessageEncoder getRequestEncoder(ProtocolConfig config) {
     return config.createRequestEncoder();
+  }
+  
+  @Provides
+  public ServerBootstrap getServerBootstrap(ChannelFactory factory) {
+    return new ServerBootstrap(factory);
   }
 }

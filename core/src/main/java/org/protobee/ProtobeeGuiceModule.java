@@ -48,6 +48,7 @@ public class ProtobeeGuiceModule extends AbstractModule {
     install(new ProtocolGuiceModule());
     install(new StatsGuiceModule());
     install(new SessionGuiceModule());
+    
     install(new ExecutorModule(new Provider<Executor>() {
       @Override
       public Executor get() {
@@ -68,6 +69,8 @@ public class ProtobeeGuiceModule extends AbstractModule {
 
     bindScope(SessionScope.class, ProtobeeScopes.SESSION);
     bindScope(IdentityScope.class, ProtobeeScopes.IDENTITY);
+
+    bind(JnutellaServantBootstrapper.class).in(Singleton.class);
     
     bindConstant().annotatedWith(UserAgent.class).to("Jnutella/0.1");
   }

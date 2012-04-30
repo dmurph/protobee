@@ -10,12 +10,10 @@ import org.jboss.netty.channel.ChannelPipeline;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.network.CleanupOnDisconnectHandler;
-import org.protobee.network.LoggingHandler;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.ProtocolSessionBootstrapper;
 import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.ProtocolSessionBootstrapper;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionModelFactory;
 import org.slf4j.Logger;
@@ -36,37 +34,25 @@ public class HandshakeStateBootstrapper {
 
   @InjectLogger
   private Logger log;
-  private final Provider<HandshakeHttpMessageDecoder> decoderFactory;
-  private final Provider<HandshakeHttpMessageEncoder> encoderFactory;
-  private final Provider<SessionUpstreamHandshaker> upShakerProvider;
-  private final Provider<SessionDownstreamHandshaker> downShakerProvider;
-  private final ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory;
+  private final Provider<ProtocolSessionBootstrapper> protocolBootstrapperFactory;
   private final Provider<SessionModelFactory> sessionFactory;
   private final Provider<ProtocolModulesHolder> protocolSession;
 
-  private final Provider<LoggingHandler> loggingHandler;
-  private final Provider<CleanupOnDisconnectHandler> cleanupHandler;
+  private final Provider<Set<ChannelHandler>> handshakeHandlersProvider;
 
   private final Provider<EventBus> eventBus;
 
   @Inject
-  public HandshakeStateBootstrapper(Provider<HandshakeHttpMessageDecoder> decoderFactory,
-      Provider<HandshakeHttpMessageEncoder> encoderFactory,
-      Provider<SessionUpstreamHandshaker> upShakerProvider,
-      Provider<SessionDownstreamHandshaker> downShakerProvider,
-      ProtocolSessionBootstrapper.Factory protocolBootstrapperFactory, Provider<EventBus> eventBus,
-      Provider<SessionModelFactory> sessionFactory, Provider<ProtocolModulesHolder> protocolSession,
-      Provider<LoggingHandler> loggingHandler, Provider<CleanupOnDisconnectHandler> cleanupHandler) {
-    this.decoderFactory = decoderFactory;
-    this.encoderFactory = encoderFactory;
-    this.upShakerProvider = upShakerProvider;
-    this.downShakerProvider = downShakerProvider;
+  public HandshakeStateBootstrapper(
+      Provider<ProtocolSessionBootstrapper> protocolBootstrapperFactory,
+      Provider<EventBus> eventBus, Provider<SessionModelFactory> sessionFactory,
+      Provider<ProtocolModulesHolder> protocolSession,
+      @HandshakeHandlers Provider<Set<ChannelHandler>> handshakeHandlersProvider) {
     this.protocolBootstrapperFactory = protocolBootstrapperFactory;
     this.eventBus = eventBus;
     this.sessionFactory = sessionFactory;
     this.protocolSession = protocolSession;
-    this.loggingHandler = loggingHandler;
-    this.cleanupHandler = cleanupHandler;
+    this.handshakeHandlersProvider = handshakeHandlersProvider;
   }
 
   /**
@@ -80,7 +66,8 @@ public class HandshakeStateBootstrapper {
    * @param pipeline
    * @return
    */
-  public void bootstrapSession(ProtocolConfig protocolConfig, NetworkIdentity identity, @Nullable Channel channel, ChannelPipeline pipeline) {
+  public void bootstrapSession(ProtocolConfig protocolConfig, NetworkIdentity identity,
+      @Nullable Channel channel, ChannelPipeline pipeline) {
     Preconditions.checkNotNull(protocolConfig);
     Preconditions.checkNotNull(identity);
 
@@ -90,7 +77,9 @@ public class HandshakeStateBootstrapper {
     try {
       identity.enterScope();
       // create session
-      session = sessionFactory.get().create(protocolConfig, identity.getSendingAddress(protocol).toString());
+      session =
+          sessionFactory.get().create(protocolConfig,
+              identity.getSendingAddress(protocol).toString());
       if (channel != null) {
         session.addObjectToScope(Key.get(Channel.class), channel);
       }
@@ -114,25 +103,16 @@ public class HandshakeStateBootstrapper {
         }
       }
 
-      // create handlers
-      ChannelHandler[] handlers = new ChannelHandler[4];
 
       // create protocol bootstrap
-      ProtocolSessionBootstrapper protocolBootstrap = protocolBootstrapperFactory.create(handlers);
-      session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class), protocolBootstrap);
+      session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class),
+          protocolBootstrapperFactory.get());
 
-      handlers[0] = encoderFactory.get();
-      handlers[1] = decoderFactory.get();
-      handlers[2] = downShakerProvider.get();
-      handlers[3] = upShakerProvider.get();
+      Set<ChannelHandler> handlers = handshakeHandlersProvider.get();
 
       for (ChannelHandler handler : handlers) {
         pipeline.addLast(handler.toString(), handler);
       }
-      CleanupOnDisconnectHandler cleanup = cleanupHandler.get();
-      LoggingHandler logging = loggingHandler.get();
-      pipeline.addLast(cleanup.toString(), cleanup);
-      pipeline.addLast(logging.toString(), logging);
 
     } finally {
       if (session != null) {

@@ -2,6 +2,7 @@ package org.protobee.session.handshake;
 
 import java.net.SocketAddress;
 import java.util.Map;
+import java.util.Set;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.Channels;
@@ -106,16 +107,33 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
 
     eventBus.post(new HandshakeReceivedEvent(ctx, request, interruptor));
 
-    HttpResponseStatus interruptingResponse = interruptor.getInterruptingDisconnect();
+    Set<HttpResponseStatus> interruptingResponse = interruptor.getDisconnectionInterrupts();
+    interruptor.clear();
 
     HttpVersion version =
         new HttpVersion(protocol.name(), protocol.majorVersion(), protocol.minorVersion(), true);
 
     HttpResponse response;
-    if (interruptingResponse != null) {
-      response = new DefaultHttpResponse(version, interruptingResponse);
-    } else {
+    if (interruptingResponse.size() == 0) {
       response = new DefaultHttpResponse(version, new HttpResponseStatus(200, "OK"));
+    } else {
+      if (log.isInfoEnabled()) {
+        StringBuilder reasons = new StringBuilder();
+        reasons.append("disconnect reasons from interruptor: {");
+        boolean first = true;
+        for (HttpResponseStatus httpResponseStatus : interruptingResponse) {
+          if (first) {
+            reasons.append("\"").append(httpResponseStatus.toString()).append("\"");
+            first = false;
+            continue;
+          }
+          reasons.append(", \"").append(httpResponseStatus.toString()).append("\"");
+        }
+        reasons.append("}");
+        log.info(reasons.toString());
+      }
+      // just grab the first one
+      response = new DefaultHttpResponse(version, interruptingResponse.iterator().next());
     }
 
     switch (sessionModel.getSessionState()) {
@@ -133,9 +151,9 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
     identity.exitScope();
 
     SocketAddress address = identity.getListeningAddress(protocol);
-    
-    Preconditions.checkState(address != null, "Listening address for identity " + identity + " with protocol " + protocol
-      + " is null");
+
+    Preconditions.checkState(address != null, "Listening address for identity " + identity
+        + " with protocol " + protocol + " is null");
 
     Channels.write(ctx.getChannel(), response, address);
   }

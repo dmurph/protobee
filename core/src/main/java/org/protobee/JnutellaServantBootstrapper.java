@@ -72,7 +72,7 @@ public class JnutellaServantBootstrapper {
 
   }
 
-  public void shutdown(int maxWaitMillis) {
+  public void shutdown(long maxWaitMillis) {
     Preconditions.checkState(shuttingDown.compareAndSet(false, true),
         "Jnutella servant was already started");
     synchronized (lock) {

@@ -11,5 +11,5 @@ import org.protobee.util.UtilSuite;
 
 @RunWith(Suite.class)
 @SuiteClasses({UtilSuite.class, NetworkTestSuite.class,
-    ProtocolTestSuite.class, IntegrityTestSuite.class, IdentityTests.class})
+    ProtocolTestSuite.class, IntegrityTestSuite.class, IdentityTests.class, ServantBootstrapTest.class})
 public class CoreTestSuite {}
