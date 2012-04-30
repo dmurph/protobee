@@ -1,0 +1,57 @@
+package org.protobee.session;
+
+import org.jboss.netty.channel.ChannelFuture;
+import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.channel.ChannelHandlerContext;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.protobee.guice.SessionScope;
+import org.protobee.protocol.HandshakeFuture;
+import org.protobee.protocol.ProtocolConfig;
+
+import com.google.common.eventbus.EventBus;
+import com.google.inject.Provider;
+import com.google.inject.assistedinject.Assisted;
+import com.google.inject.assistedinject.AssistedInject;
+
+
+/**
+ * Removes handshake handlers and adds protocol handlers.
+ * 
+ * @author Daniel
+ */
+@SessionScope
+public class ProtocolSessionBootstrapper {
+
+  public static interface Factory {
+    ProtocolSessionBootstrapper create(ChannelHandler[] handshakeHandlersForRemoval);
+  }
+
+  private final ChannelHandler[] removingHandshakeHandlers;
+  private final ProtocolConfig config;
+  private final Provider<ChannelFuture> handshakeComplete;
+
+  @AssistedInject
+  public ProtocolSessionBootstrapper(@Assisted ChannelHandler[] handshakeHandlersForRemoval,
+      ProtocolConfig config, @HandshakeFuture Provider<ChannelFuture> handshakeComplete) {
+    this.removingHandshakeHandlers = handshakeHandlersForRemoval;
+    this.config = config;
+    this.handshakeComplete = handshakeComplete;
+  }
+
+  public void bootstrapProtocolPipeline(ChannelPipeline pipeline, EventBus eventBus,
+      SessionModel model, ChannelHandlerContext context) {
+    // add new handlers
+    for (ChannelHandler handler : config.createProtocolHandlers()) {
+      pipeline.addLast(handler.toString(), handler);
+    }
+    // remove handshaker handlers
+    for (ChannelHandler handler : removingHandshakeHandlers) {
+      pipeline.remove(handler);
+    }
+    ChannelFuture handshake = handshakeComplete.get();
+    handshake.setSuccess();
+    
+    // post event
+    eventBus.post(new ProtocolHandlersLoadedEvent(context));
+  }
+}
