@@ -8,8 +8,6 @@ import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.util.Date;
 
-import org.protobee.ProtobeeGuiceModule;
-
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.grapher.GrapherModule;
@@ -19,9 +17,6 @@ import com.google.inject.grapher.graphviz.GraphvizRenderer;
 
 
 public class DependencyGraphGenerator {
-  public static void main(String[] args) {
-    graphGood("depGraph", Guice.createInjector(new ProtobeeGuiceModule()));
-  }
 
   public final static Injector graphGood(String filename, Injector inj) {
     try {

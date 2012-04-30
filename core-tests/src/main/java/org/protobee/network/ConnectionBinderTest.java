@@ -1,0 +1,112 @@
+package org.protobee.network;
+
+import static org.junit.Assert.*;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.*;
+
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
+import java.util.Set;
+
+import org.jboss.netty.bootstrap.Bootstrap;
+import org.jboss.netty.bootstrap.ServerBootstrap;
+import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
+import org.jboss.netty.channel.ChannelPipeline;
+import org.jboss.netty.channel.ServerChannelFactory;
+import org.junit.Test;
+import org.protobee.AbstractTest;
+import org.protobee.identity.NetworkIdentityManager;
+import org.protobee.protocol.Protocol;
+import org.protobee.protocol.ProtocolConfig;
+
+import com.google.common.collect.ImmutableSet;
+import com.google.inject.AbstractModule;
+import com.google.inject.Injector;
+import com.google.inject.util.Modules;
+
+public class ConnectionBinderTest extends AbstractTest {
+
+  @Test
+  public void testSingleConfigBound() {
+    int port = 10;
+    ProtocolConfig config = mockDefaultProtocolConfig();
+    when(config.getPort()).thenReturn(port);
+
+    final ProtobeeChannels channels = mock(ProtobeeChannels.class);
+    final ServerBootstrap bootstrap = mock(ServerBootstrap.class);
+    Channel channel = mock(Channel.class);
+    when(bootstrap.bind(any(SocketAddress.class))).thenReturn(channel);
+
+    Injector inj =
+        getInjector(Modules.combine(getModuleWithProtocolConfig(config), new AbstractModule() {
+          @Override
+          protected void configure() {
+            bind(ServerBootstrap.class).toInstance(bootstrap);
+            bind(ProtobeeChannels.class).toInstance(channels);
+          }
+        }));
+
+    ConnectionBinder binder = inj.getInstance(ConnectionBinder.class);
+
+    Channel bindedChannel = binder.bind(config);
+
+    InetSocketAddress localAddress = new InetSocketAddress(port);
+
+    assertEquals(channel, bindedChannel);
+    verify(bootstrap).setOptions(eq(config.getNettyBootstrapOptions()));
+    verify(bootstrap).bind(eq(localAddress));
+    Protocol protocol = config.get();
+    verify(channels).addChannel(eq(channel), eq(protocol));
+    
+    NetworkIdentityManager identities = inj.getInstance(NetworkIdentityManager.class);
+    
+    InetSocketAddress meAddress = (InetSocketAddress) identities.getMe().getListeningAddress(protocol);
+    assertEquals(port, meAddress.getPort());
+    
+  }
+  
+  @Test
+  public void testMultipleBound() {
+    int port = 10;
+    ProtocolConfig config = mockDefaultProtocolConfig();
+    ProtocolConfig config2 = mockDefaultProtocolConfig();
+    when(config.getPort()).thenReturn(port);
+    when(config2.getPort()).thenReturn(port);
+    Set<ProtocolConfig> configs = ImmutableSet.of(config, config2);
+
+    final ProtobeeChannels channels = mock(ProtobeeChannels.class);
+    final ServerBootstrap bootstrap = mock(ServerBootstrap.class);
+    Channel channel = mock(Channel.class);
+    when(bootstrap.bind(any(SocketAddress.class))).thenReturn(channel);
+
+    Injector inj =
+        getInjector(Modules.combine(getModuleWithProtocolConfig(config, config2), new AbstractModule() {
+          @Override
+          protected void configure() {
+            bind(ServerBootstrap.class).toInstance(bootstrap);
+            bind(ProtobeeChannels.class).toInstance(channels);
+          }
+        }));
+
+    ConnectionBinder binder = inj.getInstance(ConnectionBinder.class);
+
+    Channel bindedChannel = binder.bind(configs, port);
+
+    InetSocketAddress localAddress = new InetSocketAddress(port);
+
+    assertEquals(channel, bindedChannel);
+    verify(bootstrap).bind(eq(localAddress));
+    Protocol protocol1 = config.get();
+    Protocol protocol2 = config2.get();
+    verify(channels).addChannel(eq(channel), eq(ImmutableSet.<Protocol>of(protocol1, protocol2)));
+    
+    NetworkIdentityManager identities = inj.getInstance(NetworkIdentityManager.class);
+    
+    InetSocketAddress meAddress1 = (InetSocketAddress) identities.getMe().getListeningAddress(protocol1);
+    assertEquals(port, meAddress1.getPort());
+    InetSocketAddress meAddress2 = (InetSocketAddress) identities.getMe().getListeningAddress(protocol2);
+    assertEquals(port, meAddress2.getPort());
+  }
+
+}

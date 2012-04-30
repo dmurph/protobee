@@ -1,4 +1,4 @@
-package org.protobee.network;
+package org.protobee.network.handlers;
 
 import java.nio.charset.Charset;
 
@@ -8,6 +8,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
+import org.protobee.network.ProtobeeChannels;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.handshake.HandshakeStateBootstrapper;
