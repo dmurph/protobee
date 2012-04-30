@@ -24,10 +24,11 @@ public class PongTest extends AbstractGnutellaTest {
     ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
 
     MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
-
+    
     PongBody pong =
-        factory.createPongMessage(new InetSocketAddress(InetAddress.getLocalHost(), (int) Short.MAX_VALUE + 1),
-            (long) Integer.MAX_VALUE + 1l, (long) Integer.MAX_VALUE + 2l, null);
+        factory.createPongMessage(new InetSocketAddress(InetAddress.getLocalHost().getHostAddress(), 
+          (int) Short.MAX_VALUE + 1), (long) Integer.MAX_VALUE + 1l, 
+          (long) Integer.MAX_VALUE + 2l, null);
 
     PongEncoder encoder = injector.getInstance(PongEncoder.class);
     encoder.encode(buffer, pong);
