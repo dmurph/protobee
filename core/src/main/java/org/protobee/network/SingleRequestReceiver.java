@@ -24,7 +24,7 @@ public class SingleRequestReceiver extends AbstractRequestReceiver {
   @AssistedInject
   public SingleRequestReceiver(@Assisted ProtocolConfig protocol,
       HandshakeStateBootstrapper handshakeBootstrap, NetworkIdentityManager identityManager,
-      JnutellaChannels channels) {
+      ProtobeeChannels channels) {
     super(handshakeBootstrap, identityManager, channels);
     this.protocolConfig = protocol;
   }

@@ -3,7 +3,7 @@ package org.protobee.session;
 import java.util.Map;
 
 import org.protobee.guice.IdentityScope;
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 
@@ -40,19 +40,19 @@ public class SessionModelFactory {
     Protocol protocol = pconfig.get();
     Map<String, Object> map = Maps.newHashMap();
     EventBus sessionEventBus = new EventBus(protocol.name() + "-" + eventBusSublabel);
-    JnutellaScopes.putObjectInScope(Key.get(EventBus.class), sessionEventBus, map);
-    JnutellaScopes.putObjectInScope(Key.get(Protocol.class), protocol, map);
-    JnutellaScopes.putObjectInScope(Key.get(ProtocolConfig.class), pconfig, map);
-    JnutellaScopes.enterSessionScope(map);
+    ProtobeeScopes.putObjectInScope(Key.get(EventBus.class), sessionEventBus, map);
+    ProtobeeScopes.putObjectInScope(Key.get(Protocol.class), protocol, map);
+    ProtobeeScopes.putObjectInScope(Key.get(ProtocolConfig.class), pconfig, map);
+    ProtobeeScopes.enterSessionScope(map);
 
     ProtocolModulesHolder protocolSessionModel = pconfig.createSessionModel();
-    JnutellaScopes.putObjectInScope(Key.get(ProtocolModulesHolder.class), protocolSessionModel, map);
+    ProtobeeScopes.putObjectInScope(Key.get(ProtocolModulesHolder.class), protocolSessionModel, map);
     
     SessionModel sessionModel = sessionModelProvider.get();
     
     sessionModel.getSessionScopeMap().putAll(map);
 
-    JnutellaScopes.exitSessionScope();
+    ProtobeeScopes.exitSessionScope();
     return sessionModel;
   }
 }

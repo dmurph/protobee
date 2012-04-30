@@ -2,7 +2,7 @@ package org.protobee.identity;
 
 import java.util.Map;
 
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -26,10 +26,10 @@ public class NetworkIdentityFactory {
 
   public NetworkIdentity create() {
     Map<String, Object> scopeMap = Maps.newHashMap();
-    JnutellaScopes.enterIdentityScope(scopeMap);
+    ProtobeeScopes.enterIdentityScope(scopeMap);
     NetworkIdentity identity = identityProvider.get();
     identity.getIdentityScopeMap().putAll(scopeMap);
-    JnutellaScopes.exitIdentityScope();
+    ProtobeeScopes.exitIdentityScope();
     return identity;
   }
 }

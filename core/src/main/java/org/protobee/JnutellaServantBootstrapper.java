@@ -6,7 +6,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.protobee.network.ConnectionBinder;
-import org.protobee.network.JnutellaChannels;
+import org.protobee.network.ProtobeeChannels;
 import org.protobee.protocol.ProtocolConfig;
 
 import com.google.common.base.Preconditions;
@@ -27,14 +27,14 @@ public class JnutellaServantBootstrapper {
   private final Set<ProtocolConfig> protocols;
   private final ConnectionBinder connectionBinder;
   private final ChannelFactory channelFactory;
-  private final JnutellaChannels channels;
+  private final ProtobeeChannels channels;
   private final AtomicBoolean started = new AtomicBoolean(false);
   private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
   private final Object lock = new Object();
 
   @Inject
   public JnutellaServantBootstrapper(Set<ProtocolConfig> protocols,
-      ConnectionBinder connectionBinder, ChannelFactory factory, JnutellaChannels channels) {
+      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels) {
     this.protocols = protocols;
     this.connectionBinder = connectionBinder;
     this.channelFactory = factory;

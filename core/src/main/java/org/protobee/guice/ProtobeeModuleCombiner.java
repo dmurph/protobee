@@ -12,7 +12,7 @@ import com.google.inject.Module;
 import com.google.inject.util.Modules;
 
 
-public class JnutellaModuleCombiner {
+public class ProtobeeModuleCombiner {
   
   /**
    * Gets all plugin modules with main application module

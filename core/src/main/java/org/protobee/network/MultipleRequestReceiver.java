@@ -27,7 +27,7 @@ public class MultipleRequestReceiver extends AbstractRequestReceiver {
   @AssistedInject
   public MultipleRequestReceiver(@Assisted Set<ProtocolConfig> protocols,
       HandshakeStateBootstrapper handshakeBootstrap, NetworkIdentityManager identityManager,
-      JnutellaChannels channels) {
+      ProtobeeChannels channels) {
     super(handshakeBootstrap, identityManager, channels);
     this.protocols = protocols;
   }

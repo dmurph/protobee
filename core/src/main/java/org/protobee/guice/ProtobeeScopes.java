@@ -10,7 +10,7 @@ import com.google.inject.OutOfScopeException;
 import com.google.inject.Provider;
 import com.google.inject.Scope;
 
-public class JnutellaScopes {
+public class ProtobeeScopes {
 
   /**
    * A threadlocal scope map for session scopes.
@@ -38,18 +38,22 @@ public class JnutellaScopes {
 
           Map<String, Object> scopeMap = sessionScopeContext.get();
           if (scopeMap != null) {
-            T t;
-            synchronized (name.intern()) {
-              t = (T) scopeMap.get(name);
+            T t = (T) scopeMap.get(name);
 
-              if (t == null) {
-                t = creator.get();
-                // if (!Scopes.isCircularProxy(t)) {
-                // Store a sentinel for provider-given null values.
-                scopeMap.put(name, t != null ? t : NullObject.INSTANCE);
-                // }
+            if (t == null) {
+              String keyLock = "SESSION-" + name;
+              synchronized (keyLock.intern()) {
+                t = (T) scopeMap.get(name);
+                if (t == null) {
+                  t = creator.get();
+                  // if (!Scopes.isCircularProxy(t)) {
+                  // Store a sentinel for provider-given null values.
+                  scopeMap.put(name, t != null ? t : NullObject.INSTANCE);
+                  // }
+                }
               }
             }
+
             // Accounts for @Nullable providers.
             if (NullObject.INSTANCE == t) {
               return null;
@@ -86,16 +90,19 @@ public class JnutellaScopes {
 
           Map<String, Object> scopeMap = identityScopeContext.get();
           if (scopeMap != null) {
-            T t;
-            synchronized (name.intern()) {
-              t = (T) scopeMap.get(name);
+            T t = (T) scopeMap.get(name);
 
-              if (t == null) {
-                t = creator.get();
-                // if (!Scopes.isCircularProxy(t)) {
-                // Store a sentinel for provider-given null values.
-                scopeMap.put(name, t != null ? t : NullObject.INSTANCE);
-                // }
+            if (t == null) {
+              String keyLock = "IDENTITY-" + name;
+              synchronized (keyLock.intern()) {
+                t = (T) scopeMap.get(name);
+                if (t == null) {
+                  t = creator.get();
+                  // if (!Scopes.isCircularProxy(t)) {
+                  // Store a sentinel for provider-given null values.
+                  scopeMap.put(name, t != null ? t : NullObject.INSTANCE);
+                  // }
+                }
               }
             }
             // Accounts for @Nullable providers.

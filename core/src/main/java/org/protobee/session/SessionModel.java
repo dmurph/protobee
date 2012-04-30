@@ -2,7 +2,7 @@ package org.protobee.session;
 
 import java.util.Map;
 
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.guice.ScopeHolder;
 import org.protobee.guice.SessionScope;
 import org.protobee.guice.SessionScopeMap;
@@ -32,8 +32,8 @@ public class SessionModel implements ScopeHolder {
       @SessionScopeMap Map<String, Object> sessionScopeMap) {
     this.identity = identity;
     this.sessionScopeMap = sessionScopeMap;
-    JnutellaScopes.putObjectInScope(Key.get(SessionModel.class), this, sessionScopeMap);
-    JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), identity, sessionScopeMap);
+    ProtobeeScopes.putObjectInScope(Key.get(SessionModel.class), this, sessionScopeMap);
+    ProtobeeScopes.putObjectInScope(Key.get(NetworkIdentity.class), identity, sessionScopeMap);
   }
 
   public NetworkIdentity getIdentity() {
@@ -53,19 +53,19 @@ public class SessionModel implements ScopeHolder {
   }
 
   public void enterScope() {
-    Preconditions.checkState(!JnutellaScopes.isInSessionScope(), "Already in a session scope");
-    JnutellaScopes.enterSessionScope(sessionScopeMap);
+    Preconditions.checkState(!ProtobeeScopes.isInSessionScope(), "Already in a session scope");
+    ProtobeeScopes.enterSessionScope(sessionScopeMap);
   }
 
   public boolean isInScope() {
-    return JnutellaScopes.isInSessionScope(sessionScopeMap);
+    return ProtobeeScopes.isInSessionScope(sessionScopeMap);
   }
 
   public void addObjectToScope(Key<?> key, Object object) {
-    JnutellaScopes.putObjectInScope(key, object, sessionScopeMap);
+    ProtobeeScopes.putObjectInScope(key, object, sessionScopeMap);
   }
 
   public void exitScope() {
-    JnutellaScopes.exitSessionScope();
+    ProtobeeScopes.exitSessionScope();
   }
 }

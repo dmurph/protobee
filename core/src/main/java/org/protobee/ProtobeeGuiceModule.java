@@ -11,7 +11,7 @@ import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.protobee.annotation.UserAgent;
 import org.protobee.guice.IdentityScope;
 import org.protobee.guice.IdentityScopeMap;
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.guice.LogModule;
 import org.protobee.guice.SessionScope;
 import org.protobee.guice.SessionScopeMap;
@@ -66,8 +66,8 @@ public class ProtobeeGuiceModule extends AbstractModule {
 
     bind(NetworkIdentityManager.class).in(Singleton.class);
 
-    bindScope(SessionScope.class, JnutellaScopes.SESSION);
-    bindScope(IdentityScope.class, JnutellaScopes.IDENTITY);
+    bindScope(SessionScope.class, ProtobeeScopes.SESSION);
+    bindScope(IdentityScope.class, ProtobeeScopes.IDENTITY);
     
     bindConstant().annotatedWith(UserAgent.class).to("Jnutella/0.1");
   }

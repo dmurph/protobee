@@ -43,13 +43,13 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
   private final ChannelFactory channelFactory;
   private final Provider<Channel> channelProvider;
   private final Object connectLock = new Object();
-  private final JnutellaChannels channels;
+  private final ProtobeeChannels channels;
 
   @Inject
   public ConnectionCreatorImpl(Map<Protocol, ProtocolConfig> protocolConfigs,
       Provider<HandshakeCreator> handshakeCreator, NetworkIdentityManager identityManager,
       HandshakeStateBootstrapper handshakeBootstrapper, ChannelFactory channelFactory,
-      Provider<Channel> channelProvider, JnutellaChannels channels) {
+      Provider<Channel> channelProvider, ProtobeeChannels channels) {
     this.protocolConfigs = protocolConfigs;
     this.handshakeCreator = handshakeCreator;
     this.identityManager = identityManager;

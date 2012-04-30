@@ -11,7 +11,7 @@ import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import org.junit.After;
 import org.junit.Before;
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityFactory;
 import org.protobee.identity.NetworkIdentityManager;
@@ -117,7 +117,7 @@ public abstract class AbstractTest {
 
   @After
   public void freeScopes() {
-    JnutellaScopes.exitIdentityScope();
-    JnutellaScopes.exitSessionScope();
+    ProtobeeScopes.exitIdentityScope();
+    ProtobeeScopes.exitSessionScope();
   }
 }

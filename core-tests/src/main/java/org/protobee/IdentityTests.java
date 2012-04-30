@@ -12,7 +12,7 @@ import java.util.Set;
 import org.junit.Test;
 import org.protobee.guice.IdentityScope;
 import org.protobee.guice.IdentityScopeMap;
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.guice.LogModule;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
@@ -41,7 +41,7 @@ public class IdentityTests extends AbstractTest {
       protected void configure() {
         install(new LogModule());
 
-        bindScope(IdentityScope.class, JnutellaScopes.IDENTITY);
+        bindScope(IdentityScope.class, ProtobeeScopes.IDENTITY);
       }
 
       @SuppressWarnings("unused")
