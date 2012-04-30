@@ -6,7 +6,7 @@ import java.util.Set;
 
 import org.protobee.guice.IdentityScope;
 import org.protobee.guice.IdentityScopeMap;
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.guice.ScopeHolder;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionManager;
@@ -47,7 +47,7 @@ public class NetworkIdentity implements ScopeHolder {
     protocolData = builder.build();
     // this should happen automatically because this object is in the identity scope, but we'll keep
     // this here in case of subclasses
-    JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
+    ProtobeeScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
   }
 
   public ProtocolData getProtocolData(Protocol protocol) {
@@ -148,20 +148,20 @@ public class NetworkIdentity implements ScopeHolder {
   }
 
   public void enterScope() {
-    Preconditions.checkState(!JnutellaScopes.isInIdentityScope(), "Already in a session scope");
-    JnutellaScopes.enterIdentityScope(identityScopeMap);
+    Preconditions.checkState(!ProtobeeScopes.isInIdentityScope(), "Already in a session scope");
+    ProtobeeScopes.enterIdentityScope(identityScopeMap);
   }
 
   public boolean isInScope() {
-    return JnutellaScopes.isInIdentityScope(identityScopeMap);
+    return ProtobeeScopes.isInIdentityScope(identityScopeMap);
   }
 
   public void addObjectToScope(Key<?> key, Object object) {
-    JnutellaScopes.putObjectInScope(key, object, identityScopeMap);
+    ProtobeeScopes.putObjectInScope(key, object, identityScopeMap);
   }
 
   public void exitScope() {
-    JnutellaScopes.exitIdentityScope();
+    ProtobeeScopes.exitIdentityScope();
   }
 
   public static class ProtocolData {

@@ -31,12 +31,12 @@ public class ConnectionBinderImpl implements ConnectionBinder {
   private final ChannelFactory channelFactory;
   private final MultipleRequestReceiver.Factory requestMultiplexerFactory;
   private final SingleRequestReceiver.Factory requestHandlerFactory;
-  private final JnutellaChannels channels;
+  private final ProtobeeChannels channels;
 
   @Inject
   public ConnectionBinderImpl(NetworkIdentityManager identityManager,
       ChannelFactory channelFactory, MultipleRequestReceiver.Factory multiplexer,
-      SingleRequestReceiver.Factory requestHandlerFactory, JnutellaChannels channels) {
+      SingleRequestReceiver.Factory requestHandlerFactory, ProtobeeChannels channels) {
     this.identityManager = identityManager;
     this.channelFactory = channelFactory;
     this.requestMultiplexerFactory = multiplexer;

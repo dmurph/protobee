@@ -1,6 +1,6 @@
 package org.protobee.util;
 
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.ProtobeeScopes;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.session.SessionModel;
 
@@ -32,11 +32,11 @@ public class Descoper {
   public void descope() {
     Preconditions.checkState(unscopedIdentity == null, "Must rescope before unscoping again");
     Preconditions.checkState(unscopedModel == null, "Must rescope before unscoping again");
-    if (JnutellaScopes.isInIdentityScope()) {
+    if (ProtobeeScopes.isInIdentityScope()) {
       unscopedIdentity = networkIdentityProvider.get();
       unscopedIdentity.exitScope();
     }
-    if (JnutellaScopes.isInSessionScope()) {
+    if (ProtobeeScopes.isInSessionScope()) {
       unscopedModel = sessionModelProvider.get();
       unscopedModel.exitScope();
     }

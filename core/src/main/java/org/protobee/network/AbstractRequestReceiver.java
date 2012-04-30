@@ -21,10 +21,10 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
 
   private final NetworkIdentityManager identityManager;
   private final HandshakeStateBootstrapper handshakeBootstrap;
-  private final JnutellaChannels channels;
+  private final ProtobeeChannels channels;
 
   public AbstractRequestReceiver(HandshakeStateBootstrapper handshakeBootstrap,
-      NetworkIdentityManager identityManager, JnutellaChannels channels) {
+      NetworkIdentityManager identityManager, ProtobeeChannels channels) {
     this.handshakeBootstrap = handshakeBootstrap;
     this.identityManager = identityManager;
     this.channels = channels;

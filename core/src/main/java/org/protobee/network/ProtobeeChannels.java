@@ -16,13 +16,13 @@ import com.google.inject.Singleton;
 
 
 @Singleton
-public class JnutellaChannels {
+public class ProtobeeChannels {
 
   private final ChannelGroup channels;
   private final Map<Protocol, ChannelGroup> protocolChannels;
 
   @Inject
-  public JnutellaChannels(Set<Protocol> protocols) {
+  public ProtobeeChannels(Set<Protocol> protocols) {
     this.channels = new DefaultChannelGroup("JnutellaChannelGroup");
     this.protocolChannels = new MapMaker().concurrencyLevel(protocols.size()).makeMap();
     for (Protocol protocol : protocols) {
