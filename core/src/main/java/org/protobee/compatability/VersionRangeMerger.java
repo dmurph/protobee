@@ -1,0 +1,155 @@
+package org.protobee.compatability;
+
+import java.util.Collections;
+import java.util.List;
+import java.util.Set;
+
+import org.protobee.compatability.VersionRange.BUILDER;
+import org.protobee.compatability.VersionRange.MinVersionBuilderComparator;
+import org.protobee.compatability.VersionRange.MinVersionComparator;
+import org.protobee.util.VersionComparator;
+
+import com.google.common.base.Function;
+import com.google.common.collect.Iterables;
+import com.google.common.collect.Lists;
+import com.google.common.collect.Sets;
+import com.google.inject.Inject;
+
+public class VersionRangeMerger {
+
+  private final VersionComparator comp;
+  private final MinVersionBuilderComparator minBuilderComp;
+  private final MinVersionComparator minComp;
+
+  @Inject
+  public VersionRangeMerger(VersionComparator comp, MinVersionBuilderComparator minBuilderComp,
+      MinVersionComparator minComp) {
+    this.comp = comp;
+    this.minBuilderComp = minBuilderComp;
+    this.minComp = minComp;
+  }
+
+  public VersionRange intersection(Set<VersionRange> entries) {
+    VersionRange.BUILDER builder = null;
+
+    for (VersionRange entry : entries) {
+      if (builder == null) {
+        builder = VersionRange.builder().set(entry);
+        continue;
+      }
+
+      if (comp.compare(builder.getMinVersion(), entry.getMinVersion()) < 0) {
+        builder.setMinVersion(entry.getMinVersion());
+      }
+      
+      if (builder.getMaxVersion().equals("+")) {
+        if (entry.getMaxVersion().equals("+")) {
+          continue;
+        }
+        builder.setMaxVersion(entry.getMaxVersion());
+        continue;
+      }
+
+      if (entry.getMaxVersion().equals("+")) {
+        continue;
+      }
+
+      if (comp.compare(builder.getMaxVersion(), entry.getMaxVersion()) > 0) {
+        builder.setMaxVersion(entry.getMaxVersion());
+      }
+
+      if (comp.compare(builder.getMinVersion(), builder.getMaxVersion()) > 0) {
+        return null;
+      }
+    }
+    return builder.build();
+  }
+
+  public Set<VersionRange> union(Set<VersionRange> entries) {
+    List<VersionRange.BUILDER> builders =
+        Lists.newArrayList(Iterables.transform(entries,
+            new Function<VersionRange, VersionRange.BUILDER>() {
+              @Override
+              public BUILDER apply(VersionRange input) {
+                return VersionRange.builder().set(input);
+              }
+            }));
+    Collections.sort(builders, minBuilderComp);
+
+    Set<VersionRange> union = Sets.newHashSet();
+
+    final int size = builders.size();
+    VersionRange.BUILDER currBuilder = null;
+    for (int i = 0; i < size; i++) {
+      VersionRange.BUILDER builder = builders.get(i);
+      if (currBuilder == null) {
+        currBuilder = builder;
+        continue;
+      }
+
+      if (currBuilder.getMaxVersion().equals("+")) {
+        break;
+      }
+      if (comp.compare(currBuilder.getMaxVersion(), builder.getMinVersion()) < 0) {
+        union.add(currBuilder.build());
+        currBuilder = builder;
+        continue;
+      }
+      if (builder.getMaxVersion().equals("+")) {
+        currBuilder.setMaxVersion("+");
+        continue;
+      }
+      if (comp.compare(currBuilder.getMaxVersion(), builder.getMaxVersion()) < 0) {
+        currBuilder.setMaxVersion(builder.getMaxVersion());
+      }
+    }
+    if (currBuilder != null) {
+      union.add(currBuilder.build());
+    }
+    return union;
+  }
+
+  public Set<VersionRange> subtract(VersionRange range, Set<VersionRange> toSubstract) {
+    List<VersionRange> subtract = Lists.newArrayList(toSubstract);
+    Collections.sort(subtract, minComp);
+
+
+    Set<VersionRange> result = Sets.newHashSet();
+
+    VersionRange.BUILDER builder = VersionRange.builder().set(range);
+
+    for (VersionRange versionRange : subtract) {
+      String minVersion = versionRange.getMinVersion();
+      String maxVersion = versionRange.getMaxVersion();
+
+      if (comp.compare(minVersion, builder.getMinVersion()) <= 0) {
+        if (maxVersion.equals("+") || comp.compare(maxVersion, builder.getMaxVersion()) > 0) {
+          return null;
+        }
+        if (builder.getMaxVersion().equals("+")
+            || comp.compare(maxVersion, builder.getMinVersion()) > 0) {
+          builder.setMinVersion(maxVersion);
+        }
+      } else if (builder.getMaxVersion().equals("+")) {
+        builder.setMaxVersion(minVersion);
+      } else if (maxVersion.equals("+") || comp.compare(maxVersion, builder.getMaxVersion()) >= 0) {
+        if (comp.compare(minVersion, builder.getMaxVersion()) < 0) {
+          builder.setMaxVersion(minVersion);
+        } else {
+          // it's above us, don't do anything
+        }
+      } else {
+        // we are contained within.
+        String oldMax = builder.getMaxVersion();
+        builder.setMaxVersion(minVersion);
+        result.add(builder.build());
+        builder = VersionRange.builder().setMinVersion(maxVersion).setMaxVersion(oldMax);
+      }
+      if (comp.compare(builder.getMinVersion(), builder.getMaxVersion()) > 0) {
+        return null;
+      }
+    }
+    result.add(builder.build());
+    return result;
+  }
+}

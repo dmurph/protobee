@@ -21,6 +21,9 @@ public class ProtobeeScopes {
   private static final ThreadLocal<Map<String, Object>> identityScopeContext =
       new ThreadLocal<Map<String, Object>>();
 
+  private static final ThreadLocal<Map<String, Object>> protocolScopeContext =
+      new ThreadLocal<Map<String, Object>>();
+
   /** A sentinel attribute value representing null. */
   public static enum NullObject {
     INSTANCE
