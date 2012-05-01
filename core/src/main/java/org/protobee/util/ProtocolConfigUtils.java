@@ -22,7 +22,7 @@ public class ProtocolConfigUtils {
   public static Map<String, Object> mergeNettyBindOptions(Set<ProtocolConfig> configs) {
     Map<String, Object> result = Maps.newHashMap();
     for (ProtocolConfig protocolConfig : configs) {
-      Map<String, Object> options = protocolConfig.getNettyBootstrapOptions();
+      Map<String, Object> options = protocolConfig.getServerBootstrapOptions();
       for (Entry<String, Object> optionEntry : options.entrySet()) {
         String name = optionEntry.getKey();
         Object option = result.get(name);

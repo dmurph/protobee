@@ -5,6 +5,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
+import java.net.InetSocketAddress;
 import java.util.Set;
 
 import org.jboss.netty.channel.ChannelFactory;
@@ -24,7 +25,7 @@ public class ServantBootstrapTest {
   @Test
   public void testSingleBind() {
     ProtocolConfig config = mock(ProtocolConfig.class);
-    when(config.getPort()).thenReturn(10);
+    when(config.getListeningAddress()).thenReturn(new InetSocketAddress(10));
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ChannelFactory channelFactory = mock(ChannelFactory.class);
@@ -42,8 +43,8 @@ public class ServantBootstrapTest {
   public void testSamePort() {
     ProtocolConfig config = mock(ProtocolConfig.class);
     ProtocolConfig config2 = mock(ProtocolConfig.class);
-    when(config.getPort()).thenReturn(10);
-    when(config2.getPort()).thenReturn(10);
+    when(config.getListeningAddress()).thenReturn(new InetSocketAddress(10));
+    when(config2.getListeningAddress()).thenReturn(new InetSocketAddress(10));
 
     Set<ProtocolConfig> configs = ImmutableSet.of(config, config2);
 
@@ -56,13 +57,13 @@ public class ServantBootstrapTest {
 
     bootstrapper.startup();
 
-    verify(binder).bind(eq(configs), eq(10));
+    verify(binder).bind(eq(configs), eq(new InetSocketAddress(10)));
   }
 
   @Test
   public void testShutdown() {
     ProtocolConfig config = mock(ProtocolConfig.class);
-    when(config.getPort()).thenReturn(10);
+    when(config.getListeningAddress()).thenReturn(new InetSocketAddress(10));
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ChannelFactory channelFactory = mock(ChannelFactory.class);

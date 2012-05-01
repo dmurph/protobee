@@ -71,7 +71,7 @@ public abstract class AbstractTest {
     when(config.createSessionModel()).thenReturn(mock(ProtocolModulesHolder.class));
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
-    when(config.getNettyBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
+    when(config.getServerBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
     return config;
   }
 
@@ -85,7 +85,7 @@ public abstract class AbstractTest {
     when(config.createSessionModel()).thenReturn(sessionModel);
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
-    when(config.getNettyBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
+    when(config.getServerBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
     return config;
   }
 
