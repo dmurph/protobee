@@ -10,7 +10,12 @@ import org.protobee.protocol.headers.CompatabilityHeaderMerger;
 
 import com.google.inject.Inject;
 
-
+/**
+ * Creates the handshake http request, and populates the merged compatability headers of the
+ * modules. The http version is the name, major version, and minor version from the protocol
+ * 
+ * @author Daniel
+ */
 @SessionScope
 public class HandshakeCreator {
 
@@ -23,10 +28,10 @@ public class HandshakeCreator {
     this.protocol = protocol;
   }
 
-  public HttpRequest createHandshakeRequest() {
+  public HttpRequest createHandshakeRequest(HttpMethod method, String uri) {
     HttpRequest request =
         new DefaultHttpRequest(new HttpVersion(protocol.name(), protocol.majorVersion(),
-            protocol.minorVersion(), true), new HttpMethod("CONNECT"), "");
+            protocol.minorVersion(), true), method, uri);
     merger.mergeHeaders(request);
 
     return request;

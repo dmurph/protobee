@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
+import org.protobee.guice.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.session.ProtocolModulesHolder;
 import org.protobee.util.VersionComparator;
@@ -16,6 +17,7 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.inject.Inject;
 
 
+@SessionScope
 public class CompatabilityHeaderMerger {
 
   @InjectLogger

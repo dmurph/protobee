@@ -13,6 +13,7 @@ import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DefaultChannelFuture;
 import org.jboss.netty.handler.codec.http.HttpMessage;
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
@@ -60,7 +61,8 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
   }
 
   @Override
-  public ChannelFuture connect(final Protocol protocol, final SocketAddress remoteAddress) {
+  public ChannelFuture connect(final Protocol protocol, final SocketAddress remoteAddress,
+      final HttpMethod method, final String uri) {
     Preconditions.checkNotNull(protocol);
     Preconditions.checkNotNull(remoteAddress);
     Preconditions.checkArgument(protocolConfigs.containsKey(protocol),
@@ -109,7 +111,7 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
             identity.enterScope();
             model.enterScope();
             HandshakeCreator handshake = handshakeCreator.get();
-            request = handshake.createHandshakeRequest();
+            request = handshake.createHandshakeRequest(method, uri);
           } finally {
             model.exitScope();
             identity.exitScope();
