@@ -78,9 +78,9 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
         }
       };
       ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
-      bootstrap.setOptions(config.getNettyBootstrapOptions());
+      bootstrap.setOptions(config.getConnectionOptions());
       bootstrap.setPipelineFactory(factory);
-      ChannelFuture future = bootstrap.connect(remoteAddress);
+      ChannelFuture future = bootstrap.connect(config.getListeningAddress(), remoteAddress);
 
       channels.addChannel(future.getChannel(), protocol);
 
@@ -136,7 +136,7 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
         future.setSuccess();
         return future;
       }
-      SessionModel session = identity.getCurrentSession(protocol);
+      final SessionModel session = identity.getCurrentSession(protocol);
       ChannelFuture future;
       try {
         identity.enterScope();
@@ -144,13 +144,15 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
         Channel channel = channelProvider.get();
         log.info("Disconnecting channel " + channel + " of protocol " + protocol + " at address "
             + remoteAddress);
-        future = channel.disconnect();
+        future = channel.close();
         channels.removeChannel(channel, protocol);
 
         future.addListener(new ChannelFutureListener() {
           @Override
           public void operationComplete(ChannelFuture future) throws Exception {
-            identity.clearCurrentSession(protocol);
+            if (identity.getCurrentSession(protocol) == session) {
+              identity.clearCurrentSession(protocol);
+            }
           }
         });
       } finally {

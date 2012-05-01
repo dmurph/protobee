@@ -1,5 +1,6 @@
 package org.protobee.network;
 
+import java.net.SocketAddress;
 import java.util.Set;
 
 import org.jboss.netty.channel.Channel;
@@ -13,7 +14,7 @@ import org.protobee.protocol.ProtocolConfig;
  */
 public interface ConnectionBinder {
   /**
-   * Preconditions: port from the config must not be already bound
+   * Preconditions: local address from the config must not already be bound
    * 
    * @param config
    * @return
@@ -21,12 +22,11 @@ public interface ConnectionBinder {
   Channel bind(final ProtocolConfig config);
 
   /**
-   * Precondition: all config's ports must match the the port argument, port > 0, and that port must
-   * not be already bound
+   * Precondition: all the config's listening address has to match the local address
    * 
    * @param configs
-   * @param port
+   * @param localAddress
    * @return
    */
-  Channel bind(final Set<ProtocolConfig> configs, int port);
+  Channel bind(final Set<ProtocolConfig> configs, SocketAddress localAddress);
 }
