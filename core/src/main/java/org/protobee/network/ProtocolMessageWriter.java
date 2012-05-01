@@ -7,6 +7,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DefaultChannelFuture;
+import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.guice.SessionScope;
 import org.protobee.identity.NetworkIdentity;
@@ -85,7 +86,7 @@ public class ProtocolMessageWriter {
   /**
    * Writes the object to the given identity's session, using the the protocol of this object's
    * session. Defaults with options {@link ConnectionOptions#CAN_CREATE_CONNECTION} and
-   * {@link HandshakeOptions#WAIT_FOR_HANDSHAKE}.
+   * {@link HandshakeOptions#WAIT_FOR_HANDSHAKE}, with method of "CONNECT" and uri of ""
    * 
    * @param identity
    * @param message
@@ -98,7 +99,8 @@ public class ProtocolMessageWriter {
 
   /**
    * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Uses connection and handshake options
+   * session. Uses connection and handshake options. If a new connection is required, method
+   * defaults to "CONNECT" and uri is ""
    * 
    * @param identity
    * @param message
@@ -108,6 +110,26 @@ public class ProtocolMessageWriter {
    */
   public ChannelFuture write(final NetworkIdentity identity, final Object message,
       ConnectionOptions connectionOptions, HandshakeOptions handshakeOptions) {
+    return write(identity, message, connectionOptions, HttpMethod.valueOf("CONNECT"), "",
+        handshakeOptions);
+  }
+
+  /**
+   * Writes the object to the given identity's session, using the the protocol of this object's
+   * session. Uses connection and handshake options. If a new connection is required, the given
+   * method and uri are used
+   * 
+   * @param identity
+   * @param message
+   * @param connectionOptions
+   * @param method
+   * @param uri
+   * @param handshakeOptions
+   * @return
+   */
+  public ChannelFuture write(final NetworkIdentity identity, final Object message,
+      ConnectionOptions connectionOptions, HttpMethod method, String uri,
+      HandshakeOptions handshakeOptions) {
     if (myIdentity == identity) {
       return write(message);
     }
@@ -193,7 +215,7 @@ public class ProtocolMessageWriter {
     }
 
     descoper.descope();
-    ChannelFuture handshakeFuture = networkManager.connect(protocol, address);
+    ChannelFuture handshakeFuture = networkManager.connect(protocol, address, method, uri);
     descoper.rescope();
 
     final Channel channel = handshakeFuture.getChannel();
