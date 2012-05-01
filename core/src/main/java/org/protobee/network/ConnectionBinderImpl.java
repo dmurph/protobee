@@ -1,6 +1,6 @@
 package org.protobee.network;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
@@ -60,33 +60,24 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     };
 
     ServerBootstrap bootstrap = bootstrapProvider.get();
-    bootstrap.setOptions(config.getNettyBootstrapOptions());
+    bootstrap.setOptions(config.getServerBootstrapOptions());
     bootstrap.setPipelineFactory(factory);
 
-    // yes, this means our address will be a localhost address for a little bit. This should change
-    // when we get the 'Remote-IP' header for the first time
-    int port = config.getPort();
+    SocketAddress localAddress = config.getListeningAddress();
     Protocol protocol = config.get();
     NetworkIdentity me = identityManager.getMe();
-
-    InetSocketAddress localAddress = (InetSocketAddress) me.getListeningAddress(protocol);
-    if (localAddress == null) {
-      localAddress = new InetSocketAddress(port);
-    } else {
-      localAddress = new InetSocketAddress(localAddress.getAddress(), port);
-    }
     identityManager.setListeningAddress(me, protocol, localAddress);
 
     Channel channel = bootstrap.bind(localAddress);
-    log.info("Port " + config.getPort() + " bound for protocol " + config);
+    log.info("Address " + localAddress + " bound for protocol " + config);
     channels.addChannel(channel, config.get());
     return channel;
   }
 
   @Override
-  public Channel bind(final Set<ProtocolConfig> configs, int port) {
+  public Channel bind(final Set<ProtocolConfig> configs, SocketAddress address) {
     Preconditions.checkNotNull(configs);
-    Preconditions.checkArgument(port > 0, "port must be > 0");
+    Preconditions.checkNotNull(address);
 
     Map<String, Object> options = ProtocolConfigUtils.mergeNettyBindOptions(configs);
 
@@ -102,25 +93,17 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     bootstrap.setOptions(options);
     bootstrap.setPipelineFactory(factory);
 
-    // yes, this means our address might be a localhost address for a little bit. This should be
-    // changed
-    // by the protocol when it knows our address
     for (ProtocolConfig protocolConfig : configs) {
       Protocol protocol = protocolConfig.get();
       NetworkIdentity me = identityManager.getMe();
-
-      InetSocketAddress localAddress = (InetSocketAddress) me.getListeningAddress(protocol);
-      if (localAddress == null) {
-        localAddress = new InetSocketAddress(port);
-      } else {
-        localAddress = new InetSocketAddress(localAddress.getAddress(), port);
-      }
-      identityManager.setListeningAddress(me, protocolConfig.get(), localAddress);
+      Preconditions.checkArgument(address.equals(protocolConfig.getListeningAddress()),
+          "Listening addresses do not match.");
+      identityManager.setListeningAddress(me, protocol, address);
     }
-    Channel channel = bootstrap.bind(new InetSocketAddress(port));
+    Channel channel = bootstrap.bind(address);
     channels.addChannel(channel, ProtocolConfigUtils.getProtocolSet(configs));
 
-    log.info("Port " + port + " bound for protocols " + configs);
+    log.info("Address " + address + " bound for protocols " + configs);
     return channel;
   }
 }

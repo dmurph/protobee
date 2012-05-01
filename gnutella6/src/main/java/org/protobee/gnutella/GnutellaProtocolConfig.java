@@ -1,5 +1,7 @@
 package org.protobee.gnutella;
 
+import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Map;
 
 import org.jboss.netty.channel.ChannelHandler;
@@ -64,12 +66,17 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   }
 
   @Override
-  public Map<String, Object> getNettyBootstrapOptions() {
+  public Map<String, Object> getServerBootstrapOptions() {
+    return Maps.newHashMap();
+  }
+  
+  @Override
+  public Map<String, Object> getConnectionOptions() {
     return Maps.newHashMap();
   }
 
   @Override
-  public int getPort() {
-    return 20;
+  public SocketAddress getListeningAddress() {
+    return new InetSocketAddress(6346);
   }
 }

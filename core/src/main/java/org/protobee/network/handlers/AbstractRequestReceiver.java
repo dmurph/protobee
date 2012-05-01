@@ -45,8 +45,7 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
     String header = data.substring(0, data.indexOf("\r\n"));
     ProtocolConfig protocolConfig = getMatchingConfig(header);
     if (protocolConfig == null) {
-      log.error("Request header '" + header + "' doesn't match " + protocolConfig
-          + " protocol header, closing channel.");
+      log.error("Request header '" + header + "' doesn't match a protocol header, closing channel.");
       channel.close();
       return null;
     }

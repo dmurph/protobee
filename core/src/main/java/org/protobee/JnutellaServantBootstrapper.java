@@ -1,5 +1,6 @@
 package org.protobee;
 
+import java.net.SocketAddress;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -53,19 +54,19 @@ public class JnutellaServantBootstrapper {
         started.set(false);
         throw new IllegalStateException("We're currently shutting down the servant");
       }
-      HashMultimap<Integer, ProtocolConfig> portToProtocols = HashMultimap.create();
+      HashMultimap<SocketAddress, ProtocolConfig> portToProtocols = HashMultimap.create();
 
       for (ProtocolConfig config : protocols) {
-        portToProtocols.put(config.getPort(), config);
+        portToProtocols.put(config.getListeningAddress(), config);
       }
 
-      for (Integer port : portToProtocols.keySet()) {
-        Set<ProtocolConfig> configs = portToProtocols.get(port);
+      for (SocketAddress address : portToProtocols.keySet()) {
+        Set<ProtocolConfig> configs = portToProtocols.get(address);
 
         if (configs.size() == 1) {
           connectionBinder.bind(Iterables.getOnlyElement(configs));
         } else {
-          connectionBinder.bind(configs, port);
+          connectionBinder.bind(configs, address);
         }
       }
     }
