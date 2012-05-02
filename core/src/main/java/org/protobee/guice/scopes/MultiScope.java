@@ -25,8 +25,8 @@ public class MultiScope implements Scope {
     INSTANCE
   }
 
-  private final ThreadLocal<Map<String, Object>> scopeContext =
-      new ThreadLocal<Map<String, Object>>();
+  private final ThreadLocal<Map<Key<?>, Object>> scopeContext =
+      new ThreadLocal<Map<Key<?>, Object>>();
 
   private final Object scopeLock = new Object();
   private final AtomicInteger scopeCounter = new AtomicInteger(0);
@@ -43,26 +43,25 @@ public class MultiScope implements Scope {
   }
 
   @Override
-  public <T> Provider<T> scope(Key<T> key, final Provider<T> creator) {
-    final String name = key.toString();
+  public <T> Provider<T> scope(final Key<T> key, final Provider<T> creator) {
+    final Object putLock = new Object();
     final MultiScope scope = this;
     return new Provider<T>() {
       @SuppressWarnings("unchecked")
       public T get() {
 
-        Map<String, Object> scopeMap = scopeContext.get();
+        Map<Key<?>, Object> scopeMap = scopeContext.get();
         if (scopeMap != null) {
-          T t = (T) scopeMap.get(name);
+          T t = (T) scopeMap.get(key);
 
           if (t == null) {
-            String keyLock = uniqueName + "-" + name;
-            synchronized (keyLock.intern()) {
-              t = (T) scopeMap.get(name);
+            synchronized (putLock) {
+              t = (T) scopeMap.get(key);
               if (t == null) {
                 t = creator.get();
                 // if (!Scopes.isCircularProxy(t)) {
                 // Store a sentinel for provider-given null values.
-                scopeMap.put(name, t != null ? t : NullObject.INSTANCE);
+                scopeMap.put(key, t != null ? t : NullObject.INSTANCE);
                 // }
               }
             }
@@ -75,13 +74,13 @@ public class MultiScope implements Scope {
 
           return t;
         }
-        throw new OutOfScopeException("Cannot access session scoped object '" + name
+        throw new OutOfScopeException("Cannot access session scoped object '" + key
             + "'. This means we are not inside of a " + uniqueName + " scoped call.");
       }
 
       @Override
       public String toString() {
-        return String.format("%s[%s]", creator, scope.toString());
+        return "{ key: " + key + " unscopedProvider: " + creator + " scope: " + scope + "}";
       }
     };
   }
@@ -112,7 +111,7 @@ public class MultiScope implements Scope {
    * @return
    */
   public ScopeHolder createScopeHolder() {
-    return this.createScopeHolder(new MapMaker().concurrencyLevel(8).<String, Object>makeMap());
+    return this.createScopeHolder(new MapMaker().concurrencyLevel(8).<Key<?>, Object>makeMap());
   }
 
   /**
@@ -124,7 +123,7 @@ public class MultiScope implements Scope {
    *        for scopes.
    * @return the scope holder
    */
-  public ScopeHolder createScopeHolder(final Map<String, Object> scopeMap) {
+  public ScopeHolder createScopeHolder(final Map<Key<?>, Object> scopeMap) {
     final int holderId = scopeCounter.getAndIncrement();
     ScopeHolder holder = new ScopeHolder() {
 
@@ -168,9 +167,8 @@ public class MultiScope implements Scope {
     return holder;
   }
 
-
-  static void putObjectInScope(Key<?> key, Object object, Map<String, Object> map) {
-    map.put(key.toString(), validateAndCanonicalizeValue(key, object));
+  static void putObjectInScope(Key<?> key, Object object, Map<Key<?>, Object> map) {
+    map.put(key, validateAndCanonicalizeValue(key, object));
   }
 
   /**
@@ -182,10 +180,9 @@ public class MultiScope implements Scope {
       return NullObject.INSTANCE;
     }
 
-    if (!key.getTypeLiteral().getRawType().isInstance(object)) {
-      throw new IllegalArgumentException("Value[" + object + "] of type["
-          + object.getClass().getName() + "] is not compatible with key[" + key + "]");
-    }
+    Preconditions.checkArgument(key.getTypeLiteral().getRawType().isInstance(object), "Value '"
+        + object + "' of type '" + object.getClass().getName() + "' is not compatible with key '"
+        + key + "'");
 
     return object;
   }

@@ -4,6 +4,7 @@ import java.util.Map;
 
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.Provides;
 import com.google.inject.TypeLiteral;
 
@@ -16,7 +17,7 @@ public class ScopesGuiceModule extends AbstractModule {
     bindScope(ProtocolScope.class, ProtobeeScopes.PROTOCOL);
 
     // bind our map providers
-    TypeLiteral<Map<String, Object>> scopeMap = new TypeLiteral<Map<String, Object>>() {};
+    TypeLiteral<Map<Key<?>, Object>> scopeMap = new TypeLiteral<Map<Key<?>, Object>>() {};
     bind(scopeMap).annotatedWith(NewSessionScopeHolder.class).toProvider(
         DefaultScopeMapProvider.class);
     bind(scopeMap).annotatedWith(NewIdentityScopeHolder.class).toProvider(
@@ -34,19 +35,19 @@ public class ScopesGuiceModule extends AbstractModule {
 
   @Provides
   @NewSessionScopeHolder
-  public ScopeHolder createSessionHolder(@NewSessionScopeHolder Map<String, Object> scopeMap) {
+  public ScopeHolder createSessionHolder(@NewSessionScopeHolder Map<Key<?>, Object> scopeMap) {
     return ProtobeeScopes.SESSION.createScopeHolder(scopeMap);
   }
 
   @Provides
   @NewIdentityScopeHolder
-  public ScopeHolder createIdentityHolder(@NewIdentityScopeHolder Map<String, Object> scopeMap) {
+  public ScopeHolder createIdentityHolder(@NewIdentityScopeHolder Map<Key<?>, Object> scopeMap) {
     return ProtobeeScopes.IDENTITY.createScopeHolder(scopeMap);
   }
 
   @Provides
   @NewProtocolScopeHolder
-  public ScopeHolder createProtocolHolder(@NewProtocolScopeHolder Map<String, Object> scopeMap) {
+  public ScopeHolder createProtocolHolder(@NewProtocolScopeHolder Map<Key<?>, Object> scopeMap) {
     return ProtobeeScopes.PROTOCOL.createScopeHolder(scopeMap);
   }
 }
