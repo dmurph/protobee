@@ -43,7 +43,6 @@ public class IdentityTests extends AbstractTest {
         install(new ScopesGuiceModule());
 
         bind(SessionManager.class).toInstance(mock(SessionManager.class));
-        bindScope(IdentityScope.class, ProtobeeScopes.IDENTITY);
       }
 
       @SuppressWarnings("unused")

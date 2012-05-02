@@ -1,6 +1,7 @@
 package org.protobee.util;
 
 import static org.junit.Assert.assertEquals;
+import static org.mockito.Mockito.mock;
 
 import java.util.Map;
 import java.util.Set;
@@ -9,12 +10,12 @@ import org.junit.Test;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.headers.CompatabilityHeader;
 import org.protobee.protocol.headers.Headers;
-import org.protobee.util.ProtocolModuleFilter;
-import org.protobee.util.VersionComparator;
+import org.protobee.protocol.headers.ProtocolModuleFilter;
+import org.protobee.session.SessionProtocolModules;
 
-import com.google.common.base.Predicate;
 import com.google.common.collect.Maps;
 import com.google.common.collect.Sets;
+import com.google.common.eventbus.EventBus;
 
 
 public class ProtocolModuleFilterTests {
@@ -27,86 +28,71 @@ public class ProtocolModuleFilterTests {
 
   @Test
   public void testLowerVersion() {
-    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator());
     Set<ProtocolModule> modules = Sets.newHashSet((ProtocolModule) new a12());
+    SessionProtocolModules pmodules = new SessionProtocolModules(modules);
+    EventBus bus = mock(EventBus.class);
+    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);
 
     Map<String, String> httpHeaders = Maps.newHashMap();
     httpHeaders.put("a", "0");
-    filter.filterModules(modules, httpHeaders, new Predicate<ProtocolModule>() {
-      @Override
-      public boolean apply(ProtocolModule input) {
-        return true;
-      }
-    });
+    filter.filterModules(httpHeaders);
 
-    assertEquals(0, modules.size());
+    assertEquals(0, pmodules.getMutableModules().size());
   }
 
   @Test
   public void testRequiredNotPresent() {
-    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator());
     Set<ProtocolModule> modules = Sets.newHashSet((ProtocolModule) new a12());
+    SessionProtocolModules pmodules = new SessionProtocolModules(modules);
+    EventBus bus = mock(EventBus.class);
+    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);
 
     Map<String, String> httpHeaders = Maps.newHashMap();
-    filter.filterModules(modules, httpHeaders, new Predicate<ProtocolModule>() {
-      @Override
-      public boolean apply(ProtocolModule input) {
-        return true;
-      }
-    });
+    filter.filterModules(httpHeaders);
 
-    assertEquals(0, modules.size());
+    assertEquals(0, pmodules.getMutableModules().size());
   }
 
   @Test
   public void testToHigh() {
-    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator());
     Set<ProtocolModule> modules = Sets.newHashSet((ProtocolModule) new a12());
+    SessionProtocolModules pmodules = new SessionProtocolModules(modules);
+    EventBus bus = mock(EventBus.class);
+    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);
 
     Map<String, String> httpHeaders = Maps.newHashMap();
     httpHeaders.put("a", "3");
-    filter.filterModules(modules, httpHeaders, new Predicate<ProtocolModule>() {
-      @Override
-      public boolean apply(ProtocolModule input) {
-        return true;
-      }
-    });
+    filter.filterModules(httpHeaders);
 
-    assertEquals(0, modules.size());
+    assertEquals(0, pmodules.getMutableModules().size());
   }
 
 
   @Test
   public void testFits() {
-    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator());
     Set<ProtocolModule> modules = Sets.newHashSet((ProtocolModule) new a12());
+    SessionProtocolModules pmodules = new SessionProtocolModules(modules);
+    EventBus bus = mock(EventBus.class);
+    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);
 
     Map<String, String> httpHeaders = Maps.newHashMap();
     httpHeaders.put("a", "1.5");
-    filter.filterModules(modules, httpHeaders, new Predicate<ProtocolModule>() {
-      @Override
-      public boolean apply(ProtocolModule input) {
-        return true;
-      }
-    });
+    filter.filterModules(httpHeaders);
 
-    assertEquals(1, modules.size());
+    assertEquals(1, pmodules.getMutableModules().size());
   }
 
   @Test
   public void testAboveExpandable() {
-    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator());
     Set<ProtocolModule> modules = Sets.newHashSet((ProtocolModule) new a2plus());
+    SessionProtocolModules pmodules = new SessionProtocolModules(modules);
+    EventBus bus = mock(EventBus.class);
+    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);
 
     Map<String, String> httpHeaders = Maps.newHashMap();
     httpHeaders.put("a", "4");
-    filter.filterModules(modules, httpHeaders, new Predicate<ProtocolModule>() {
-      @Override
-      public boolean apply(ProtocolModule input) {
-        return true;
-      }
-    });
+    filter.filterModules(httpHeaders);
 
-    assertEquals(1, modules.size());
+    assertEquals(1, pmodules.getMutableModules().size());
   }
 }

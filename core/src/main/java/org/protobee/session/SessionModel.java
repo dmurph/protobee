@@ -1,6 +1,5 @@
 package org.protobee.session;
 
-import org.protobee.guice.scopes.ProtocolScopeHolder;
 import org.protobee.guice.scopes.ScopeHolder;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.guice.scopes.SessionScopeHolder;

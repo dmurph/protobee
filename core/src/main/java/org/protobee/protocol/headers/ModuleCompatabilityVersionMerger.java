@@ -10,7 +10,11 @@ import org.protobee.compatability.VersionRange;
 import org.protobee.compatability.VersionRangeMerger;
 import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.modules.ProtocolModule;
+import org.protobee.session.SessionProtocolModules;
+import org.protobee.session.SessionState;
+import org.protobee.util.HeaderUtil;
 import org.protobee.util.VersionComparator;
+import org.protobee.util.VersionUtils;
 import org.slf4j.Logger;
 
 import com.google.common.annotations.VisibleForTesting;
@@ -21,8 +25,15 @@ import com.google.common.collect.ImmutableMultimap;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 
-
+/**
+ * Precomputes and provides merged compatibility headers for base set of all modules for a protocol,
+ * and also merges the base set of headers with given http message headers, and also uses the
+ * modified set of headers from the current session.
+ * 
+ * @author Daniel
+ */
 @ProtocolScope
 public class ModuleCompatabilityVersionMerger {
 
@@ -35,9 +46,12 @@ public class ModuleCompatabilityVersionMerger {
   private final VersionComparator comp;
   private final VersionRangeMerger rangeMerger;
 
+  private final Provider<SessionProtocolModules> modulesProvider;
+
   @Inject
   public ModuleCompatabilityVersionMerger(VersionComparator comparator,
-      Set<Class<? extends ProtocolModule>> moduleClasses, VersionRangeMerger merger) {
+      Set<Class<? extends ProtocolModule>> moduleClasses, VersionRangeMerger merger,
+      Provider<SessionProtocolModules> modulesProvider) {
     this(comparator, Iterables.toArray(Iterables.transform(moduleClasses,
         new Function<Class<? extends ProtocolModule>, Headers>() {
           @Override
@@ -47,14 +61,15 @@ public class ModuleCompatabilityVersionMerger {
                 "Every protocol module must have a @Headers annotation");
             return headers;
           }
-        }), Headers.class), merger);
+        }), Headers.class), merger, modulesProvider);
   }
 
   @VisibleForTesting
   public ModuleCompatabilityVersionMerger(VersionComparator comparator, Headers[] headersArray,
-      VersionRangeMerger merger) {
+      VersionRangeMerger merger, Provider<SessionProtocolModules> modulesProvider) {
     comp = comparator;
     this.rangeMerger = merger;
+    this.modulesProvider = modulesProvider;
 
     ImmutableMultimap.Builder<String, VersionRange> requiredVersionsBuilder =
         ImmutableMultimap.builder();
@@ -152,8 +167,23 @@ public class ModuleCompatabilityVersionMerger {
     }
   }
 
-  public Map<String, String> mergeHeaders(HttpMessage message) {
+  /**
+   * Precondition: must be in session scope
+   */
+  public Map<String, String> mergeHandshakeHeaders(HttpMessage message, SessionState handshakeState) {
+    switch (handshakeState) {
+      case HANDSHAKE_0:
+        return mergeForAllModules(message);
+      case HANDSHAKE_1:
+        return mergeForMutableModules(message);
+      default:
+        throw new IllegalStateException(
+            "No compatability handshake merging should be happening in handshake state "
+                + handshakeState);
+    }
+  }
 
+  private Map<String, String> mergeForAllModules(HttpMessage message) {
     Map<String, String> result = Maps.newHashMap();
 
     for (Map.Entry<String, String> header : message.getHeaders()) {
@@ -164,11 +194,11 @@ public class ModuleCompatabilityVersionMerger {
       if (requiredVersions.containsKey(name)) {
         Collection<VersionRange> versions = requiredVersions.get(name);
 
-        version = findSmallestMax(value, versions);
+        version = VersionUtils.findSmallestMax(value, versions, rangeMerger, comp);
       } else if (requestedVersions.containsKey(name)) {
         Collection<VersionRange> versions = requestedVersions.get(name);
 
-        version = findSmallestMax(value, versions);
+        version = VersionUtils.findSmallestMax(value, versions, rangeMerger, comp);
       } else {
         log.debug("We have no compatability need for header: " + name);
         continue;
@@ -184,30 +214,68 @@ public class ModuleCompatabilityVersionMerger {
     return result;
   }
 
-  private String findSmallestMax(String value, Collection<VersionRange> versions) {
-    String smallestMax = null;
+  private Map<String, String> mergeForMutableModules(HttpMessage message) {
 
-    if (!VersionComparator.isValidVersionString(value)) {
-      log.warn("Not a valid version string: " + value);
-      return null;
+    Set<ProtocolModule> modules = modulesProvider.get().getMutableModules();
+
+    Headers[] headerArray = HeaderUtil.getHeadersFromModules(modules);
+
+    Map<String, String> result = Maps.newHashMap();
+
+    HashMultimap<String, VersionRange> excluding = HeaderUtil.getExcludingVersions(headerArray);
+
+    // merge our exclusions for scalable performance
+    for (String name : excluding.keySet()) {
+      Set<VersionRange> versions = excluding.get(name);
+      Set<VersionRange> updated = rangeMerger.union(versions);
+      excluding.replaceValues(name, updated);
     }
-    for (VersionRange range : versions) {
-      if (!rangeMerger.contains(value, range)) {
+
+    HashMultimap<String, VersionRange> required = HeaderUtil.getRequiredVersions(headerArray);
+
+    for (String name : required.keySet()) {
+      if (!message.containsHeader(name)) {
         continue;
       }
-      String currMax = range.getMaxVersion();
 
-      if (smallestMax == null) {
-        if (currMax.equals(VersionRange.PLUS)) {
-          smallestMax = value;
-        } else {
-          smallestMax = comp.compare(currMax, value) < 0 ? currMax : value;
-        }
+      Set<VersionRange> ranges = required.get(name);
+      String previous = message.getHeader(name);
+
+      if (excluding.containsKey(name)) {
+        VersionRange intersection = rangeMerger.intersection(ranges);
+        Preconditions.checkState(intersection != null,
+            "Conflicting required versions for compatability: " + name);
+        ranges = rangeMerger.subtract(intersection, excluding.get(name));
       }
-      if (!currMax.equals(VersionRange.PLUS) && comp.compare(currMax, value) < 0) {
-        smallestMax = currMax;
-      }
+
+      String value = VersionUtils.findSmallestMax(previous, ranges, rangeMerger, comp);
+
+      log.debug("Merged given header " + name + ": " + previous + " to " + value);
+      result.put(name, value);
     }
-    return smallestMax;
+
+    HashMultimap<String, VersionRange> requested = HeaderUtil.getRequestedVersions(headerArray);
+    for (String name : requested.keySet()) {
+      if (!message.containsHeader(name) || result.containsKey(name)) {
+        continue;
+      }
+
+      Set<VersionRange> ranges = requested.get(name);
+      String previous = message.getHeader(name);
+
+      if (excluding.containsKey(name)) {
+        VersionRange intersection = rangeMerger.intersection(ranges);
+        Preconditions.checkState(intersection != null,
+            "Conflicting required versions for compatability: " + name);
+        ranges = rangeMerger.subtract(intersection, excluding.get(name));
+      }
+
+      String value = VersionUtils.findSmallestMax(previous, ranges, rangeMerger, comp);
+
+      log.debug("Merged given header " + name + ": " + previous + " to " + value);
+      result.put(name, value);
+    }
+
+    return result;
   }
 }

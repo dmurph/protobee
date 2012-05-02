@@ -58,14 +58,6 @@ public class HandshakeStateBootstrapper {
 
   /**
    * Preconditions: identity already has sending and listening addresses set
-   * 
-   * 
-   * @param protocolConfig
-   * @param identity
-   * @param remoteAddress
-   * @param channel
-   * @param pipeline
-   * @return
    */
   public void bootstrapSession(ProtocolModel protocolModel, NetworkIdentity identity,
       @Nullable Channel channel, ChannelPipeline pipeline) {
@@ -85,9 +77,8 @@ public class HandshakeStateBootstrapper {
         session.getScope().putInScope(Key.get(Channel.class), channel);
       }
 
-
       session.enterScope();
-
+      
       identity.registerNewSession(protocol, session);
 
       SessionProtocolModules protocolSessionModel = protocolSession.get();

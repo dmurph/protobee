@@ -23,19 +23,11 @@ public class ProtocolConfigUtils {
 
   private static final Logger log = LoggerFactory.getLogger(ProtocolConfigUtils.class);
 
-  public static Map<String, Object> mergeNettyBindOptions(Set<ProtocolModel> models,
-      @ServerOptionsMap Provider<Map<String, Object>> serverOptionsMapProvider) {
+  public static Map<String, Object> mergeNettyBindOptions(Set<ProtocolModel> models) {
     Preconditions.checkNotNull(models);
-    Preconditions.checkNotNull(serverOptionsMapProvider);
     Map<String, Object> result = Maps.newHashMap();
     for (ProtocolModel model : models) {
-      Map<String, Object> options;
-      try {
-        model.enterScope();
-        options = serverOptionsMapProvider.get();
-      } finally {
-        model.exitScope();
-      }
+      Map<String, Object> options = model.getServerOptions();
       for (Entry<String, Object> optionEntry : options.entrySet()) {
         String name = optionEntry.getKey();
         Object option = result.get(name);

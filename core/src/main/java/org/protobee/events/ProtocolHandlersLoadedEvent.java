@@ -1,4 +1,4 @@
-package org.protobee.session;
+package org.protobee.events;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 
