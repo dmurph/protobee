@@ -2,12 +2,10 @@ package org.protobee.network.handlers;
 
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.ProtobeeChannels;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.handshake.HandshakeStateBootstrapper;
 
-import com.google.inject.assistedinject.Assisted;
-import com.google.inject.assistedinject.AssistedInject;
-
+import com.google.inject.Inject;
 
 /**
  * Sets up a protocol session when a request is received, where we're only watching for one protocol
@@ -16,14 +14,10 @@ import com.google.inject.assistedinject.AssistedInject;
  */
 public class SingleRequestReceiver extends AbstractRequestReceiver {
 
-  public static interface Factory {
-    SingleRequestReceiver create(ProtocolConfig protocol);
-  }
+  private final ProtocolModel protocolConfig;
 
-  private final ProtocolConfig protocolConfig;
-
-  @AssistedInject
-  public SingleRequestReceiver(@Assisted ProtocolConfig protocol,
+  @Inject
+  public SingleRequestReceiver(ProtocolModel protocol,
       HandshakeStateBootstrapper handshakeBootstrap, NetworkIdentityManager identityManager,
       ProtobeeChannels channels) {
     super(handshakeBootstrap, identityManager, channels);
@@ -31,7 +25,7 @@ public class SingleRequestReceiver extends AbstractRequestReceiver {
   }
 
   @Override
-  protected ProtocolConfig getMatchingConfig(String header) {
-    return header.matches(protocolConfig.get().headerRegex()) ? protocolConfig : null;
+  protected ProtocolModel getMatchingConfig(String header) {
+    return header.matches(protocolConfig.getProtocol().headerRegex()) ? protocolConfig : null;
   }
 }

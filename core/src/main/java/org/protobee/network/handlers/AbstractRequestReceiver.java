@@ -10,7 +10,7 @@ import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.ProtobeeChannels;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.handshake.HandshakeStateBootstrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -43,23 +43,23 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
       return null;
     }
     String header = data.substring(0, data.indexOf("\r\n"));
-    ProtocolConfig protocolConfig = getMatchingConfig(header);
-    if (protocolConfig == null) {
+    ProtocolModel protocolModel = getMatchingConfig(header);
+    if (protocolModel == null) {
       log.error("Request header '" + header + "' doesn't match a protocol header, closing channel.");
       channel.close();
       return null;
     }
 
-    Protocol protocol = protocolConfig.get();
+    Protocol protocol = protocolModel.getProtocol();
 
     // add our newly connected channel to the group
     channels.addChannel(channel, protocol);
 
     ChannelPipeline pipeline = ctx.getPipeline();
-
     NetworkIdentity identity =
         identityManager.getNetworkIdentityWithNewConnection(protocol, channel.getRemoteAddress());
-    handshakeBootstrap.bootstrapSession(protocolConfig, identity, channel, pipeline);
+
+    handshakeBootstrap.bootstrapSession(protocolModel, identity, channel, pipeline);
 
     // this should be the only handler we added to this pipeline
     pipeline.remove(this);
@@ -69,5 +69,5 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
     return newBuffer;
   }
 
-  protected abstract ProtocolConfig getMatchingConfig(String header);
+  protected abstract ProtocolModel getMatchingConfig(String header);
 }

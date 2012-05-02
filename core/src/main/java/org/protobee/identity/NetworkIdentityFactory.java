@@ -1,35 +1,40 @@
 package org.protobee.identity;
 
-import java.util.Map;
+import org.protobee.guice.scopes.NewIdentityScopeHolder;
+import org.protobee.guice.scopes.ScopeHolder;
 
-import org.protobee.guice.ProtobeeScopes;
-
-import com.google.common.collect.Maps;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
-
+import com.google.inject.Singleton;
 
 /**
- * Creates an identity inside of it's identity scope, and populates any scoped objects into the
- * identity scope.
+ * Wraps the creation of a {@link NetworkIdentity} identity inside of a new identity scope
  * 
  * @author Daniel
  */
+@Singleton
 public class NetworkIdentityFactory {
 
   private Provider<NetworkIdentity> identityProvider;
+  private final Provider<ScopeHolder> scopeProvider;
 
   @Inject
-  public NetworkIdentityFactory(Provider<NetworkIdentity> identityProvider) {
+  public NetworkIdentityFactory(@NewIdentityScopeHolder Provider<ScopeHolder> scopeProvider,
+      Provider<NetworkIdentity> identityProvider) {
     this.identityProvider = identityProvider;
+    this.scopeProvider = scopeProvider;
   }
 
+  /**
+   * Preconditions: not in an identity scope
+   * 
+   * @return
+   */
   public NetworkIdentity create() {
-    Map<String, Object> scopeMap = Maps.newHashMap();
-    ProtobeeScopes.enterIdentityScope(scopeMap);
+    ScopeHolder holder = scopeProvider.get();
+    holder.enterScope();
     NetworkIdentity identity = identityProvider.get();
-    identity.getIdentityScopeMap().putAll(scopeMap);
-    ProtobeeScopes.exitIdentityScope();
+    holder.exitScope();
     return identity;
   }
 }

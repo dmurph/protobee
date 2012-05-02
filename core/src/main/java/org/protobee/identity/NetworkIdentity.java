@@ -4,10 +4,9 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
-import org.protobee.guice.IdentityScope;
-import org.protobee.guice.IdentityScopeMap;
-import org.protobee.guice.ProtobeeScopes;
-import org.protobee.guice.ScopeHolder;
+import org.protobee.guice.scopes.IdentityScope;
+import org.protobee.guice.scopes.IdentityScopeHolder;
+import org.protobee.guice.scopes.ScopeHolder;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
@@ -26,19 +25,19 @@ import com.google.inject.Key;
  * @author Daniel
  */
 @IdentityScope
-public class NetworkIdentity implements ScopeHolder {
+public class NetworkIdentity {
 
   private final Map<Protocol, ProtocolData> protocolData;
-  private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
+  private final ScopeHolder scope;
   private final SessionManager sessionManager;
   private String description;
 
   @Inject
-  public NetworkIdentity(Set<Protocol> protocols,
-      @IdentityScopeMap Map<String, Object> identityScopeMap, SessionManager sessions) {
+  public NetworkIdentity(Set<Protocol> protocols, SessionManager sessions,
+      @IdentityScopeHolder ScopeHolder scopeHolder) {
     this.sessionManager = sessions;
-    this.identityScopeMap = identityScopeMap;
+    this.scope = scopeHolder;
     ImmutableMap.Builder<Protocol, ProtocolData> builder = ImmutableMap.builder();
 
     for (Protocol protocol : protocols) {
@@ -47,7 +46,7 @@ public class NetworkIdentity implements ScopeHolder {
     protocolData = builder.build();
     // this should happen automatically because this object is in the identity scope, but we'll keep
     // this here in case of subclasses
-    ProtobeeScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
+    scope.putInScope(Key.get(NetworkIdentity.class), this);
   }
 
   public ProtocolData getProtocolData(Protocol protocol) {
@@ -124,10 +123,6 @@ public class NetworkIdentity implements ScopeHolder {
     return tags.contains(tag);
   }
 
-  Map<String, Object> getIdentityScopeMap() {
-    return identityScopeMap;
-  }
-
   @Override
   public final int hashCode() {
     return super.hashCode();
@@ -143,25 +138,24 @@ public class NetworkIdentity implements ScopeHolder {
 
   @Override
   public String toString() {
-    return "{ description: " + description + ", tags: " + tags.toString() + ", protocolData: "
-        + protocolData + "}";
+    return "{ description: " + description + ", tags: " + tags.toString() + ", scope: " + scope
+        + ", protocolData: " + protocolData + "}";
+  }
+
+  public ScopeHolder getScope() {
+    return scope;
   }
 
   public void enterScope() {
-    Preconditions.checkState(!ProtobeeScopes.isInIdentityScope(), "Already in a session scope");
-    ProtobeeScopes.enterIdentityScope(identityScopeMap);
+    scope.enterScope();
   }
 
   public boolean isInScope() {
-    return ProtobeeScopes.isInIdentityScope(identityScopeMap);
-  }
-
-  public void addObjectToScope(Key<?> key, Object object) {
-    ProtobeeScopes.putObjectInScope(key, object, identityScopeMap);
+    return scope.isInScope();
   }
 
   public void exitScope() {
-    ProtobeeScopes.exitIdentityScope();
+    scope.exitScope();
   }
 
   public static class ProtocolData {

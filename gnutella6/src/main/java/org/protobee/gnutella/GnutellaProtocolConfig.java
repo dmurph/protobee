@@ -10,7 +10,7 @@ import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import org.protobee.gnutella.session.GnutellaSessionModel;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.SessionProtocolModules;
 
 import com.google.common.collect.Maps;
 import com.google.inject.Inject;
@@ -41,7 +41,7 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   }
 
   @Override
-  public ProtocolModulesHolder createSessionModel() {
+  public SessionProtocolModules createSessionModel() {
     return sessionModuleProvider.get();
   }
 
@@ -66,7 +66,7 @@ public class GnutellaProtocolConfig implements ProtocolConfig {
   }
 
   @Override
-  public Map<String, Object> getServerBootstrapOptions() {
+  public Map<String, Object> getServerOptions() {
     return Maps.newHashMap();
   }
   

@@ -1,5 +1,6 @@
 package org.protobee.compatability;
 
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Set;
@@ -10,6 +11,7 @@ import org.protobee.compatability.VersionRange.MinVersionComparator;
 import org.protobee.util.VersionComparator;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
@@ -41,16 +43,16 @@ public class VersionRangeMerger {
       if (comp.compare(builder.getMinVersion(), entry.getMinVersion()) < 0) {
         builder.setMinVersion(entry.getMinVersion());
       }
-      
-      if (builder.getMaxVersion().equals("+")) {
-        if (entry.getMaxVersion().equals("+")) {
+
+      if (builder.getMaxVersion().equals(VersionRange.PLUS)) {
+        if (entry.getMaxVersion().equals(VersionRange.PLUS)) {
           continue;
         }
         builder.setMaxVersion(entry.getMaxVersion());
         continue;
       }
 
-      if (entry.getMaxVersion().equals("+")) {
+      if (entry.getMaxVersion().equals(VersionRange.PLUS)) {
         continue;
       }
 
@@ -87,7 +89,7 @@ public class VersionRangeMerger {
         continue;
       }
 
-      if (currBuilder.getMaxVersion().equals("+")) {
+      if (currBuilder.getMaxVersion().equals(VersionRange.PLUS)) {
         break;
       }
       if (comp.compare(currBuilder.getMaxVersion(), builder.getMinVersion()) < 0) {
@@ -95,8 +97,8 @@ public class VersionRangeMerger {
         currBuilder = builder;
         continue;
       }
-      if (builder.getMaxVersion().equals("+")) {
-        currBuilder.setMaxVersion("+");
+      if (builder.getMaxVersion().equals(VersionRange.PLUS)) {
+        currBuilder.setMaxVersion(VersionRange.PLUS);
         continue;
       }
       if (comp.compare(currBuilder.getMaxVersion(), builder.getMaxVersion()) < 0) {
@@ -109,30 +111,43 @@ public class VersionRangeMerger {
     return union;
   }
 
-  public Set<VersionRange> subtract(VersionRange range, Set<VersionRange> toSubstract) {
+  /**
+   * Returned set is sorted by
+   * 
+   * @param range
+   * @param toSubstract
+   * @return
+   */
+  public Set<VersionRange> subtract(VersionRange range, Collection<VersionRange> toSubstract) {
     List<VersionRange> subtract = Lists.newArrayList(toSubstract);
     Collections.sort(subtract, minComp);
-
 
     Set<VersionRange> result = Sets.newHashSet();
 
     VersionRange.BUILDER builder = VersionRange.builder().set(range);
 
+    // we don't just exit, because we could have split up the input range, and then
+    // cover the second range
+    boolean rangeCovered = false;
     for (VersionRange versionRange : subtract) {
       String minVersion = versionRange.getMinVersion();
       String maxVersion = versionRange.getMaxVersion();
 
       if (comp.compare(minVersion, builder.getMinVersion()) <= 0) {
-        if (maxVersion.equals("+") || comp.compare(maxVersion, builder.getMaxVersion()) > 0) {
-          return null;
+        if (maxVersion.equals(VersionRange.PLUS)
+            || comp.compare(maxVersion, builder.getMaxVersion()) > 0) {
+          rangeCovered = true;
+          break;
         }
-        if (builder.getMaxVersion().equals("+")
+        if (builder.getMaxVersion().equals(VersionRange.PLUS)
             || comp.compare(maxVersion, builder.getMinVersion()) > 0) {
           builder.setMinVersion(maxVersion);
         }
-      } else if (builder.getMaxVersion().equals("+")) {
+      } else if (builder.getMaxVersion().equals(VersionRange.PLUS)) {
         builder.setMaxVersion(minVersion);
-      } else if (maxVersion.equals("+") || comp.compare(maxVersion, builder.getMaxVersion()) >= 0) {
+      } else if (maxVersion.equals(VersionRange.PLUS)
+          || comp.compare(maxVersion, builder.getMaxVersion()) >= 0) {
+
         if (comp.compare(minVersion, builder.getMaxVersion()) < 0) {
           builder.setMaxVersion(minVersion);
         } else {
@@ -146,10 +161,24 @@ public class VersionRangeMerger {
         builder = VersionRange.builder().setMinVersion(maxVersion).setMaxVersion(oldMax);
       }
       if (comp.compare(builder.getMinVersion(), builder.getMaxVersion()) > 0) {
-        return null;
+        rangeCovered = true;
+        break;
       }
     }
+    if (rangeCovered) {
+      return result.isEmpty() ? null : result;
+    }
+
     result.add(builder.build());
     return result;
+  }
+
+  public boolean contains(String version, VersionRange range) {
+    Preconditions.checkArgument(VersionComparator.isValidVersionString(version),
+        "Not a valid version string");
+    Preconditions.checkNotNull(range);
+    return comp.compare(version, range.getMinVersion()) >= 0
+        && (range.getMaxVersion().equals(VersionRange.PLUS) || comp.compare(version,
+            range.getMaxVersion()) <= 0);
   }
 }
