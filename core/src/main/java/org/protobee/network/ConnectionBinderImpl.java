@@ -14,10 +14,8 @@ import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.handlers.MultipleRequestReceiver;
 import org.protobee.network.handlers.SingleRequestReceiver;
-import org.protobee.protocol.LocalListeningAddress;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolModel;
-import org.protobee.protocol.ServerOptionsMap;
 import org.protobee.util.ProtocolConfigUtils;
 import org.slf4j.Logger;
 
@@ -38,22 +36,15 @@ public class ConnectionBinderImpl implements ConnectionBinder {
   private final Provider<SingleRequestReceiver> requestHandlerFactory;
   private final ProtobeeChannels channels;
 
-  private final Provider<Map<String, Object>> serverOptionsProvider;
-  private final Provider<SocketAddress> localAddressProvider;
-
   @Inject
   public ConnectionBinderImpl(NetworkIdentityManager identityManager,
       Provider<ServerBootstrap> bootstrapProvider, MultipleRequestReceiver.Factory multiplexer,
-      Provider<SingleRequestReceiver> requestHandlerFactory, ProtobeeChannels channels,
-      @ServerOptionsMap Provider<Map<String, Object>> serverOptionsProvider,
-      @LocalListeningAddress Provider<SocketAddress> localAddressProvider) {
+      Provider<SingleRequestReceiver> requestHandlerFactory, ProtobeeChannels channels) {
     this.identityManager = identityManager;
     this.bootstrapProvider = bootstrapProvider;
     this.requestMultiplexerFactory = multiplexer;
     this.requestHandlerFactory = requestHandlerFactory;
     this.channels = channels;
-    this.serverOptionsProvider = serverOptionsProvider;
-    this.localAddressProvider = localAddressProvider;
   }
 
   @Override
@@ -78,20 +69,15 @@ public class ConnectionBinderImpl implements ConnectionBinder {
 
     SocketAddress localAddress;
     ServerBootstrap bootstrap = bootstrapProvider.get();
-    try {
-      model.enterScope();
-      bootstrap.setOptions(serverOptionsProvider.get());
-      bootstrap.setPipelineFactory(factory);
+    bootstrap.setOptions(model.getServerOptions());
+    bootstrap.setPipelineFactory(factory);
 
-      localAddress = localAddressProvider.get();
-      NetworkIdentity me = identityManager.getMe();
-      identityManager.setListeningAddress(me, protocol, localAddress);
-    } finally {
-      model.exitScope();
-    }
+    localAddress = model.getLocalListeningAddress();
+    NetworkIdentity me = identityManager.getMe();
+    identityManager.setListeningAddress(me, protocol, localAddress);
 
     Channel channel = bootstrap.bind(localAddress);
-    log.info("Address " + localAddress + " bound for protocol " + model.getProtocol());
+    log.info("Address " + localAddress + " bound for protocol " + model);
     channels.addChannel(channel, protocol);
 
     return channel;
@@ -102,8 +88,7 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     Preconditions.checkNotNull(models);
     Preconditions.checkNotNull(address);
 
-    Map<String, Object> options =
-        ProtocolConfigUtils.mergeNettyBindOptions(models, serverOptionsProvider);
+    Map<String, Object> options = ProtocolConfigUtils.mergeNettyBindOptions(models);
 
     ChannelPipelineFactory factory = new ChannelPipelineFactory() {
       @Override
@@ -120,14 +105,9 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     for (ProtocolModel model : models) {
       Protocol protocol = model.getProtocol();
       NetworkIdentity me = identityManager.getMe();
-      try {
-        model.enterScope();
-        SocketAddress listeningAddress = localAddressProvider.get();
-        Preconditions.checkArgument(address.equals(listeningAddress),
-            "Listening addresses do not match.");
-      } finally {
-        model.exitScope();
-      }
+      SocketAddress listeningAddress = model.getLocalListeningAddress();
+      Preconditions.checkArgument(address.equals(listeningAddress),
+          "Listening addresses do not match.");
       identityManager.setListeningAddress(me, protocol, address);
     }
     Channel channel = bootstrap.bind(address);

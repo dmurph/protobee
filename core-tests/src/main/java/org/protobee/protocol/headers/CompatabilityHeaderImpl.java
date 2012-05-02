@@ -2,8 +2,6 @@ package org.protobee.protocol.headers;
 
 import java.lang.annotation.Annotation;
 
-import org.protobee.protocol.headers.CompatabilityHeader;
-
 public class CompatabilityHeaderImpl implements CompatabilityHeader {
 
   private final String name;
@@ -21,18 +19,15 @@ public class CompatabilityHeaderImpl implements CompatabilityHeader {
     return name;
   }
 
-
   @Override
   public String minVersion() {
     return minVersion;
   }
 
-
   @Override
   public String maxVersion() {
     return maxVersion;
   }
-
 
   @Override
   public Class<? extends Annotation> annotationType() {
@@ -44,7 +39,6 @@ public class CompatabilityHeaderImpl implements CompatabilityHeader {
     return (127 * "name".hashCode()) ^ name.hashCode() + (127 * "minVersion".hashCode())
         ^ minVersion.hashCode() + (127 * "maxVersion".hashCode()) ^ maxVersion.hashCode();
   }
-
 
   @Override
   public boolean equals(Object obj) {

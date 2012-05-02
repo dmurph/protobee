@@ -5,7 +5,6 @@ import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 
 import org.junit.Test;
-import org.protobee.util.VersionComparator;
 
 public class VersionComparatorTest {
 
@@ -34,13 +33,12 @@ public class VersionComparatorTest {
   
   @Test
   public void testValidVersionStrings() {
-    VersionComparator comparator = new VersionComparator();
     
-    assertTrue(comparator.isValidVersionString("0.1"));
-    assertTrue(comparator.isValidVersionString("1"));
-    assertTrue(comparator.isValidVersionString("10.198888.2.5"));
-    assertFalse(comparator.isValidVersionString(".1"));
-    assertFalse(comparator.isValidVersionString("14.1."));
+    assertTrue(VersionComparator.isValidVersionString("0.1"));
+    assertTrue(VersionComparator.isValidVersionString("1"));
+    assertTrue(VersionComparator.isValidVersionString("10.198888.2.5"));
+    assertFalse(VersionComparator.isValidVersionString(".1"));
+    assertFalse(VersionComparator.isValidVersionString("14.1."));
   }
   
   

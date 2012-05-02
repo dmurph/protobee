@@ -6,8 +6,10 @@ import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.SimpleChannelDownstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
+import org.protobee.events.HandshakeSendingEvent;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.ProtocolSessionBootstrapper;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionState;
@@ -30,6 +32,7 @@ public class SessionDownstreamHandshaker extends SimpleChannelDownstreamHandler 
 
   @InjectLogger
   private Logger log;
+  private final ProtocolModel protocolModel;
   private final SessionModel sessionModel;
   private final EventBus eventBus;
   private final ProtocolSessionBootstrapper bootstrapper;
@@ -37,11 +40,13 @@ public class SessionDownstreamHandshaker extends SimpleChannelDownstreamHandler 
 
   @Inject
   public SessionDownstreamHandshaker(SessionModel session, EventBus eventBus,
-      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity) {
+      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity,
+      ProtocolModel protocolModel) {
     this.sessionModel = session;
     this.eventBus = eventBus;
     this.bootstrapper = bootstrapper;
     this.identity = identity;
+    this.protocolModel = protocolModel;
   }
 
   @Override
@@ -64,28 +69,33 @@ public class SessionDownstreamHandshaker extends SimpleChannelDownstreamHandler 
 
     HttpMessage request = (HttpMessage) e.getMessage();
 
-    identity.enterScope();
-    sessionModel.enterScope();
-    // just post to the event bus because we do all filtering logic and setup in the upstream
-    // handshaker
-    eventBus.post(new HandshakeSendingEvent(ctx, request));
+    try {
+      protocolModel.enterScope();
+      identity.enterScope();
+      sessionModel.enterScope();
+      // just post to the event bus because we do all filtering logic and setup in the upstream
+      // handshaker
+      eventBus.post(new HandshakeSendingEvent(ctx, request));
 
-    sessionModel.exitScope();
-    identity.exitScope();
 
-    Channels.write(ctx, e.getFuture(), request);
+      Channels.write(ctx, e.getFuture(), request);
 
-    switch (sessionModel.getSessionState()) {
-      case HANDSHAKE_0:
-        sessionModel.setSessionState(SessionState.HANDSHAKE_1);
-        break;
-      case HANDSHAKE_1:
-        sessionModel.setSessionState(SessionState.HANDSHAKE_2);
-        break;
-      case HANDSHAKE_2:
-        bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
-        sessionModel.setSessionState(SessionState.MESSAGES);
-        break;
+      switch (sessionModel.getSessionState()) {
+        case HANDSHAKE_0:
+          sessionModel.setSessionState(SessionState.HANDSHAKE_1);
+          break;
+        case HANDSHAKE_1:
+          sessionModel.setSessionState(SessionState.HANDSHAKE_2);
+          break;
+        case HANDSHAKE_2:
+          bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
+          sessionModel.setSessionState(SessionState.MESSAGES);
+          break;
+      }
+    } finally {
+      sessionModel.exitScope();
+      identity.exitScope();
+      protocolModel.exitScope();
     }
   }
 }

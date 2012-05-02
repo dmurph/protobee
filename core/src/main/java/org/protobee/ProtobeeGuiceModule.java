@@ -1,7 +1,5 @@
 package org.protobee;
 
-import java.util.Map;
-import java.util.Set;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -14,19 +12,14 @@ import org.protobee.guice.netty.ExecutorModule;
 import org.protobee.guice.scopes.ScopesGuiceModule;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.NetworkGuiceModule;
-import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.protocol.ProtocolGuiceModule;
 import org.protobee.session.SessionGuiceModule;
 import org.protobee.stats.StatsGuiceModule;
-import org.protobee.util.ProtocolConfigUtils;
 import org.protobee.util.UtilGuiceModule;
 
-import com.google.common.base.Preconditions;
-import com.google.common.collect.ImmutableMap;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
-import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 

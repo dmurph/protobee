@@ -10,10 +10,25 @@ public class HeadersImpl implements Headers {
 
   private final CompatabilityHeader[] required;
   private final CompatabilityHeader[] requested;
+  private final CompatabilityHeader[] excluded;
+  private final CompatabilityHeader[] silentExclusion;
 
-  public HeadersImpl(CompatabilityHeader[] required, CompatabilityHeader[] requested) {
+  public HeadersImpl(CompatabilityHeader[] required, CompatabilityHeader[] requested,
+      CompatabilityHeader[] excluded, CompatabilityHeader[] silentExclusion) {
     this.required = required;
     this.requested = requested;
+    this.excluded = excluded;
+    this.silentExclusion = silentExclusion;
+  }
+
+  @Override
+  public CompatabilityHeader[] excluding() {
+    return excluded;
+  }
+
+  @Override
+  public CompatabilityHeader[] silentExcluding() {
+    return silentExclusion;
   }
 
   @Override
@@ -34,7 +49,9 @@ public class HeadersImpl implements Headers {
   @Override
   public int hashCode() {
     return (127 * "required".hashCode()) ^ Arrays.hashCode(required)
-        + (127 * "requested".hashCode()) ^ Arrays.hashCode(requested);
+        + (127 * "requested".hashCode()) ^ Arrays.hashCode(requested)
+        + (127 * "excluding".hashCode()) ^ Arrays.hashCode(excluded)
+        + (127 * "silentExcluding".hashCode()) ^ Arrays.hashCode(silentExclusion);
   }
 
   @Override

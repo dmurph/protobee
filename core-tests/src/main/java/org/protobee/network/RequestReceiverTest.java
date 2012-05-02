@@ -66,9 +66,8 @@ public class RequestReceiverTest extends AbstractTest {
           }
         }));
 
-    SingleRequestReceiver.Factory factory = inj.getInstance(SingleRequestReceiver.Factory.class);
-
-    SingleRequestReceiver receiver = spy(factory.create(config));
+    
+    SingleRequestReceiver receiver = spy(inj.getInstance(SingleRequestReceiver.class));
     doReturn(ChannelBuffers.dynamicBuffer()).when(receiver).newCumulationBuffer(
         any(ChannelHandlerContext.class), anyInt());
 
@@ -91,8 +90,8 @@ public class RequestReceiverTest extends AbstractTest {
 
     verify(pipeline).remove(receiver);
 
-    verify(handshakeBootstrapper).bootstrapSession(eq(config), eq(identity), eq(channel),
-        any(ChannelPipeline.class));
+    verify(handshakeBootstrapper).bootstrapSession(eq(fromConfig(inj, config)), eq(identity),
+        eq(channel), any(ChannelPipeline.class));
   }
 
   @Test
@@ -124,9 +123,7 @@ public class RequestReceiverTest extends AbstractTest {
           }
         }));
 
-    SingleRequestReceiver.Factory factory = inj.getInstance(SingleRequestReceiver.Factory.class);
-
-    SingleRequestReceiver receiver = spy(factory.create(config));
+    SingleRequestReceiver receiver = spy(inj.getInstance(SingleRequestReceiver.class));
     doReturn(ChannelBuffers.dynamicBuffer()).when(receiver).newCumulationBuffer(
         any(ChannelHandlerContext.class), anyInt());
 
@@ -172,18 +169,19 @@ public class RequestReceiverTest extends AbstractTest {
     final ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
     Injector inj =
-        getInjector(Modules.combine(getModuleWithProtocolConfig(config, config2), new AbstractModule() {
-          @Override
-          protected void configure() {
-            bind(HandshakeStateBootstrapper.class).toInstance(handshakeBootstrapper);
-            bind(ProtobeeChannels.class).toInstance(channels);
-          }
-        }));
+        getInjector(Modules.combine(getModuleWithProtocolConfig(config, config2),
+            new AbstractModule() {
+              @Override
+              protected void configure() {
+                bind(HandshakeStateBootstrapper.class).toInstance(handshakeBootstrapper);
+                bind(ProtobeeChannels.class).toInstance(channels);
+              }
+            }));
 
     MultipleRequestReceiver.Factory factory =
         inj.getInstance(MultipleRequestReceiver.Factory.class);
 
-    MultipleRequestReceiver receiver = spy(factory.create(configs));
+    MultipleRequestReceiver receiver = spy(factory.create(fromConfigs(inj, configs)));
     doReturn(ChannelBuffers.dynamicBuffer()).when(receiver).newCumulationBuffer(
         any(ChannelHandlerContext.class), anyInt());
 
@@ -197,9 +195,9 @@ public class RequestReceiverTest extends AbstractTest {
       throw new RuntimeException(e);
     }
 
-    verify(handshakeBootstrapper).bootstrapSession(eq(config2), any(NetworkIdentity.class),
-        eq(channel), any(ChannelPipeline.class));
-    verify(handshakeBootstrapper, never()).bootstrapSession(eq(config), any(NetworkIdentity.class),
-      eq(channel), any(ChannelPipeline.class));
+    verify(handshakeBootstrapper).bootstrapSession(eq(fromConfig(inj, config2)),
+        any(NetworkIdentity.class), eq(channel), any(ChannelPipeline.class));
+    verify(handshakeBootstrapper, never()).bootstrapSession(eq(fromConfig(inj, config)),
+        any(NetworkIdentity.class), eq(channel), any(ChannelPipeline.class));
   }
 }

@@ -77,51 +77,48 @@ public class ProtocolGuiceModule extends AbstractModule {
 
   @Provides
   @Singleton
-  public Set<Protocol> getProtocols(Set<ProtocolConfig> configs) {
-    return ProtocolConfigUtils.getProtocolSet(configs);
-  }
-
-  @Provides
-  public Set<ProtocolModule> createModules(ProtocolConfig config) {
-    return config.createProtocolModules();
+  public Set<Protocol> getProtocols(Set<ProtocolModel> configs) {
+    return ProtocolConfigUtils.getProtocolSetFromModels(configs);
   }
 
   @Provides
   @ProtocolScope
-  public Protocol getProtocol(ProtocolConfig config) {
-    return config.get();
+  public Protocol getProtocol(ProtocolModel model) {
+    return model.getProtocol();
   }
 
   @Provides
   @ProtocolScope
-  public Set<Class<? extends ProtocolModule>> getModuleClasses(ProtocolConfig config) {
-    return config.getModuleClasses();
+  public Set<Class<? extends ProtocolModule>> getModuleClasses(ProtocolModel model) {
+    return model.getModuleClasses();
   }
 
   @Provides
   @ProtocolScope
   @ServerOptionsMap
-  public Map<String, Object> getServerOptions(ProtocolConfig config) {
-    return config.getMergedServerOptions();
+  public Map<String, Object> getServerOptions(ProtocolModel model) {
+    return model.getServerOptions();
   }
 
   @Provides
   @ProtocolScope
   @ConnectionOptionsMap
-  public Map<String, Object> getConnectionOptions(ProtocolConfig config) {
-    return config.getConnectionOptions();
+  public Map<String, Object> getConnectionOptions(ProtocolModel model) {
+    return model.getConnectionOptions();
   }
 
   @Provides
-  @ProtocolScope
   @LocalListeningAddress
-  public SocketAddress getLocalAddress(ProtocolConfig config) {
-    return config.getListeningAddress();
+  @ProtocolScope
+  public SocketAddress getLocalAddress(ProtocolModel model) {
+    return model.getLocalListeningAddress();
   }
+
+
 
   @Provides
   @ProtocolChannelHandlers
-  @ProtocolScope
+  @SessionScope
   public ChannelHandler[] createProtocolHandlers(ProtocolConfig config) {
     return config.createProtocolHandlers();
   }
@@ -138,5 +135,11 @@ public class ProtocolGuiceModule extends AbstractModule {
   @SessionScope
   public HttpMessageDecoder createDecoder(ProtocolConfig config) {
     return config.createRequestDecoder();
+  }
+
+  @Provides
+  @SessionScope
+  public Set<ProtocolModule> createModules(ProtocolConfig config) {
+    return config.createProtocolModules();
   }
 }

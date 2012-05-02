@@ -1,8 +1,8 @@
-package org.protobee.session.handshake;
+package org.protobee.events;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpMessage;
-import org.protobee.session.SessionEvent;
+import org.protobee.session.handshake.HandshakeInterruptor;
 
 public class HandshakeReceivedEvent extends SessionEvent {
 
