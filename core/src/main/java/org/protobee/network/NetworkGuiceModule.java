@@ -4,8 +4,8 @@ import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
-import org.protobee.guice.SessionScope;
 import org.protobee.guice.netty.NioServerSocketChannelFactoryProvider;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
 import org.protobee.network.handlers.CloseOnExceptionHandler;
 import org.protobee.network.handlers.LoggingUpstreamHandler;
@@ -25,32 +25,19 @@ public class NetworkGuiceModule extends AbstractModule {
   @Override
   protected void configure() {
     install(new FactoryModuleBuilder().build(MultipleRequestReceiver.Factory.class));
-    install(new FactoryModuleBuilder().build(SingleRequestReceiver.Factory.class));
 
-    bind(ChannelFactory.class).toProvider(NioServerSocketChannelFactoryProvider.class).in(Singleton.class);
+    bind(SingleRequestReceiver.class);
+    bind(ChannelFactory.class).toProvider(NioServerSocketChannelFactoryProvider.class).in(
+        Singleton.class);
 
     bind(ConnectionCreator.class).to(ConnectionCreatorImpl.class).in(Singleton.class);
     bind(ConnectionBinder.class).to(ConnectionBinderImpl.class).in(Singleton.class);
-    
+
     bind(CleanupOnDisconnectHandler.class).in(SessionScope.class);
     bind(CloseOnExceptionHandler.class).in(Singleton.class);
     bind(LoggingUpstreamHandler.class).in(Singleton.class);
   }
 
-  @Provides
-  @Named("request")
-  @SessionScope
-  public HttpMessageDecoder getRequestDecoder(ProtocolConfig config) {
-    return config.createRequestDecoder();
-  }
-
-  @Provides
-  @Named("request")
-  @SessionScope
-  public HttpMessageEncoder getRequestEncoder(ProtocolConfig config) {
-    return config.createRequestEncoder();
-  }
-  
   @Provides
   public ServerBootstrap getServerBootstrap(ChannelFactory factory) {
     return new ServerBootstrap(factory);

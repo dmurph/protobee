@@ -6,13 +6,12 @@ import org.jboss.netty.channel.ChannelUpstreamHandler;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpResponseDecoder;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
+import org.protobee.protocol.RequestEncoding;
 import org.protobee.session.SessionModel;
 import org.slf4j.Logger;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 
 @SessionScope
 public class HandshakeHttpMessageDecoder implements ChannelUpstreamHandler {
@@ -25,7 +24,7 @@ public class HandshakeHttpMessageDecoder implements ChannelUpstreamHandler {
 
 
   @Inject
-  public HandshakeHttpMessageDecoder(@Named("request") HttpMessageDecoder requestDecoder,
+  public HandshakeHttpMessageDecoder(@RequestEncoding HttpMessageDecoder requestDecoder,
       HttpResponseDecoder responseDecoder, SessionModel sessionModel) {
     this.requestDecoder = requestDecoder;
     this.responseDecoder = responseDecoder;
@@ -43,8 +42,9 @@ public class HandshakeHttpMessageDecoder implements ChannelUpstreamHandler {
         responseDecoder.handleUpstream(ctx, e);
         break;
       case MESSAGES:
-        log.error("Cannot be in messages state");
-        throw new IllegalStateException("Cannot be in messages state");
+      default:
+        log.error("Illegal session state");
+        throw new IllegalStateException("Illegal session state");
     }
   }
 }

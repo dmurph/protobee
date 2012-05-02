@@ -10,12 +10,19 @@ import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 public class VersionRange {
+  public static final String PLUS = "+";
+
   private final String minVersion;
   private final String maxVersion;
 
   public VersionRange(String minVersion, String maxVersion) {
     Preconditions.checkNotNull(minVersion);
     Preconditions.checkNotNull(maxVersion);
+    Preconditions.checkArgument(VersionComparator.isValidVersionString(minVersion),
+        "invalid minVersion: " + minVersion);
+    Preconditions.checkArgument(
+        maxVersion.equals(PLUS) || VersionComparator.isValidVersionString(maxVersion),
+        "Invalid maxVersion: " + maxVersion);
     this.minVersion = minVersion;
     this.maxVersion = maxVersion;
   }

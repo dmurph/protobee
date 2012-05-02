@@ -11,7 +11,7 @@ import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import org.junit.After;
 import org.junit.Before;
-import org.protobee.guice.ProtobeeScopes;
+import org.protobee.guice.scopes.ProtobeeScopes;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityFactory;
 import org.protobee.identity.NetworkIdentityManager;
@@ -19,7 +19,7 @@ import org.protobee.modules.ProtocolModule;
 import org.protobee.plugin.PluginGuiceModule;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.SessionProtocolModules;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionModelFactory;
 
@@ -68,16 +68,16 @@ public abstract class AbstractTest {
   public static ProtocolConfig mockDefaultProtocolConfig() {
     ProtocolConfig config = mock(ProtocolConfig.class);
     when(config.get()).thenReturn(mock(Protocol.class));
-    when(config.createSessionModel()).thenReturn(mock(ProtocolModulesHolder.class));
+    when(config.createSessionModel()).thenReturn(mock(SessionProtocolModules.class));
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
-    when(config.getServerBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
+    when(config.getServerOptions()).thenReturn(Maps.<String, Object>newHashMap());
     return config;
   }
 
   public static ProtocolConfig mockDefaultProtocolConfig(Set<ProtocolModule> sessionModules) {
 
-    ProtocolModulesHolder sessionModel = mock(ProtocolModulesHolder.class);
+    SessionProtocolModules sessionModel = mock(SessionProtocolModules.class);
     when(sessionModel.getMutableModules()).thenReturn(sessionModules);
 
     ProtocolConfig config = mock(ProtocolConfig.class);
@@ -85,7 +85,7 @@ public abstract class AbstractTest {
     when(config.createSessionModel()).thenReturn(sessionModel);
     when(config.createRequestDecoder()).thenReturn(mock(HttpMessageDecoder.class));
     when(config.createRequestEncoder()).thenReturn(mock(HttpMessageEncoder.class));
-    when(config.getServerBootstrapOptions()).thenReturn(Maps.<String, Object>newHashMap());
+    when(config.getServerOptions()).thenReturn(Maps.<String, Object>newHashMap());
     return config;
   }
 
@@ -117,7 +117,8 @@ public abstract class AbstractTest {
 
   @After
   public void freeScopes() {
-    ProtobeeScopes.exitIdentityScope();
-    ProtobeeScopes.exitSessionScope();
+    ProtobeeScopes.IDENTITY.exitScope();
+    ProtobeeScopes.PROTOCOL.exitScope();
+    ProtobeeScopes.SESSION.exitScope();
   }
 }

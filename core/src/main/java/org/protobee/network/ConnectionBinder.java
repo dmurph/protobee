@@ -4,7 +4,7 @@ import java.net.SocketAddress;
 import java.util.Set;
 
 import org.jboss.netty.channel.Channel;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
 
 
 /**
@@ -19,7 +19,7 @@ public interface ConnectionBinder {
    * @param config
    * @return
    */
-  Channel bind(final ProtocolConfig config);
+  Channel bind(final ProtocolModel config);
 
   /**
    * Precondition: all the config's listening address has to match the local address
@@ -28,5 +28,5 @@ public interface ConnectionBinder {
    * @param localAddress
    * @return
    */
-  Channel bind(final Set<ProtocolConfig> configs, SocketAddress localAddress);
+  Channel bind(final Set<ProtocolModel> configs, SocketAddress localAddress);
 }

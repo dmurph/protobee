@@ -2,7 +2,7 @@ package org.protobee.plugin;
 
 import org.protobee.gnutella.Gnutella;
 import org.protobee.gnutella.filters.GnutellaPreFilter;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.ProtocolConfig;
 

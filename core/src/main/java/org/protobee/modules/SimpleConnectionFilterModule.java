@@ -8,7 +8,7 @@ import javax.annotation.Nullable;
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.SessionProtocolModules;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionState;
 import org.protobee.session.handshake.HandshakeInterruptor;
@@ -37,9 +37,9 @@ public abstract class SimpleConnectionFilterModule implements ProtocolModule {
   private final Map<SessionState, Set<CustomFilterEntry>> customRules;
   private final SessionModel session;
   private final VersionComparator comp;
-  private final ProtocolModulesHolder modules;
+  private final SessionProtocolModules modules;
 
-  protected SimpleConnectionFilterModule(ProtocolModulesHolder protocolModulesHolder,
+  protected SimpleConnectionFilterModule(SessionProtocolModules protocolModulesHolder,
       SessionModel session, VersionComparator comp,
       @Nullable Map<SessionState, Set<HeaderFilterEntry>> headerFilters,
       @Nullable Map<Class<? extends ProtocolModule>, ClassFilterEntry> classFilters,

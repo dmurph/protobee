@@ -17,7 +17,7 @@ import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.junit.Test;
 import org.protobee.guice.LogModule;
 import org.protobee.protocol.headers.CompatabilityHeader;
-import org.protobee.protocol.headers.CompatabilityHeaderMerger;
+import org.protobee.protocol.headers.ModuleCompatabilityVersionMerger;
 import org.protobee.protocol.headers.Headers;
 import org.protobee.util.VersionComparator;
 
@@ -47,8 +47,8 @@ public class HeaderMergerTest {
     Injector inj =
         Guice.createInjector(new LogModule());
 
-    CompatabilityHeaderMerger merger =
-        new CompatabilityHeaderMerger(new VersionComparator(), headers);
+    ModuleCompatabilityVersionMerger merger =
+        new ModuleCompatabilityVersionMerger(new VersionComparator(), headers);
     inj.injectMembers(merger);
 
     HttpMessage mockMessage = mock(HttpMessage.class);
@@ -78,8 +78,8 @@ public class HeaderMergerTest {
     Injector inj =
         Guice.createInjector(new LogModule());
 
-    CompatabilityHeaderMerger merger =
-        new CompatabilityHeaderMerger(new VersionComparator(), headerArray);
+    ModuleCompatabilityVersionMerger merger =
+        new ModuleCompatabilityVersionMerger(new VersionComparator(), headerArray);
     inj.injectMembers(merger);
 
     HttpMessage mockMessage = mock(HttpMessage.class);

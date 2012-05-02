@@ -16,7 +16,7 @@ import org.protobee.gnutella.messages.PongBody;
 import org.protobee.gnutella.modules.ping.AdvancedPongCache.CacheEntry;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.gnutella.util.GUID;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;

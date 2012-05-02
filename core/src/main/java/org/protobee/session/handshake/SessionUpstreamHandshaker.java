@@ -14,13 +14,13 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.headers.CompatabilityHeaderMerger;
+import org.protobee.protocol.headers.ModuleCompatabilityVersionMerger;
 import org.protobee.session.ProtocolSessionBootstrapper;
-import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.SessionProtocolModules;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionState;
 import org.protobee.util.ProtocolModuleFilter;
@@ -42,8 +42,8 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   @InjectLogger
   private Logger log;
   private final SessionModel sessionModel;
-  private final ProtocolModulesHolder protocolSessionModel;
-  private final CompatabilityHeaderMerger headerMerger;
+  private final SessionProtocolModules protocolSessionModel;
+  private final ModuleCompatabilityVersionMerger headerMerger;
   private final HandshakeInterruptor interruptor;
   private final EventBus eventBus;
   private final ProtocolModuleFilter filter;
@@ -52,10 +52,10 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   private final Protocol protocol;
 
   @Inject
-  public SessionUpstreamHandshaker(SessionModel session, CompatabilityHeaderMerger headerMerger,
+  public SessionUpstreamHandshaker(SessionModel session, ModuleCompatabilityVersionMerger headerMerger,
       HandshakeInterruptor interruptor, ProtocolModuleFilter filter, EventBus eventBus,
       ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity, Protocol protocol,
-      ProtocolModulesHolder protocolSessionModel) {
+      SessionProtocolModules protocolSessionModel) {
     this.sessionModel = session;
     this.headerMerger = headerMerger;
     this.interruptor = interruptor;

@@ -6,13 +6,12 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
 import org.jboss.netty.handler.codec.http.HttpResponseEncoder;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
+import org.protobee.protocol.RequestEncoding;
 import org.protobee.session.SessionModel;
 import org.slf4j.Logger;
 
 import com.google.inject.Inject;
-import com.google.inject.name.Named;
-
 
 @SessionScope
 public class HandshakeHttpMessageEncoder implements ChannelDownstreamHandler {
@@ -24,7 +23,7 @@ public class HandshakeHttpMessageEncoder implements ChannelDownstreamHandler {
   private final SessionModel sessionModel;
 
   @Inject
-  public HandshakeHttpMessageEncoder(@Named("request") HttpMessageEncoder requestEncoder,
+  public HandshakeHttpMessageEncoder(@RequestEncoding HttpMessageEncoder requestEncoder,
       HttpResponseEncoder responseEncoder, SessionModel sessionModel) {
     this.requestEncoder = requestEncoder;
     this.responseEncoder = responseEncoder;
@@ -42,8 +41,9 @@ public class HandshakeHttpMessageEncoder implements ChannelDownstreamHandler {
         responseEncoder.handleDownstream(ctx, e);
         break;
       case MESSAGES:
-        log.error("Cannot be in messages state");
-        throw new IllegalStateException("Cannot be in messages state");
+      default:
+        log.error("Illegal session state");
+        throw new IllegalStateException("Illegal session state");
     }
   }
 }

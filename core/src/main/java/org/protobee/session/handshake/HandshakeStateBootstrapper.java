@@ -11,11 +11,11 @@ import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.ProtocolSessionBootstrapper;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionModelFactory;
+import org.protobee.session.SessionProtocolModules;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -36,7 +36,7 @@ public class HandshakeStateBootstrapper {
   private Logger log;
   private final Provider<ProtocolSessionBootstrapper> protocolBootstrapperFactory;
   private final Provider<SessionModelFactory> sessionFactory;
-  private final Provider<ProtocolModulesHolder> protocolSession;
+  private final Provider<SessionProtocolModules> protocolSession;
 
   private final Provider<Set<ChannelHandler>> handshakeHandlersProvider;
 
@@ -46,8 +46,9 @@ public class HandshakeStateBootstrapper {
   public HandshakeStateBootstrapper(
       Provider<ProtocolSessionBootstrapper> protocolBootstrapperFactory,
       Provider<EventBus> eventBus, Provider<SessionModelFactory> sessionFactory,
-      Provider<ProtocolModulesHolder> protocolSession,
-      @HandshakeHandlers Provider<Set<ChannelHandler>> handshakeHandlersProvider) {
+      Provider<SessionProtocolModules> protocolSession,
+      @HandshakeHandlers Provider<Set<ChannelHandler>> handshakeHandlersProvider,
+      Provider<Protocol> protocolProvider) {
     this.protocolBootstrapperFactory = protocolBootstrapperFactory;
     this.eventBus = eventBus;
     this.sessionFactory = sessionFactory;
@@ -56,7 +57,7 @@ public class HandshakeStateBootstrapper {
   }
 
   /**
-   * Preconditions: not in any scope, identity already has sending and listening addresses set
+   * Preconditions: identity already has sending and listening addresses set
    * 
    * 
    * @param protocolConfig
@@ -66,29 +67,30 @@ public class HandshakeStateBootstrapper {
    * @param pipeline
    * @return
    */
-  public void bootstrapSession(ProtocolConfig protocolConfig, NetworkIdentity identity,
+  public void bootstrapSession(ProtocolModel protocolModel, NetworkIdentity identity,
       @Nullable Channel channel, ChannelPipeline pipeline) {
-    Preconditions.checkNotNull(protocolConfig);
     Preconditions.checkNotNull(identity);
 
-    Protocol protocol = protocolConfig.get();
+    Protocol protocol = protocolModel.getProtocol();
 
     SessionModel session = null;
     try {
+      protocolModel.enterScope();
       identity.enterScope();
       // create session
       session =
-          sessionFactory.get().create(protocolConfig,
-              identity.getSendingAddress(protocol).toString());
+          sessionFactory.get().create(
+              protocol.name() + "-" + identity.getSendingAddress(protocol).toString());
       if (channel != null) {
-        session.addObjectToScope(Key.get(Channel.class), channel);
+        session.getScope().putInScope(Key.get(Channel.class), channel);
       }
+
 
       session.enterScope();
 
       identity.registerNewSession(protocol, session);
 
-      ProtocolModulesHolder protocolSessionModel = protocolSession.get();
+      SessionProtocolModules protocolSessionModel = protocolSession.get();
 
       Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
       if (modules.size() == 0) {
@@ -105,7 +107,7 @@ public class HandshakeStateBootstrapper {
 
 
       // create protocol bootstrap
-      session.addObjectToScope(Key.get(ProtocolSessionBootstrapper.class),
+      session.getScope().putInScope(Key.get(ProtocolSessionBootstrapper.class),
           protocolBootstrapperFactory.get());
 
       Set<ChannelHandler> handlers = handshakeHandlersProvider.get();
@@ -119,6 +121,7 @@ public class HandshakeStateBootstrapper {
         session.exitScope();
       }
       identity.exitScope();
+      protocolModel.exitScope();
     }
   }
 }

@@ -54,7 +54,7 @@ public class ConnectionBinderTest extends AbstractTest {
     InetSocketAddress localAddress = new InetSocketAddress(port);
 
     assertEquals(channel, bindedChannel);
-    verify(bootstrap).setOptions(eq(config.getServerBootstrapOptions()));
+    verify(bootstrap).setOptions(eq(config.getServerOptions()));
     verify(bootstrap).bind(eq(localAddress));
     Protocol protocol = config.get();
     verify(channels).addChannel(eq(channel), eq(protocol));

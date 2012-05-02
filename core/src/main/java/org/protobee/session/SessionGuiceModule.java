@@ -4,10 +4,8 @@ import java.util.Set;
 
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandler;
-import org.protobee.guice.PrescopedProvider;
-import org.protobee.guice.SessionScope;
-import org.protobee.protocol.Protocol;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.guice.scopes.PrescopedProvider;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.session.handshake.DefaultHandshakeHandlersProvider;
 import org.protobee.session.handshake.HandshakeHandlers;
 import org.protobee.session.handshake.HandshakeHttpMessageDecoder;
@@ -39,15 +37,11 @@ public class SessionGuiceModule extends AbstractModule {
 
     bind(HandshakeStateBootstrapper.class).in(Singleton.class);
 
-    bind(ProtocolModulesHolder.class).toProvider(new PrescopedProvider<ProtocolModulesHolder>())
-        .in(SessionScope.class);
+    bind(SessionProtocolModules.class).in(SessionScope.class);
 
     bind(EventBus.class).toProvider(new PrescopedProvider<EventBus>()).in(SessionScope.class);
     bind(SessionModel.class).in(SessionScope.class);
-    bind(Protocol.class).toProvider(new PrescopedProvider<Protocol>()).in(SessionScope.class);
     bind(Channel.class).toProvider(new PrescopedProvider<Channel>()).in(SessionScope.class);
-    bind(ProtocolConfig.class).toProvider(new PrescopedProvider<ProtocolConfig>()).in(
-        SessionScope.class);
   }
 
   private void bindHandshakeHandlers() {

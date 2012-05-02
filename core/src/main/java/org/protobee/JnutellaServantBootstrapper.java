@@ -6,14 +6,17 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
+import org.protobee.guice.scopes.ProtobeeScopes;
 import org.protobee.network.ConnectionBinder;
 import org.protobee.network.ProtobeeChannels;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.LocalListeningAddress;
+import org.protobee.protocol.ProtocolModel;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 
@@ -25,7 +28,9 @@ import com.google.inject.Singleton;
 @Singleton
 public class JnutellaServantBootstrapper {
 
-  private final Set<ProtocolConfig> protocols;
+  private final Set<ProtocolModel> protocols;
+  private final Provider<SocketAddress> localAddressProvider;
+
   private final ConnectionBinder connectionBinder;
   private final ChannelFactory channelFactory;
   private final ProtobeeChannels channels;
@@ -34,12 +39,14 @@ public class JnutellaServantBootstrapper {
   private final Object lock = new Object();
 
   @Inject
-  public JnutellaServantBootstrapper(Set<ProtocolConfig> protocols,
-      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels) {
+  public JnutellaServantBootstrapper(Set<ProtocolModel> protocols,
+      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels,
+      @LocalListeningAddress Provider<SocketAddress> localAddressProvider) {
     this.protocols = protocols;
     this.connectionBinder = connectionBinder;
     this.channelFactory = factory;
     this.channels = channels;
+    this.localAddressProvider = localAddressProvider;
   }
 
   public boolean isStarted() {
@@ -54,23 +61,28 @@ public class JnutellaServantBootstrapper {
         started.set(false);
         throw new IllegalStateException("We're currently shutting down the servant");
       }
-      HashMultimap<SocketAddress, ProtocolConfig> portToProtocols = HashMultimap.create();
+      HashMultimap<SocketAddress, ProtocolModel> portToProtocols = HashMultimap.create();
 
-      for (ProtocolConfig config : protocols) {
-        portToProtocols.put(config.getListeningAddress(), config);
-      }
-
-      for (SocketAddress address : portToProtocols.keySet()) {
-        Set<ProtocolConfig> configs = portToProtocols.get(address);
-
-        if (configs.size() == 1) {
-          connectionBinder.bind(Iterables.getOnlyElement(configs));
-        } else {
-          connectionBinder.bind(configs, address);
+      try {
+        for (ProtocolModel model : protocols) {
+          model.enterScope();
+          portToProtocols.put(localAddressProvider.get(), model);
+          model.exitScope();
         }
+
+        for (SocketAddress address : portToProtocols.keySet()) {
+          Set<ProtocolModel> models = portToProtocols.get(address);
+
+          if (models.size() == 1) {
+            connectionBinder.bind(Iterables.getOnlyElement(models));
+          } else {
+            connectionBinder.bind(models, address);
+          }
+        }
+      } finally {
+        ProtobeeScopes.PROTOCOL.exitScope();
       }
     }
-
   }
 
   public void shutdown(long maxWaitMillis) {
