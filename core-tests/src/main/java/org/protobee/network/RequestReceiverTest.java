@@ -28,6 +28,7 @@ import org.protobee.network.handlers.MultipleRequestReceiver;
 import org.protobee.network.handlers.SingleRequestReceiver;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.handshake.HandshakeStateBootstrapper;
 
 import com.google.common.collect.ImmutableSet;
@@ -66,10 +67,12 @@ public class RequestReceiverTest extends AbstractTest {
           }
         }));
 
-    
+    ProtocolModel model = fromConfig(inj, config);
+    model.enterScope();
     SingleRequestReceiver receiver = spy(inj.getInstance(SingleRequestReceiver.class));
     doReturn(ChannelBuffers.dynamicBuffer()).when(receiver).newCumulationBuffer(
         any(ChannelHandlerContext.class), anyInt());
+    model.exitScope();
 
     String headerString = "TEST CONNECT/0.6\r\njaslk";
     ChannelBuffer header = ChannelBuffers.dynamicBuffer();
@@ -122,10 +125,13 @@ public class RequestReceiverTest extends AbstractTest {
             bind(ProtobeeChannels.class).toInstance(channels);
           }
         }));
-
+    
+    ProtocolModel model = fromConfig(inj, config);
+    model.enterScope();
     SingleRequestReceiver receiver = spy(inj.getInstance(SingleRequestReceiver.class));
     doReturn(ChannelBuffers.dynamicBuffer()).when(receiver).newCumulationBuffer(
         any(ChannelHandlerContext.class), anyInt());
+    model.exitScope();
 
     String headerString = "NOPE CONNECT/0.6\r\njaslk";
     ChannelBuffer header = ChannelBuffers.dynamicBuffer();

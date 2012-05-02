@@ -19,7 +19,7 @@ public class VersionUtils {
       return null;
     }
     for (VersionRange range : versions) {
-      if (!merger.contains(value, range)) {
+      if (comparator.compare(range.getMinVersion(), value) > 0) {
         continue;
       }
       String currMax = range.getMaxVersion();
