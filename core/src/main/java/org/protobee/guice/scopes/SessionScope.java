@@ -1,4 +1,4 @@
-package org.protobee.guice;
+package org.protobee.guice.scopes;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

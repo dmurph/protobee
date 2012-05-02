@@ -6,7 +6,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelStateEvent;
 import org.jboss.netty.channel.SimpleChannelUpstreamHandler;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionModel;
@@ -49,7 +49,7 @@ public class CleanupOnDisconnectHandler extends SimpleChannelUpstreamHandler {
         log.info("Clearing current session for connection " + remoteAddress);
         identity.clearCurrentSession(protocol);
       } else {
-        log.warn("Not cleaing session, it doesn't match");
+        log.warn("Not clearing session, it doesn't match");
       }
     } else {
       log.debug("Session already cleared for connection " + remoteAddress);

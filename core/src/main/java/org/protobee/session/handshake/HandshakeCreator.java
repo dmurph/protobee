@@ -4,9 +4,9 @@ import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.headers.CompatabilityHeaderMerger;
+import org.protobee.protocol.headers.ModuleCompatabilityVersionMerger;
 
 import com.google.inject.Inject;
 
@@ -16,23 +16,21 @@ import com.google.inject.Inject;
  * 
  * @author Daniel
  */
-@SessionScope
+@ProtocolScope
 public class HandshakeCreator {
 
-  private final CompatabilityHeaderMerger merger;
-  private final Protocol protocol;
+  private final ModuleCompatabilityVersionMerger merger;
 
   @Inject
-  public HandshakeCreator(CompatabilityHeaderMerger merger, Protocol protocol) {
+  public HandshakeCreator(ModuleCompatabilityVersionMerger merger) {
     this.merger = merger;
-    this.protocol = protocol;
   }
 
-  public HttpRequest createHandshakeRequest(HttpMethod method, String uri) {
+  public HttpRequest createHandshakeRequest(Protocol protocol, HttpMethod method, String uri) {
     HttpRequest request =
         new DefaultHttpRequest(new HttpVersion(protocol.name(), protocol.majorVersion(),
             protocol.minorVersion(), true), method, uri);
-    merger.mergeHeaders(request);
+    merger.populateModuleHeaders(request);
 
     return request;
   }

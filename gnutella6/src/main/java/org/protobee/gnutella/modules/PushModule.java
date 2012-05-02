@@ -8,7 +8,7 @@ import org.protobee.gnutella.messages.PushBody;
 import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.PushRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ProtocolMessageWriter;
 

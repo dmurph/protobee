@@ -4,7 +4,7 @@ import java.util.Map;
 import java.util.Set;
 
 import org.protobee.compatability.VersionRange;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.util.VersionComparator;
 
 import com.google.common.base.Preconditions;

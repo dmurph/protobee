@@ -9,7 +9,7 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DefaultChannelFuture;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.protocol.HandshakeFuture;
 import org.protobee.protocol.Protocol;
@@ -215,7 +215,7 @@ public class ProtocolMessageWriter {
     }
 
     descoper.descope();
-    ChannelFuture handshakeFuture = networkManager.connect(protocol, address, method, uri);
+    ChannelFuture handshakeFuture = networkManager.connect(null, address, method, uri);
     descoper.rescope();
 
     final Channel channel = handshakeFuture.getChannel();

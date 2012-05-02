@@ -1,4 +1,4 @@
-package org.protobee.guice;
+package org.protobee.guice.scopes;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
