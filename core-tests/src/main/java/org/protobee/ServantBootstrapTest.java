@@ -14,7 +14,7 @@ import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.junit.Test;
 import org.protobee.network.ConnectionBinder;
 import org.protobee.network.ProtobeeChannels;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
 
 import com.google.common.collect.ImmutableSet;
 
@@ -24,46 +24,46 @@ public class ServantBootstrapTest {
 
   @Test
   public void testSingleBind() {
-    ProtocolConfig config = mock(ProtocolConfig.class);
-    when(config.getListeningAddress()).thenReturn(new InetSocketAddress(10));
+    ProtocolModel model = mock(ProtocolModel.class);
+    when(model.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ChannelFactory channelFactory = mock(ChannelFactory.class);
     ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
     JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(ImmutableSet.of(config), binder, channelFactory, channels);
+        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channelFactory, channels);
 
     bootstrapper.startup();
 
-    verify(binder).bind(config);
+    verify(binder).bind(model);
   }
 
   @Test
   public void testSamePort() {
-    ProtocolConfig config = mock(ProtocolConfig.class);
-    ProtocolConfig config2 = mock(ProtocolConfig.class);
-    when(config.getListeningAddress()).thenReturn(new InetSocketAddress(10));
-    when(config2.getListeningAddress()).thenReturn(new InetSocketAddress(10));
+    ProtocolModel model = mock(ProtocolModel.class);
+    when(model.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
+    ProtocolModel model2 = mock(ProtocolModel.class);
+    when(model2.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
 
-    Set<ProtocolConfig> configs = ImmutableSet.of(config, config2);
+    Set<ProtocolModel> models = ImmutableSet.of(model, model2);
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ChannelFactory channelFactory = mock(ChannelFactory.class);
     ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
     JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(configs, binder, channelFactory, channels);
+        new JnutellaServantBootstrapper(models, binder, channelFactory, channels);
 
     bootstrapper.startup();
 
-    verify(binder).bind(eq(configs), eq(new InetSocketAddress(10)));
+    verify(binder).bind(eq(models), eq(new InetSocketAddress(10)));
   }
 
   @Test
   public void testShutdown() {
-    ProtocolConfig config = mock(ProtocolConfig.class);
-    when(config.getListeningAddress()).thenReturn(new InetSocketAddress(10));
+    ProtocolModel model = mock(ProtocolModel.class);
+    when(model.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ChannelFactory channelFactory = mock(ChannelFactory.class);
@@ -74,7 +74,7 @@ public class ServantBootstrapTest {
     when(channelGroup.close()).thenReturn(closeFuture);
 
     JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(ImmutableSet.of(config), binder, channelFactory, channels);
+        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channelFactory, channels);
 
     bootstrapper.startup();
 

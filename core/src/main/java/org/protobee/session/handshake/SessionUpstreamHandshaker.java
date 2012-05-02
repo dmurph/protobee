@@ -14,20 +14,19 @@ import org.jboss.netty.handler.codec.http.HttpResponse;
 import org.jboss.netty.handler.codec.http.HttpResponseStatus;
 import org.jboss.netty.handler.codec.http.HttpVersion;
 import org.protobee.annotation.InjectLogger;
+import org.protobee.events.HandshakeReceivedEvent;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
-import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.protocol.headers.ModuleCompatabilityVersionMerger;
+import org.protobee.protocol.headers.ProtocolModuleFilter;
 import org.protobee.session.ProtocolSessionBootstrapper;
-import org.protobee.session.SessionProtocolModules;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionState;
-import org.protobee.util.ProtocolModuleFilter;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
-import com.google.common.base.Predicate;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 
@@ -42,20 +41,19 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
   @InjectLogger
   private Logger log;
   private final SessionModel sessionModel;
-  private final SessionProtocolModules protocolSessionModel;
   private final ModuleCompatabilityVersionMerger headerMerger;
   private final HandshakeInterruptor interruptor;
   private final EventBus eventBus;
   private final ProtocolModuleFilter filter;
   private final ProtocolSessionBootstrapper bootstrapper;
   private final NetworkIdentity identity;
-  private final Protocol protocol;
+  private final ProtocolModel protocolModel;
 
   @Inject
-  public SessionUpstreamHandshaker(SessionModel session, ModuleCompatabilityVersionMerger headerMerger,
-      HandshakeInterruptor interruptor, ProtocolModuleFilter filter, EventBus eventBus,
-      ProtocolSessionBootstrapper bootstrapper, NetworkIdentity identity, Protocol protocol,
-      SessionProtocolModules protocolSessionModel) {
+  public SessionUpstreamHandshaker(SessionModel session,
+      ModuleCompatabilityVersionMerger headerMerger, HandshakeInterruptor interruptor,
+      ProtocolModuleFilter filter, EventBus eventBus, ProtocolSessionBootstrapper bootstrapper,
+      NetworkIdentity identity, ProtocolModel protocolModel) {
     this.sessionModel = session;
     this.headerMerger = headerMerger;
     this.interruptor = interruptor;
@@ -63,8 +61,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
     this.eventBus = eventBus;
     this.bootstrapper = bootstrapper;
     this.identity = identity;
-    this.protocol = protocol;
-    this.protocolSessionModel = protocolSessionModel;
+    this.protocolModel = protocolModel;
   }
 
   @Override
@@ -85,70 +82,80 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
 
     HttpMessage request = (HttpMessage) e.getMessage();
 
-    if (sessionModel.getSessionState() == SessionState.HANDSHAKE_2) {
-      eventBus.post(new HandshakeReceivedEvent(ctx, request, null));
-      bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
-      sessionModel.setSessionState(SessionState.MESSAGES);
-      return;
-    }
-
-    identity.enterScope();
-    sessionModel.enterScope();
-    // they initiated the connection, we just got their first message
-    Map<String, String> mergedCompatabilityHeaders = headerMerger.mergeHeaders(request);
-    filter.filterModules(protocolSessionModel.getMutableModules(), mergedCompatabilityHeaders,
-        new Predicate<ProtocolModule>() {
-          @Override
-          public boolean apply(ProtocolModule input) {
-            eventBus.unregister(input);
-            return true;
-          }
-        });
-
-    eventBus.post(new HandshakeReceivedEvent(ctx, request, interruptor));
-
-    Set<HttpResponseStatus> interruptingResponse = interruptor.getDisconnectionInterrupts();
-    interruptor.clear();
-
-    HttpVersion version =
-        new HttpVersion(protocol.name(), protocol.majorVersion(), protocol.minorVersion(), true);
+    Protocol protocol = protocolModel.getProtocol();
 
     HttpResponse response;
-    if (interruptingResponse.size() == 0) {
-      response = new DefaultHttpResponse(version, new HttpResponseStatus(200, "OK"));
-    } else {
-      if (log.isInfoEnabled()) {
-        StringBuilder reasons = new StringBuilder();
-        reasons.append("disconnect reasons from interruptor: {");
-        boolean first = true;
-        for (HttpResponseStatus httpResponseStatus : interruptingResponse) {
-          if (first) {
-            reasons.append("\"").append(httpResponseStatus.toString()).append("\"");
-            first = false;
-            continue;
-          }
-          reasons.append(", \"").append(httpResponseStatus.toString()).append("\"");
-        }
-        reasons.append("}");
-        log.info(reasons.toString());
-      }
-      // just grab the first one
-      response = new DefaultHttpResponse(version, interruptingResponse.iterator().next());
-    }
+    try {
+      protocolModel.enterScope();
+      identity.enterScope();
+      sessionModel.enterScope();
 
-    switch (sessionModel.getSessionState()) {
-      case HANDSHAKE_0:
-        for (String name : mergedCompatabilityHeaders.keySet()) {
-          response.addHeader(name, mergedCompatabilityHeaders.get(name));
+      if (sessionModel.getSessionState() == SessionState.HANDSHAKE_2) {
+        eventBus.post(new HandshakeReceivedEvent(ctx, request, null));
+        bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
+        sessionModel.setSessionState(SessionState.MESSAGES);
+
+        sessionModel.exitScope();
+        identity.exitScope();
+        protocolModel.exitScope();
+        return;
+      }
+
+      // they initiated the connection, we just got their first message
+      Map<String, String> mergedCompatabilityHeaders =
+          headerMerger.mergeHandshakeHeaders(request, sessionModel.getSessionState());
+      filter.filterModules(mergedCompatabilityHeaders);
+
+      eventBus.post(new HandshakeReceivedEvent(ctx, request, interruptor));
+
+      Set<HttpResponseStatus> interruptingResponse = interruptor.getDisconnectionInterrupts();
+      interruptor.clear();
+
+      HttpVersion version =
+          new HttpVersion(protocol.name(), protocol.majorVersion(), protocol.minorVersion(), true);
+
+      if (interruptingResponse.size() == 0) {
+        response = new DefaultHttpResponse(version, new HttpResponseStatus(200, "OK"));
+      } else {
+
+        // this is just to log all the reasons
+        if (log.isInfoEnabled()) {
+          StringBuilder reasons = new StringBuilder();
+          reasons.append("disconnect reasons from interruptor: {");
+          boolean first = true;
+          for (HttpResponseStatus httpResponseStatus : interruptingResponse) {
+            if (first) {
+              reasons.append("\"").append(httpResponseStatus.toString()).append("\"");
+              first = false;
+              continue;
+            }
+            reasons.append(", \"").append(httpResponseStatus.toString()).append("\"");
+          }
+          reasons.append("}");
+          log.info(reasons.toString());
         }
-        sessionModel.setSessionState(SessionState.HANDSHAKE_1);
-        break;
-      case HANDSHAKE_1:
-        sessionModel.setSessionState(SessionState.HANDSHAKE_2);
-        break;
+
+        // just grab the first one
+        response = new DefaultHttpResponse(version, interruptingResponse.iterator().next());
+      }
+
+      switch (sessionModel.getSessionState()) {
+        case HANDSHAKE_0:
+          for (String name : mergedCompatabilityHeaders.keySet()) {
+            response.addHeader(name, mergedCompatabilityHeaders.get(name));
+          }
+          sessionModel.setSessionState(SessionState.HANDSHAKE_1);
+          break;
+        case HANDSHAKE_1:
+          sessionModel.setSessionState(SessionState.HANDSHAKE_2);
+          break;
+      }
+
+    } finally {
+      sessionModel.exitScope();
+      identity.exitScope();
+      protocolModel.exitScope();
     }
-    sessionModel.exitScope();
-    identity.exitScope();
 
     SocketAddress address = identity.getListeningAddress(protocol);
 

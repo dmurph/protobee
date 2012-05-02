@@ -10,6 +10,7 @@ import org.protobee.compatability.VersionRange.MinVersionBuilderComparator;
 import org.protobee.compatability.VersionRange.MinVersionComparator;
 import org.protobee.util.VersionComparator;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
@@ -29,6 +30,13 @@ public class VersionRangeMerger {
     this.comp = comp;
     this.minBuilderComp = minBuilderComp;
     this.minComp = minComp;
+  }
+
+  @VisibleForTesting
+  public VersionRangeMerger() {
+    this.comp = new VersionComparator();
+    this.minBuilderComp = new MinVersionBuilderComparator(comp);
+    this.minComp = new MinVersionComparator(comp);
   }
 
   public VersionRange intersection(Set<VersionRange> entries) {

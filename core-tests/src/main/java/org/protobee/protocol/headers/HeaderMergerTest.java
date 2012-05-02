@@ -15,10 +15,12 @@ import java.util.Map.Entry;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.junit.Test;
+import org.protobee.compatability.VersionRangeMerger;
 import org.protobee.guice.LogModule;
 import org.protobee.protocol.headers.CompatabilityHeader;
 import org.protobee.protocol.headers.ModuleCompatabilityVersionMerger;
 import org.protobee.protocol.headers.Headers;
+import org.protobee.session.SessionState;
 import org.protobee.util.VersionComparator;
 
 import com.google.common.collect.Lists;
@@ -41,14 +43,14 @@ public class HeaderMergerTest {
 
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
-    Headers header = new HeadersImpl(required, requested);
+    Headers header = new HeadersImpl(required, requested, new CompatabilityHeader[0], new CompatabilityHeader[0]);
     Headers[] headers = new Headers[] {header};
 
-    Injector inj =
-        Guice.createInjector(new LogModule());
+    Injector inj = Guice.createInjector(new LogModule());
 
     ModuleCompatabilityVersionMerger merger =
-        new ModuleCompatabilityVersionMerger(new VersionComparator(), headers);
+        new ModuleCompatabilityVersionMerger(new VersionComparator(), headers,
+            new VersionRangeMerger(), null);
     inj.injectMembers(merger);
 
     HttpMessage mockMessage = mock(HttpMessage.class);
@@ -72,14 +74,14 @@ public class HeaderMergerTest {
 
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
-    Headers header = new HeadersImpl(required, requested);
+    Headers header = new HeadersImpl(required, requested, new CompatabilityHeader[0], new CompatabilityHeader[0]);
     Headers[] headerArray = new Headers[] {header};
 
-    Injector inj =
-        Guice.createInjector(new LogModule());
+    Injector inj = Guice.createInjector(new LogModule());
 
     ModuleCompatabilityVersionMerger merger =
-        new ModuleCompatabilityVersionMerger(new VersionComparator(), headerArray);
+      new ModuleCompatabilityVersionMerger(new VersionComparator(), headerArray,
+          new VersionRangeMerger(), null);
     inj.injectMembers(merger);
 
     HttpMessage mockMessage = mock(HttpMessage.class);
@@ -91,7 +93,7 @@ public class HeaderMergerTest {
     headers.add(new MyEntry("F", "1.8"));
     when(mockMessage.getHeaders()).thenReturn(headers);
 
-    Map<String, String> agreed = merger.mergeHeaders(mockMessage);
+    Map<String, String> agreed = merger.mergeHandshakeHeaders(mockMessage, SessionState.HANDSHAKE_0);
 
     assertTrue(agreed.containsKey("A"));
     assertTrue(agreed.containsKey("B"));
