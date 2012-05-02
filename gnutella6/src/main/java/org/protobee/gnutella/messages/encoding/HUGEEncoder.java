@@ -6,6 +6,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.protobee.gnutella.extension.HUGEExtension;
 import org.protobee.gnutella.util.URN;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
 public class HUGEEncoder implements PartEncoder<HUGEExtension> {
@@ -17,14 +18,18 @@ public class HUGEEncoder implements PartEncoder<HUGEExtension> {
   @Override
   public void encode(ChannelBuffer buffer, HUGEExtension toEncode) throws EncodingException {
     
+    Preconditions.checkArgument(toEncode != null, "encode shouldn't be called if HUGE is null");
+    
     URN[] urns = toEncode.getUrns();
+    int count = 0;
     
-    for (int i = 0; i < (urns.length - 1); i++) {
-      buffer.writeBytes(urns[i].getUrnString().getBytes(Charset.forName("UTF-8")));
-      buffer.writeByte((byte) 0x1C);
+    for (URN urn : urns){
+      buffer.writeBytes(urn.getUrnString().getBytes(Charset.forName("UTF-8")));
+      if (count != urns.length){
+        buffer.writeByte((byte) 0x1C);
+      }
+      count++;
     }
-    buffer.writeBytes(urns[urns.length - 1].getUrnString().getBytes(Charset.forName("UTF-8")));
-    
   }
 }
 

@@ -50,16 +50,14 @@ public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
     HUGEExtension huge = null; 
     if (tag != ((byte) 0xC3)){
       huge = hugeDecoder.decode(buffer);
-      buffer.readByte();
     }
     
     GGEP ggep = null;
-    
     if (buffer.readable()) {
+      buffer.readByte();
       ggep = ggepDecoder.decode(buffer);
     }
     
-    Preconditions.checkNotNull(ggep, "GGEP is null.");
     return bodyFactory.createQueryMessage(minSpeed, query, huge, ggep);
   }
 }

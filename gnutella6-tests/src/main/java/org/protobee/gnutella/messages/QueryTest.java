@@ -8,6 +8,8 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.protobee.gnutella.AbstractGnutellaTest;
+import org.protobee.gnutella.extension.GGEP;
+import org.protobee.gnutella.extension.HUGEExtension;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.QueryDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;
@@ -18,19 +20,26 @@ public class QueryTest extends AbstractGnutellaTest {
 
   @Test
   public void testQuery() throws DecodingException, EncodingException, UnknownHostException {
-    ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
 
-    MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
+    for (HUGEExtension huge: TestUtils.getHUGEArray()){
+      for (GGEP ggep: TestUtils.getGGEPArray()){
+        System.out.println();
+        ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
 
-    QueryBody query = factory.createQueryMessage( (short) (Integer.MAX_VALUE + 1), "kjhsdfkjs", null, null);
+        MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
 
-    QueryEncoder encoder = injector.getInstance(QueryEncoder.class);
-    encoder.encode(buffer, query);
+        QueryBody query = factory.createQueryMessage( (short) (Integer.MAX_VALUE + 1), "kjhsdfkjs", huge, ggep);
 
-    QueryDecoder decoder = injector.getInstance(QueryDecoder.class);
-    QueryBody results = decoder.decode(buffer);
+        QueryEncoder encoder = injector.getInstance(QueryEncoder.class);
+        encoder.encode(buffer, query);
 
-    assertEquals(query, results);
+        QueryDecoder decoder = injector.getInstance(QueryDecoder.class);
+        QueryBody results = decoder.decode(buffer);
+
+        assertEquals(query, results);
+
+      }
+    }
   }
 
 }

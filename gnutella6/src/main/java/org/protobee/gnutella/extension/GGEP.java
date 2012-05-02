@@ -56,7 +56,7 @@ public class GGEP {
     Preconditions.checkNotNull(properties);
     this.properties.putAll(properties);
   }
-  
+
   public GGEP(GGEP other) {
     Preconditions.checkNotNull(other);
     this.properties.putAll(other.properties);
@@ -71,7 +71,7 @@ public class GGEP {
     Preconditions.checkNotNull(other);
     properties.putAll(other.properties);
   }
-  
+
   public int getNumKeys() {
     return properties.size();
   }

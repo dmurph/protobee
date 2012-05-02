@@ -30,8 +30,7 @@ public class ResponseDecoder implements PartDecoder<ResponseBody> {
   @Override
   public ResponseBody decode(ChannelBuffer buffer) throws DecodingException {
     Preconditions.checkState(buffer.readableBytes() >= 8);
-    // sets writer index for later use
-    buffer.writerIndex(buffer.readableBytes());
+
     long fileIndex = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
     long fileSize = ByteUtils.uint2long(ByteUtils.leb2int(buffer));
 
@@ -41,27 +40,37 @@ public class ResponseDecoder implements PartDecoder<ResponseBody> {
       throw new DecodingException("Reached end of buffer with no 0 byte in filename");
     }
     String fileName = buffer.toString(buffer.readerIndex(), lengthFileName, Charset.forName("UTF-8"));
+    buffer.readerIndex(buffer.readerIndex()+lengthFileName+1);
 
-    buffer.readerIndex(buffer.readerIndex()+lengthFileName + 1);
+    int lengthOfExtensions = buffer.bytesBefore((byte) 0x0);
+    if (lengthOfExtensions == -1){
+      log.error("Reached end of buffer with no 0 byte ending the extension block");
+      throw new DecodingException("Reached end of buffer with no 0 byte ending the extension block");
+    }
 
-    // after first 0
-    byte tag = buffer.readByte(); 
     HUGEExtension huge = null;
     GGEP ggep = null;
 
-    if (buffer.readable() && tag != 0){
+    if (lengthOfExtensions != 0){
+
+      byte tag = buffer.readByte(); 
       buffer.readerIndex(buffer.readerIndex() - 1);
+
       if (tag != (byte) 0xC3){ // if not ggep
         huge = hugeDecoder.decode(buffer);
-        buffer.readByte(); // read the dividor bite
+        buffer.readByte(); // read the dividor bite or the ending bite
+        if (buffer.readable()){
+          tag = buffer.readByte();
+          buffer.readerIndex(buffer.readerIndex() - 1);
+        }
       }
 
-      if (buffer.readable()){
+      if (tag == (byte) 0xC3){
         ggep = ggepDecoder.decode(buffer);
       }
 
     }
-
+    buffer.readByte();
     return new ResponseBody(fileIndex, fileSize, fileName, huge, ggep);
   }
 }
