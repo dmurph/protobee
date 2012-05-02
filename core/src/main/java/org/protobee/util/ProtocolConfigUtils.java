@@ -6,30 +6,43 @@ import java.util.Set;
 
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
+import org.protobee.protocol.ServerOptionsMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.google.common.base.Function;
+import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
+import com.google.inject.Provider;
 
 
 public class ProtocolConfigUtils {
 
   private static final Logger log = LoggerFactory.getLogger(ProtocolConfigUtils.class);
 
-  public static Map<String, Object> mergeNettyBindOptions(Set<ProtocolConfig> configs) {
+  public static Map<String, Object> mergeNettyBindOptions(Set<ProtocolModel> models,
+      @ServerOptionsMap Provider<Map<String, Object>> serverOptionsMapProvider) {
+    Preconditions.checkNotNull(models);
+    Preconditions.checkNotNull(serverOptionsMapProvider);
     Map<String, Object> result = Maps.newHashMap();
-    for (ProtocolConfig protocolConfig : configs) {
-      Map<String, Object> options = protocolConfig.getServerBootstrapOptions();
+    for (ProtocolModel model : models) {
+      Map<String, Object> options;
+      try {
+        model.enterScope();
+        options = serverOptionsMapProvider.get();
+      } finally {
+        model.exitScope();
+      }
       for (Entry<String, Object> optionEntry : options.entrySet()) {
         String name = optionEntry.getKey();
         Object option = result.get(name);
         Object newOption = optionEntry.getValue();
         if (option != null && !option.equals(newOption)) {
           log.warn("Option '" + name + "' is already definited to be '" + option
-              + "'.  Overwriting with '" + newOption + " from " + protocolConfig);
+              + "'.  Overwriting with '" + newOption + " from " + model);
         }
         result.put(name, newOption);
       }
@@ -45,5 +58,14 @@ public class ProtocolConfigUtils {
             return input.get();
           }
         }));
+  }
+
+  public static Set<Protocol> getProtocolSetFromModels(Set<ProtocolModel> models) {
+    return ImmutableSet.copyOf(Iterables.transform(models, new Function<ProtocolModel, Protocol>() {
+      @Override
+      public Protocol apply(ProtocolModel input) {
+        return input.getProtocol();
+      }
+    }));
   }
 }

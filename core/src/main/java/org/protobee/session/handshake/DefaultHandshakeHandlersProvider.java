@@ -12,7 +12,7 @@ import com.google.inject.Inject;
 import com.google.inject.Provider;
 
 /**
- * Preconditions: we must be corresponding identity and session scope, and our channel
+ * Preconditions: we must be corresponding protocol, identity, session scope, and our channel
  * handlers must be in session scope
  * 
  * @author Daniel
@@ -32,7 +32,8 @@ public class DefaultHandshakeHandlersProvider implements Provider<Set<ChannelHan
       Provider<HandshakeHttpMessageEncoder> encoderFactory,
       Provider<SessionUpstreamHandshaker> upShakerProvider,
       Provider<SessionDownstreamHandshaker> downShakerProvider,
-      Provider<LoggingUpstreamHandler> loggingHandler, Provider<CleanupOnDisconnectHandler> cleanupHandler,
+      Provider<LoggingUpstreamHandler> loggingHandler,
+      Provider<CleanupOnDisconnectHandler> cleanupHandler,
       Provider<CloseOnExceptionHandler> closeHandler) {
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;

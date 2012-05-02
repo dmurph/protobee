@@ -18,5 +18,23 @@ public @interface Headers {
   /**
    * Capabilities requested but not required
    */
-  CompatabilityHeader[] requested();
+  CompatabilityHeader[] requested() default {};
+
+  /**
+   * Capabilities that this module cannot load with, and will actively try to block on protocol
+   * handshaking. These ranges are exclusive. That means the min and max versions are allowed, but
+   * anything between them is not.
+   * 
+   * @return
+   */
+  CompatabilityHeader[] excluding() default {};
+
+  /**
+   * Capabilities that this module cannot load with, but will not effect the the versions chosen in
+   * the handshake. These ranges are exclusive. That means the min and max versions are allowed, but
+   * anything between them is not.
+   * 
+   * @return
+   */
+  CompatabilityHeader[] silentExcluding() default {};
 }

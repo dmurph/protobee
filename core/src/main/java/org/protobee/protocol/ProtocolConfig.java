@@ -2,55 +2,76 @@ package org.protobee.protocol;
 
 import java.net.SocketAddress;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
-import org.protobee.session.ProtocolModulesHolder;
+import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
+import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
+import org.protobee.modules.ProtocolModule;
 
+import com.google.common.collect.Maps;
 import com.google.inject.Provider;
 
+public abstract class ProtocolConfig implements Provider<Protocol> {
 
-public interface ProtocolConfig extends Provider<Protocol> {
+
+
+  public HttpMessageDecoder createRequestDecoder() {
+    return new HttpRequestDecoder();
+  }
+
+  public HttpMessageEncoder createRequestEncoder() {
+    return new HttpRequestEncoder();
+  }
+
+  public Map<String, Object> getMergedServerOptions() {
+    Map<String, Object> map = Maps.newHashMap();
+    map.putAll(getServerOptions());
+    for (Entry<String, Object> entry : getConnectionOptions().entrySet()) {
+      map.put("child." + entry.getKey(), entry.getValue());
+    }
+    return map;
+  }
 
   /**
-   * Precondition: we are in the session scope, but the SessionModel is not yet in the scope.
-   * 
-   * @return
+   * Called in the corresponding protocol scope for this config when the scope is created.
    */
-  ProtocolModulesHolder createSessionModel();
+  public void scopedInit() {}
+
+  public abstract Set<ProtocolModule> createProtocolModules();
+
+  public abstract Set<Class<? extends ProtocolModule>> getModuleClasses();
 
   /**
    * Precondition: we are correct session and identity scope
    * 
    * @return
    */
-  ChannelHandler[] createProtocolHandlers();
+  public abstract ChannelHandler[] createProtocolHandlers();
 
-  HttpMessageDecoder createRequestDecoder();
-
-  HttpMessageEncoder createRequestEncoder();
 
   /**
-   * Options set on the server. Should include "child" options that match the
+   * Options set on the server. "child" options are generated later from
    * {@link #getConnectionOptions()}
    * 
    * @return
    */
-  Map<String, Object> getServerBootstrapOptions();
+  public abstract Map<String, Object> getServerOptions();
 
   /**
-   * Options set on connection channels. should match the 'child' options in
-   * {@link #getServerBootstrapOptions()}
+   * Options set on connection channels.
    * 
    * @return
    */
-  Map<String, Object> getConnectionOptions();
+  public abstract Map<String, Object> getConnectionOptions();
 
   /**
    * The local address used for listening
    * 
    * @return
    */
-  SocketAddress getListeningAddress();
+  public abstract SocketAddress getListeningAddress();
 }

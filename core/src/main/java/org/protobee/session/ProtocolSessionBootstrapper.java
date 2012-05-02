@@ -6,7 +6,7 @@ import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.protocol.HandshakeFuture;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.handshake.HandshakeHandlers;

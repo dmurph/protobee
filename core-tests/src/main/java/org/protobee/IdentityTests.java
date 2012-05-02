@@ -11,10 +11,10 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.protobee.guice.IdentityScope;
-import org.protobee.guice.IdentityScopeMap;
 import org.protobee.guice.LogModule;
-import org.protobee.guice.ProtobeeScopes;
+import org.protobee.guice.scopes.IdentityScope;
+import org.protobee.guice.scopes.ProtobeeScopes;
+import org.protobee.guice.scopes.ScopesGuiceModule;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
@@ -24,7 +24,6 @@ import org.protobee.session.SessionManager;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -41,6 +40,7 @@ public class IdentityTests extends AbstractTest {
       @Override
       protected void configure() {
         install(new LogModule());
+        install(new ScopesGuiceModule());
 
         bind(SessionManager.class).toInstance(mock(SessionManager.class));
         bindScope(IdentityScope.class, ProtobeeScopes.IDENTITY);
@@ -65,13 +65,6 @@ public class IdentityTests extends AbstractTest {
       @Singleton
       public Set<Protocol> getProtocolss() {
         return ImmutableSet.of();
-      }
-
-      @SuppressWarnings("unused")
-      @Provides
-      @IdentityScopeMap
-      public Map<String, Object> createScopeMap() {
-        return Maps.newHashMap();
       }
     });
 

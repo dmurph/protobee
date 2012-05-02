@@ -1,4 +1,4 @@
-package org.protobee.guice;
+package org.protobee.guice.scopes;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;
@@ -9,7 +9,7 @@ import java.lang.annotation.Target;
 import com.google.inject.ScopeAnnotation;
 
 /**
- * Apply this to implementation classes when you want one instance per protocol.
+ * Apply this to implementation classes when you want one instance per protocol session.
  * 
  * @author Daniel
  */
@@ -17,4 +17,4 @@ import com.google.inject.ScopeAnnotation;
 @Target({ElementType.TYPE, ElementType.METHOD})
 @Retention(RetentionPolicy.RUNTIME)
 @ScopeAnnotation
-public @interface ProtocolScope {}
+public @interface IdentityScope {}

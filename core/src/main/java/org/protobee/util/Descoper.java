@@ -1,8 +1,10 @@
 package org.protobee.util;
 
-import org.protobee.guice.ProtobeeScopes;
-import org.protobee.identity.NetworkIdentity;
-import org.protobee.session.SessionModel;
+import org.protobee.guice.scopes.IdentityScopeHolder;
+import org.protobee.guice.scopes.ProtobeeScopes;
+import org.protobee.guice.scopes.ProtocolScopeHolder;
+import org.protobee.guice.scopes.ScopeHolder;
+import org.protobee.guice.scopes.SessionScopeHolder;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -10,47 +12,66 @@ import com.google.inject.Provider;
 
 
 /**
- * Utility class for unscoping + rescoping any current identity or session scope
+ * Utility class for descoping + rescoping any current identity, session, or protocol scopes
  * 
  * @author Daniel
  */
 public class Descoper {
 
-  private final Provider<NetworkIdentity> networkIdentityProvider;
-  private final Provider<SessionModel> sessionModelProvider;
+  private final Provider<ScopeHolder> identityScopeProvider;
+  private final Provider<ScopeHolder> sessionScopeProvider;
+  private final Provider<ScopeHolder> protocolScopeProvider;
 
-  private NetworkIdentity unscopedIdentity = null;
-  private SessionModel unscopedModel = null;
+  private ScopeHolder identityScope = null;
+  private ScopeHolder sessionScope = null;
+  private ScopeHolder protocolScope = null;
 
   @Inject
-  public Descoper(Provider<NetworkIdentity> networkIdentityProvider,
-      Provider<SessionModel> sessionModelProvider) {
-    this.networkIdentityProvider = networkIdentityProvider;
-    this.sessionModelProvider = sessionModelProvider;
+  public Descoper(@IdentityScopeHolder Provider<ScopeHolder> identityScopeProvider,
+      @SessionScopeHolder Provider<ScopeHolder> sessionScopeProvider,
+      @ProtocolScopeHolder Provider<ScopeHolder> protocolScopeProvider) {
+    this.identityScopeProvider = identityScopeProvider;
+    this.sessionScopeProvider = sessionScopeProvider;
+    this.protocolScopeProvider = protocolScopeProvider;
   }
 
+  /**
+   * This should be in a try-finally block, where the subsequent matching {@link #rescope()} is in
+   * the finally block
+   */
   public void descope() {
-    Preconditions.checkState(unscopedIdentity == null, "Must rescope before unscoping again");
-    Preconditions.checkState(unscopedModel == null, "Must rescope before unscoping again");
-    if (ProtobeeScopes.isInIdentityScope()) {
-      unscopedIdentity = networkIdentityProvider.get();
-      unscopedIdentity.exitScope();
+    Preconditions.checkState(identityScope == null, "Must rescope before descoping again");
+    Preconditions.checkState(sessionScope == null, "Must rescope before descoping again");
+    Preconditions.checkState(protocolScope == null, "Must rescope before descoping again");
+
+    if (ProtobeeScopes.IDENTITY.isInScope()) {
+      identityScope = identityScopeProvider.get();
+      identityScope.exitScope();
     }
-    if (ProtobeeScopes.isInSessionScope()) {
-      unscopedModel = sessionModelProvider.get();
-      unscopedModel.exitScope();
+    if (ProtobeeScopes.SESSION.isInScope()) {
+      sessionScope = sessionScopeProvider.get();
+      sessionScope.exitScope();
+    }
+    if (ProtobeeScopes.PROTOCOL.isInScope()) {
+      protocolScope = protocolScopeProvider.get();
+      protocolScope.exitScope();
     }
   }
 
   public void rescope() {
-    if (unscopedIdentity != null) {
-      unscopedIdentity.enterScope();
-      unscopedIdentity = null;
+    if (identityScope != null) {
+      identityScope.enterScope();
+      identityScope = null;
     }
 
-    if (unscopedModel != null) {
-      unscopedModel.enterScope();
-      unscopedModel = null;
+    if (sessionScope != null) {
+      sessionScope.enterScope();
+      sessionScope = null;
+    }
+
+    if (protocolScope != null) {
+      protocolScope.enterScope();
+      protocolScope = null;
     }
   }
 }

@@ -6,7 +6,7 @@ import org.protobee.gnutella.messages.QueryBody;
 import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
 

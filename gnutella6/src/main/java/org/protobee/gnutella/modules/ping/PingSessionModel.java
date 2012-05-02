@@ -3,7 +3,7 @@ package org.protobee.gnutella.modules.ping;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.protobee.gnutella.constants.MaxTTL;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 
 import com.google.inject.Inject;
 

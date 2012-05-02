@@ -7,7 +7,6 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 import com.google.inject.multibindings.Multibinder;
 
-
 /**
  * Module that plugin modules should subclass. Use the {@link OverridingModule} annotation to
  * signify that you with this module to be part of the overriding modules set.
@@ -20,7 +19,8 @@ public abstract class PluginGuiceModule extends AbstractModule {
 
   public Multibinder<ProtocolConfig> getConfigBinder() {
     if (configBinder == null) {
-      configBinder = Multibinder.newSetBinder(binder(), ProtocolConfig.class);
+      configBinder =
+          Multibinder.newSetBinder(binder(), ProtocolConfig.class);
     }
     return configBinder;
   }

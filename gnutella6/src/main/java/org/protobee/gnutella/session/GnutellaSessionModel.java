@@ -5,9 +5,9 @@ import java.util.Set;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.gnutella.Gnutella;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.session.ProtocolModulesHolder;
+import org.protobee.session.SessionProtocolModules;
 import org.protobee.util.HeaderUtil;
 
 import com.google.common.collect.Sets;
@@ -15,7 +15,7 @@ import com.google.inject.Inject;
 
 
 @SessionScope
-public class GnutellaSessionModel implements ProtocolModulesHolder {
+public class GnutellaSessionModel implements SessionProtocolModules {
 
   private Map<String, String> allHeaders = null;
   private final Set<ProtocolModule> mutableModules;
