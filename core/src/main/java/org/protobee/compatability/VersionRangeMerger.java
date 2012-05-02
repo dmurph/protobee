@@ -141,20 +141,21 @@ public class VersionRangeMerger {
       String minVersion = versionRange.getMinVersion();
       String maxVersion = versionRange.getMaxVersion();
 
-      if (comp.compare(minVersion, builder.getMinVersion()) <= 0) {
-        if (maxVersion.equals(VersionRange.PLUS)
+      if (comp.compare(minVersion, builder.getMinVersion()) < 0) {
+        if (!maxVersion.equals(VersionRange.PLUS)
+            && (builder.getMaxVersion().equals(VersionRange.PLUS) || comp.compare(maxVersion,
+                builder.getMinVersion()) > 0)) {
+          builder.setMinVersion(maxVersion);
+        }
+        else if (maxVersion.equals(VersionRange.PLUS)
             || comp.compare(maxVersion, builder.getMaxVersion()) > 0) {
           rangeCovered = true;
           break;
         }
-        if (builder.getMaxVersion().equals(VersionRange.PLUS)
-            || comp.compare(maxVersion, builder.getMinVersion()) > 0) {
-          builder.setMinVersion(maxVersion);
-        }
       } else if (builder.getMaxVersion().equals(VersionRange.PLUS)) {
         builder.setMaxVersion(minVersion);
       } else if (maxVersion.equals(VersionRange.PLUS)
-          || comp.compare(maxVersion, builder.getMaxVersion()) >= 0) {
+          || comp.compare(maxVersion, builder.getMaxVersion()) > 0) {
 
         if (comp.compare(minVersion, builder.getMaxVersion()) < 0) {
           builder.setMaxVersion(minVersion);
@@ -168,7 +169,7 @@ public class VersionRangeMerger {
         result.add(builder.build());
         builder = VersionRange.builder().setMinVersion(maxVersion).setMaxVersion(oldMax);
       }
-      if (comp.compare(builder.getMinVersion(), builder.getMaxVersion()) > 0) {
+      if (!builder.getMaxVersion().equals(VersionRange.PLUS) && comp.compare(builder.getMinVersion(), builder.getMaxVersion()) > 0) {
         rangeCovered = true;
         break;
       }

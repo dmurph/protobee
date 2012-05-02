@@ -43,7 +43,8 @@ public class HeaderMergerTest {
 
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
-    Headers header = new HeadersImpl(required, requested, new CompatabilityHeader[0], new CompatabilityHeader[0]);
+    Headers header =
+        new HeadersImpl(required, requested, new CompatabilityHeader[0], new CompatabilityHeader[0]);
     Headers[] headers = new Headers[] {header};
 
     Injector inj = Guice.createInjector(new LogModule());
@@ -63,6 +64,48 @@ public class HeaderMergerTest {
   }
 
   @Test
+  public void testGenerateMergedModuleHeadersWithExclusions() {
+    CompatabilityHeader[] required =
+        new CompatabilityHeaderImpl[] {
+
+        new CompatabilityHeaderImpl("A", "0.1", "0.5"),
+            new CompatabilityHeaderImpl("A", "0.1", "0.4"),
+            new CompatabilityHeaderImpl("B", "0.1", "0.1"),
+            new CompatabilityHeaderImpl("B", "0.1", "0.5"),
+            new CompatabilityHeaderImpl("C", "4", "8"), new CompatabilityHeaderImpl("C", "2", "9"),
+            new CompatabilityHeaderImpl("C", "1", "+"),
+            new CompatabilityHeaderImpl("D", "10", "+"),};
+
+
+
+    CompatabilityHeader[] requested = new CompatabilityHeader[0];
+
+    CompatabilityHeader[] excluded =
+        new CompatabilityHeaderImpl[] {new CompatabilityHeaderImpl("C", "8", "10"),
+                                       new CompatabilityHeaderImpl("D", "9", "11"),
+                                       new CompatabilityHeaderImpl("A", "0.3", "0.4")};
+
+    Headers header =
+        new HeadersImpl(required, requested, excluded, new CompatabilityHeader[0]);
+    Headers[] headers = new Headers[] {header};
+
+    Injector inj = Guice.createInjector(new LogModule());
+
+    ModuleCompatabilityVersionMerger merger =
+        new ModuleCompatabilityVersionMerger(new VersionComparator(), headers,
+            new VersionRangeMerger(), null);
+    inj.injectMembers(merger);
+
+    HttpMessage mockMessage = mock(HttpMessage.class);
+    merger.populateModuleHeaders(mockMessage);
+
+    verify(mockMessage, times(1)).addHeader(eq("A"), eq("0.4"));
+    verify(mockMessage, times(1)).addHeader(eq("B"), eq("0.1"));
+    verify(mockMessage, times(1)).addHeader(eq("C"), eq("8"));
+    verify(mockMessage, times(1)).addHeader(eq("D"), eq("11"));
+  }
+
+  @Test
   public void testGenerateMergedIncomingHeaders() {
     CompatabilityHeader[] required =
         new CompatabilityHeaderImpl[] {new CompatabilityHeaderImpl("A", "0.1", "0.5"),
@@ -74,14 +117,15 @@ public class HeaderMergerTest {
 
     CompatabilityHeader[] requested = new CompatabilityHeader[0];
 
-    Headers header = new HeadersImpl(required, requested, new CompatabilityHeader[0], new CompatabilityHeader[0]);
+    Headers header =
+        new HeadersImpl(required, requested, new CompatabilityHeader[0], new CompatabilityHeader[0]);
     Headers[] headerArray = new Headers[] {header};
 
     Injector inj = Guice.createInjector(new LogModule());
 
     ModuleCompatabilityVersionMerger merger =
-      new ModuleCompatabilityVersionMerger(new VersionComparator(), headerArray,
-          new VersionRangeMerger(), null);
+        new ModuleCompatabilityVersionMerger(new VersionComparator(), headerArray,
+            new VersionRangeMerger(), null);
     inj.injectMembers(merger);
 
     HttpMessage mockMessage = mock(HttpMessage.class);
@@ -93,7 +137,8 @@ public class HeaderMergerTest {
     headers.add(new MyEntry("F", "1.8"));
     when(mockMessage.getHeaders()).thenReturn(headers);
 
-    Map<String, String> agreed = merger.mergeHandshakeHeaders(mockMessage, SessionState.HANDSHAKE_0);
+    Map<String, String> agreed =
+        merger.mergeHandshakeHeaders(mockMessage, SessionState.HANDSHAKE_0);
 
     assertTrue(agreed.containsKey("A"));
     assertTrue(agreed.containsKey("B"));
