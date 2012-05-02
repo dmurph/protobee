@@ -9,14 +9,12 @@ import org.jboss.netty.channel.group.ChannelGroupFuture;
 import org.protobee.guice.scopes.ProtobeeScopes;
 import org.protobee.network.ConnectionBinder;
 import org.protobee.network.ProtobeeChannels;
-import org.protobee.protocol.LocalListeningAddress;
 import org.protobee.protocol.ProtocolModel;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
-import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 
@@ -29,7 +27,6 @@ import com.google.inject.Singleton;
 public class JnutellaServantBootstrapper {
 
   private final Set<ProtocolModel> protocols;
-  private final Provider<SocketAddress> localAddressProvider;
 
   private final ConnectionBinder connectionBinder;
   private final ChannelFactory channelFactory;
@@ -40,13 +37,11 @@ public class JnutellaServantBootstrapper {
 
   @Inject
   public JnutellaServantBootstrapper(Set<ProtocolModel> protocols,
-      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels,
-      @LocalListeningAddress Provider<SocketAddress> localAddressProvider) {
+      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels) {
     this.protocols = protocols;
     this.connectionBinder = connectionBinder;
     this.channelFactory = factory;
     this.channels = channels;
-    this.localAddressProvider = localAddressProvider;
   }
 
   public boolean isStarted() {
@@ -65,9 +60,7 @@ public class JnutellaServantBootstrapper {
 
       try {
         for (ProtocolModel model : protocols) {
-          model.enterScope();
-          portToProtocols.put(localAddressProvider.get(), model);
-          model.exitScope();
+          portToProtocols.put(model.getLocalListeningAddress(), model);
         }
 
         for (SocketAddress address : portToProtocols.keySet()) {

@@ -31,7 +31,7 @@ public class GnutellaSessionModel implements SessionProtocolModules {
    * @param message
    */
   void setHeaders(HttpMessage message) {
-    allHeaders = HeaderUtil.mergedGnutellaHeaders(message);
+    allHeaders = HeaderUtil.mergeDuplicatesWithComma(message);
   }
 
   public Map<String, String> getAllHeaders() {

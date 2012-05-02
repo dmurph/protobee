@@ -49,7 +49,7 @@ public class ConnectionBinderTest extends AbstractTest {
 
     ConnectionBinder binder = inj.getInstance(ConnectionBinder.class);
 
-    Channel bindedChannel = binder.bind(config);
+    Channel bindedChannel = binder.bind(getModelFor(inj, config.get()));
 
     InetSocketAddress localAddress = new InetSocketAddress(port);
 
@@ -58,13 +58,13 @@ public class ConnectionBinderTest extends AbstractTest {
     verify(bootstrap).bind(eq(localAddress));
     Protocol protocol = config.get();
     verify(channels).addChannel(eq(channel), eq(protocol));
-    
+
     NetworkIdentityManager identities = inj.getInstance(NetworkIdentityManager.class);
-    
+
     assertEquals(address, identities.getMe().getListeningAddress(protocol));
-    
+
   }
-  
+
   @Test
   public void testMultipleBound() {
     int port = 10;
@@ -81,25 +81,26 @@ public class ConnectionBinderTest extends AbstractTest {
     when(bootstrap.bind(any(SocketAddress.class))).thenReturn(channel);
 
     Injector inj =
-        getInjector(Modules.combine(getModuleWithProtocolConfig(config, config2), new AbstractModule() {
-          @Override
-          protected void configure() {
-            bind(ServerBootstrap.class).toInstance(bootstrap);
-            bind(ProtobeeChannels.class).toInstance(channels);
-          }
-        }));
+        getInjector(Modules.combine(getModuleWithProtocolConfig(config, config2),
+            new AbstractModule() {
+              @Override
+              protected void configure() {
+                bind(ServerBootstrap.class).toInstance(bootstrap);
+                bind(ProtobeeChannels.class).toInstance(channels);
+              }
+            }));
 
     ConnectionBinder binder = inj.getInstance(ConnectionBinder.class);
 
-    Channel bindedChannel = binder.bind(configs, address);
+    Channel bindedChannel = binder.bind(fromConfigs(inj, configs), address);
 
     assertEquals(channel, bindedChannel);
     verify(bootstrap).bind(eq(address));
-    
+
     Protocol protocol1 = config.get();
     Protocol protocol2 = config2.get();
     verify(channels).addChannel(eq(channel), eq(ImmutableSet.<Protocol>of(protocol1, protocol2)));
-    
+
     NetworkIdentityManager identities = inj.getInstance(NetworkIdentityManager.class);
 
     assertEquals(address, identities.getMe().getListeningAddress(protocol1));

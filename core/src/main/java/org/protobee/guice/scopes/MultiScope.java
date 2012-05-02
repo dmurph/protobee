@@ -4,7 +4,6 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
 import com.google.common.base.Preconditions;
 import com.google.common.collect.MapMaker;
 import com.google.inject.Key;
@@ -76,9 +75,8 @@ public class MultiScope implements Scope {
 
           return t;
         }
-        throw new OutOfScopeException(
-            "Cannot access session scoped object. This means we are not inside of a " + uniqueName
-                + " scoped call.");
+        throw new OutOfScopeException("Cannot access session scoped object '" + name
+            + "'. This means we are not inside of a " + uniqueName + " scoped call.");
       }
 
       @Override

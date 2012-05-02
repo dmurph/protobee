@@ -1,8 +1,8 @@
 package org.protobee.gnutella.session;
 
 import org.jboss.netty.channel.ChannelHandlerContext;
+import org.protobee.events.SessionEvent;
 import org.protobee.gnutella.messages.GnutellaMessage;
-import org.protobee.session.SessionEvent;
 
 
 public class MessageReceivedEvent extends SessionEvent {

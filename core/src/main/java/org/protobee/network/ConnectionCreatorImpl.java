@@ -1,7 +1,6 @@
 package org.protobee.network;
 
 import java.net.SocketAddress;
-import java.util.Map;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
@@ -17,9 +16,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
-import org.protobee.protocol.ConnectionOptionsMap;
 import org.protobee.protocol.HandshakeFuture;
-import org.protobee.protocol.LocalListeningAddress;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.SessionModel;
@@ -47,24 +44,16 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
   private final Object connectLock = new Object();
   private final ProtobeeChannels channels;
 
-
-  private final Provider<Map<String, Object>> connectionOptionsProvider;
-  private final Provider<SocketAddress> localAddressProvider;
-
   @Inject
   public ConnectionCreatorImpl(Provider<HandshakeCreator> handshakeCreator,
       NetworkIdentityManager identityManager, HandshakeStateBootstrapper handshakeBootstrapper,
-      ChannelFactory channelFactory, Provider<Channel> channelProvider, ProtobeeChannels channels,
-      @ConnectionOptionsMap Provider<Map<String, Object>> connectionOptionsProvider,
-      @LocalListeningAddress Provider<SocketAddress> localAddressProvider) {
+      ChannelFactory channelFactory, Provider<Channel> channelProvider, ProtobeeChannels channels) {
     this.handshakeCreator = handshakeCreator;
     this.identityManager = identityManager;
     this.handshakeBootstrapper = handshakeBootstrapper;
     this.channelFactory = channelFactory;
     this.channelProvider = channelProvider;
     this.channels = channels;
-    this.connectionOptionsProvider = connectionOptionsProvider;
-    this.localAddressProvider = localAddressProvider;
   }
 
   @Override
@@ -84,7 +73,7 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
           ChannelPipeline pipeline = Channels.pipeline();
           try {
             protocolModel.enterScope();
-            handshakeBootstrapper.bootstrapSession(identity, null, pipeline);
+            handshakeBootstrapper.bootstrapSession(protocolModel, identity, null, pipeline);
           } finally {
             protocolModel.exitScope();
           }
@@ -94,14 +83,8 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
 
 
       ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
-      SocketAddress listeningAddress;
-      try {
-        protocolModel.enterScope();
-        bootstrap.setOptions(connectionOptionsProvider.get());
-        listeningAddress = localAddressProvider.get();
-      } finally {
-        protocolModel.exitScope();
-      }
+      SocketAddress listeningAddress = protocolModel.getLocalListeningAddress();
+      bootstrap.setOptions(protocolModel.getConnectionOptions());
       bootstrap.setPipelineFactory(factory);
       ChannelFuture future = bootstrap.connect(listeningAddress, remoteAddress);
 
