@@ -15,8 +15,8 @@ public class ResponseBody {
     this.fileIndex = fileIndex;
     this.fileSize = fileSize;
     this.fileName = fileName;
-    this.huge = huge;
-    this.ggep = ggep;
+    this.huge = (huge == null || huge.isEmpty()) ? null : huge;
+    this.ggep = (ggep == null || ggep.isEmpty()) ? null : ggep;
   }
 
   public long getFileIndex() {

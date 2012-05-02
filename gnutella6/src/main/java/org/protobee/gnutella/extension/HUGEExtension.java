@@ -10,7 +10,7 @@ public class HUGEExtension {
   private URN[] urns;
 
   public HUGEExtension(URN[] urns){
-    this.urns = (urns != null) ? urns : new URN[0];
+    this.urns = (urns == null) ? new URN[0] : urns;
   }
 
   public URN[] getUrns() {

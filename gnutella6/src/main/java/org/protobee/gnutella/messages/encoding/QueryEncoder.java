@@ -34,7 +34,7 @@ public class QueryEncoder implements MessageBodyEncoder {
       hugeEncoder.encode(buffer, toEncode.getHuge());
     }
     
-    if (toEncode.getGgep() != null) {
+    if (toEncode.getGgep() != null && !toEncode.getGgep().isEmpty()) {
       buffer.writeByte((byte) 0x1C);
       EncoderInput ei = new EncoderInput(toEncode.getGgep(), false);
       ggepEncoder.encode(buffer, ei);

@@ -65,8 +65,8 @@ public class QueryBody implements MessageBody {
   public QueryBody(@Assisted short minSpeed, @Assisted String query, @Nullable @Assisted GGEP ggep, @Nullable @Assisted HUGEExtension huge) {
     this.minSpeed = minSpeed;
     this.query = query;
-    this.ggep = ggep;
-    this.huge = huge;
+    this.ggep = (ggep == null || ggep.isEmpty()) ? null : ggep;
+    this.huge = (huge == null || huge.isEmpty()) ? null : huge;
   }
   
   public boolean hasInvalidQuery(){
