@@ -40,9 +40,9 @@ import org.protobee.gnutella.util.GUID;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
-import org.protobee.network.ProtocolMessageWriter;
-import org.protobee.network.ProtocolMessageWriter.ConnectionOptions;
-import org.protobee.network.ProtocolMessageWriter.HandshakeOptions;
+import org.protobee.network.ProtobeeMessageWriterImpl;
+import org.protobee.network.ProtobeeMessageWriterImpl.ConnectionOptions;
+import org.protobee.network.ProtobeeMessageWriterImpl.HandshakeOptions;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.SessionManagerImpl;
@@ -64,7 +64,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
   public void testDropOnFastRepeat() {
     final DropLog dropLog = mock(DropLog.class);
     final Clock clock = mock(Clock.class);
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
 
     final int expireTime = 6000;
     final long firstAcceptTime = 3000;
@@ -72,7 +72,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(DropLog.class).toInstance(dropLog);
         bind(Clock.class).toInstance(clock);
         bindConstant().annotatedWith(PongExpireTime.class).to(expireTime);
@@ -106,7 +106,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testBroadcastOnEmptyCache() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
     final SlotsController slots = mock(SlotsController.class);
     when(slots.canAcceptNewConnection()).thenReturn(false);
@@ -116,7 +116,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
         bindConstant().annotatedWith(MaxTTL.class).to(maxTtl);
@@ -173,7 +173,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testMultiplexedRegularPing() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
     final SlotsController slots = mock(SlotsController.class);
     when(slots.canAcceptNewConnection()).thenReturn(false);
@@ -184,7 +184,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
         bindConstant().annotatedWith(MaxTTL.class).to(maxTtl);
@@ -241,7 +241,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testDirectPingAndAcceptTime() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
     final SlotsController slots = mock(SlotsController.class);
     final Clock clock = mock(Clock.class);
@@ -254,7 +254,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
         bind(Clock.class).toInstance(clock);
@@ -307,7 +307,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testNoDirectPingWhenNoSlots() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
     final SlotsController slots = mock(SlotsController.class);
     when(slots.canAcceptNewConnection()).thenReturn(false);
@@ -316,7 +316,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
       }
@@ -354,7 +354,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testCrawlerPing() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
     final SlotsController slots = mock(SlotsController.class);
     when(slots.canAcceptNewConnection()).thenReturn(true);
@@ -363,7 +363,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
       }
@@ -443,7 +443,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testCacheUsedAndNeededDecremented() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
     final SlotsController slots = mock(SlotsController.class);
     final Clock clock = mock(Clock.class);
@@ -457,7 +457,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
         bind(SlotsController.class).toInstance(slots);
         bind(Clock.class).toInstance(clock);
@@ -565,13 +565,13 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testAddPongToCache() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
 
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
       }
     });
@@ -604,13 +604,13 @@ public class PingModuleTests extends AbstractGnutellaTest {
 
   @Test
   public void testPongDemultiplex() {
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
+    final ProtobeeMessageWriterImpl writer = mock(ProtobeeMessageWriterImpl.class);
     final SessionManagerImpl sessionManager = mock(SessionManagerImpl.class);
 
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtobeeMessageWriterImpl.class).toInstance(writer);
         bind(SessionManagerImpl.class).toInstance(sessionManager);
       }
     });

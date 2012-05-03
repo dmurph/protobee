@@ -39,7 +39,7 @@ import com.google.inject.Provider;
  * @author Daniel
  */
 @SessionScope
-public class ProtocolMessageWriter {
+public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
 
   public static enum ConnectionOptions {
     CAN_CREATE_CONNECTION, EXIT_IF_NO_CONNECTION
@@ -60,7 +60,7 @@ public class ProtocolMessageWriter {
   private final Provider<ChannelFuture> handshakeFutureProvider;
 
   @Inject
-  public ProtocolMessageWriter(Channel channel, NetworkIdentity myIdentity, Descoper descoper,
+  public ProtobeeMessageWriterImpl(Channel channel, NetworkIdentity myIdentity, Descoper descoper,
       ConnectionCreator networkManager, Protocol protocol, Provider<Channel> channelProvider,
       @HandshakeFuture Provider<ChannelFuture> handshakeFuture) {
     this.channel = channel;
@@ -72,61 +72,26 @@ public class ProtocolMessageWriter {
     this.handshakeFutureProvider = handshakeFuture;
   }
 
-  /**
-   * Writes the object to this object's session.
-   * 
-   * @param message
-   * @return
-   */
+  @Override
   public ChannelFuture write(Object message) {
     Preconditions.checkNotNull(message);
     return write(channel, message, myIdentity.getListeningAddress(protocol));
   }
 
-  /**
-   * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Defaults with options {@link ConnectionOptions#CAN_CREATE_CONNECTION} and
-   * {@link HandshakeOptions#WAIT_FOR_HANDSHAKE}, with method of "CONNECT" and uri of ""
-   * 
-   * @param identity
-   * @param message
-   * @return
-   */
+  @Override
   public ChannelFuture write(NetworkIdentity identity, final Object message) {
     return write(identity, message, ConnectionOptions.CAN_CREATE_CONNECTION,
         HandshakeOptions.WAIT_FOR_HANDSHAKE);
   }
 
-  /**
-   * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Uses connection and handshake options. If a new connection is required, method
-   * defaults to "CONNECT" and uri is ""
-   * 
-   * @param identity
-   * @param message
-   * @param connectionOptions
-   * @param handshakeOptions
-   * @return
-   */
+  @Override
   public ChannelFuture write(final NetworkIdentity identity, final Object message,
       ConnectionOptions connectionOptions, HandshakeOptions handshakeOptions) {
     return write(identity, message, connectionOptions, HttpMethod.valueOf("CONNECT"), "",
         handshakeOptions);
   }
 
-  /**
-   * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Uses connection and handshake options. If a new connection is required, the given
-   * method and uri are used
-   * 
-   * @param identity
-   * @param message
-   * @param connectionOptions
-   * @param method
-   * @param uri
-   * @param handshakeOptions
-   * @return
-   */
+  @Override
   public ChannelFuture write(final NetworkIdentity identity, final Object message,
       ConnectionOptions connectionOptions, HttpMethod method, String uri,
       HandshakeOptions handshakeOptions) {
