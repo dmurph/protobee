@@ -9,105 +9,95 @@ import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.DefaultChannelFuture;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.protocol.HandshakeFuture;
 import org.protobee.protocol.Protocol;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionState;
 import org.protobee.util.Descoper;
+import org.protobee.util.ProtocolUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
+import com.google.inject.Singleton;
 
-
-/**
- * <p>
- * Helper class for writing message to a protocol connection. If the handshake is not complete yet,
- * the message will be sent after the handshake is complete. Similarly, if there in no connection, a
- * new one is made.
- * </p>
- * <p>
- * Operations on this object correspond to the session it resides in.
- * </p>
- * <p>
- * Preconditions for injection: needs to be in identity and session scope
- * </p>
- * 
- * @author Daniel
- */
-@SessionScope
+@Singleton
 public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
-
-  public static enum ConnectionOptions {
-    CAN_CREATE_CONNECTION, EXIT_IF_NO_CONNECTION
-  }
-
-  public static enum HandshakeOptions {
-    WAIT_FOR_HANDSHAKE, EXIT_IF_HANDSHAKING
-  }
 
   @InjectLogger
   private Logger log;
-  private final Channel channel;
-  private final NetworkIdentity myIdentity;
-  private final Descoper descoper;
-  private final ConnectionCreator networkManager;
-  private final Protocol protocol;
   private final Provider<Channel> channelProvider;
+  private final Provider<NetworkIdentity> identityProvider;
+  private final Provider<SessionModel> sessionProvider;
+  private final Provider<ProtocolModel> protocolProvider;
+  private final ConnectionCreator networkManager;
   private final Provider<ChannelFuture> handshakeFutureProvider;
+  private final Provider<Descoper> descoperProvider;
 
   @Inject
-  public ProtobeeMessageWriterImpl(Channel channel, NetworkIdentity myIdentity, Descoper descoper,
-      ConnectionCreator networkManager, Protocol protocol, Provider<Channel> channelProvider,
-      @HandshakeFuture Provider<ChannelFuture> handshakeFuture) {
-    this.channel = channel;
-    this.myIdentity = myIdentity;
-    this.descoper = descoper;
-    this.networkManager = networkManager;
-    this.protocol = protocol;
+  public ProtobeeMessageWriterImpl(Provider<Channel> channelProvider,
+      Provider<NetworkIdentity> identityProvider, Provider<SessionModel> sessionProvider,
+      ConnectionCreator networkManager, Provider<ProtocolModel> protocolProvider,
+      @HandshakeFuture Provider<ChannelFuture> handshakeFutureProvider,
+      Provider<Descoper> descoperProvider) {
     this.channelProvider = channelProvider;
-    this.handshakeFutureProvider = handshakeFuture;
+    this.identityProvider = identityProvider;
+    this.sessionProvider = sessionProvider;
+    this.networkManager = networkManager;
+    this.protocolProvider = protocolProvider;
+    this.handshakeFutureProvider = handshakeFutureProvider;
+    this.descoperProvider = descoperProvider;
   }
 
   @Override
   public ChannelFuture write(Object message) {
     Preconditions.checkNotNull(message);
-    return write(channel, message, myIdentity.getListeningAddress(protocol));
+    Channel channel = channelProvider.get();
+    SessionModel session = sessionProvider.get();
+    SocketAddress address =
+        session.getIdentity().getListeningAddress(session.getProtocol().getProtocol());
+    return write(channel, message, address);
   }
 
   @Override
-  public ChannelFuture write(NetworkIdentity identity, final Object message) {
-    return write(identity, message, ConnectionOptions.CAN_CREATE_CONNECTION,
+  public ChannelFuture write(Object message, HandshakeOptions handshakeOptions) {
+    return write(message, ConnectionOptions.EXIT_IF_NO_CONNECTION, null, null, handshakeOptions);
+  }
+
+  @Override
+  public ChannelFuture write(Object message, HttpMethod method, String uri) {
+    return write(message, ConnectionOptions.CAN_CREATE_CONNECTION, method, uri,
         HandshakeOptions.WAIT_FOR_HANDSHAKE);
   }
 
   @Override
-  public ChannelFuture write(final NetworkIdentity identity, final Object message,
-      ConnectionOptions connectionOptions, HandshakeOptions handshakeOptions) {
-    return write(identity, message, connectionOptions, HttpMethod.valueOf("CONNECT"), "",
-        handshakeOptions);
-  }
-
-  @Override
-  public ChannelFuture write(final NetworkIdentity identity, final Object message,
-      ConnectionOptions connectionOptions, HttpMethod method, String uri,
-      HandshakeOptions handshakeOptions) {
-    if (myIdentity == identity) {
-      return write(message);
+  public ChannelFuture write(final Object message, ConnectionOptions connectionOptions,
+      HttpMethod method, String uri, HandshakeOptions handshakeOptions) {
+    Preconditions.checkNotNull(message);
+    Preconditions.checkNotNull(connectionOptions);
+    Preconditions.checkNotNull(handshakeOptions);
+    if (connectionOptions == ConnectionOptions.CAN_CREATE_CONNECTION) {
+      Preconditions.checkNotNull(method);
+      Preconditions.checkNotNull(uri);
     }
+
+    ProtocolModel protocolModel = protocolProvider.get();
+    final Protocol protocol = protocolModel.getProtocol();
+    final NetworkIdentity identity = identityProvider.get();
+
     ChannelFuture messageFuture = null;
     if (identity.hasCurrentSession(protocol)) {
-      log.debug("Current session already running for identity '" + identity
-          + "', dispatching in that session.");
+      log.debug("Current session of " + ProtocolUtils.toString(protocol)
+          + " already running for identity '" + identity + "', dispatching in that session.");
       SessionModel session = identity.getCurrentSession(protocol);
 
+      Channel channel = null;
       try {
-        descoper.descope();
         session.enterScope();
-        final Channel channel = channelProvider.get();
+        channel = channelProvider.get();
 
         if (session.getSessionState() == SessionState.MESSAGES) {
           messageFuture = write(channel, message, identity.getListeningAddress(protocol));
@@ -118,12 +108,12 @@ public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
             // TODO should we have a throwable here?
             messageFuture.setFailure(null);
             session.exitScope();
-            descoper.rescope();
             return messageFuture;
           }
           ChannelFuture handshakeFuture = handshakeFutureProvider.get();
 
           final ChannelFuture finalFuture = messageFuture;
+          final Channel finalChannel = channel;
           handshakeFuture.addListener(new ChannelFutureListener() {
             @Override
             public void operationComplete(ChannelFuture future) throws Exception {
@@ -134,7 +124,7 @@ public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
 
               if (future.isSuccess()) {
                 ChannelFuture writeFuture =
-                    write(channel, message, identity.getListeningAddress(protocol));
+                    write(finalChannel, message, identity.getListeningAddress(protocol));
                 writeFuture.addListener(new ChannelFutureListener() {
 
                   @Override
@@ -158,16 +148,15 @@ public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
         messageFuture.setFailure(e);
       } finally {
         session.exitScope();
-        descoper.rescope();
       }
 
       return messageFuture;
     }
 
-    messageFuture = new DefaultChannelFuture(channel, false);
     if (connectionOptions == ConnectionOptions.EXIT_IF_NO_CONNECTION) {
       log.info("No current connection, exiting");
       // TODO should we have a throwable here?
+      messageFuture = new DefaultChannelFuture(null, false);
       messageFuture.setFailure(null);
       return messageFuture;
     }
@@ -179,11 +168,14 @@ public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
       return null;
     }
 
+    Descoper descoper = descoperProvider.get();
     descoper.descope();
     ChannelFuture handshakeFuture = networkManager.connect(null, address, method, uri);
     descoper.rescope();
 
     final Channel channel = handshakeFuture.getChannel();
+
+    messageFuture = new DefaultChannelFuture(channel, false);
 
     final ChannelFuture finalFuture = messageFuture;
     handshakeFuture.addListener(new ChannelFutureListener() {

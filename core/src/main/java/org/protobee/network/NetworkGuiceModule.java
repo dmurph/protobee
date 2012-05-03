@@ -26,7 +26,7 @@ public class NetworkGuiceModule extends AbstractModule {
     bind(ChannelFactory.class).toProvider(NioServerSocketChannelFactoryProvider.class).in(
         Singleton.class);
 
-    bind(ProtobeeMessageWriter.class).to(ProtobeeMessageWriterImpl.class);
+    bind(ProtobeeMessageWriter.class).to(ProtobeeMessageWriterImpl.class).in(Singleton.class);
 
     bind(ConnectionCreator.class).to(ConnectionCreatorImpl.class).in(Singleton.class);
     bind(ConnectionBinder.class).to(ConnectionBinderImpl.class).in(Singleton.class);
