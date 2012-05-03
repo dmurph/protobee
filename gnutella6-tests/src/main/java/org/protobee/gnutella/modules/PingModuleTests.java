@@ -10,6 +10,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.times;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -40,9 +41,8 @@ import org.protobee.gnutella.util.GUID;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
+import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
 import org.protobee.network.ProtobeeMessageWriterImpl;
-import org.protobee.network.ProtobeeMessageWriterImpl.ConnectionOptions;
-import org.protobee.network.ProtobeeMessageWriterImpl.HandshakeOptions;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.SessionManagerImpl;
@@ -101,7 +101,8 @@ public class PingModuleTests extends AbstractGnutellaTest {
     session.exitScope();
     identity.exitScope();
 
-    verify(dropLog).messageDropped(eq(address), eq(gnutellaConfig.get()), eq(message), any(String.class));
+    verify(dropLog).messageDropped(eq(address), eq(gnutellaConfig.get()), eq(message),
+        any(String.class));
   }
 
   @Test
@@ -154,21 +155,19 @@ public class PingModuleTests extends AbstractGnutellaTest {
     remoteIdentity.exitScope();
 
     // TODO when we populate our ping with ggep, control what that is and check for it here
-    for (SessionModel session : sessions) {
-      verify(writer).write(eq(session.getIdentity()), argThat(new ArgumentMatcher<Object>() {
-        @Override
-        public boolean matches(Object argument) {
-          GnutellaMessage message = (GnutellaMessage) argument;
-          MessageHeader header = message.getHeader();
-          assertFalse("Guid of broadcast message cannot match input ping guid.",
-              Arrays.equals(header.getGuid(), guid));
-          byte[] nguid = header.getGuid();
+    verify(writer, times(sessions.size())).write(argThat(new ArgumentMatcher<Object>() {
+      @Override
+      public boolean matches(Object argument) {
+        GnutellaMessage message = (GnutellaMessage) argument;
+        MessageHeader header = message.getHeader();
+        assertFalse("Guid of broadcast message cannot match input ping guid.",
+            Arrays.equals(header.getGuid(), guid));
+        byte[] nguid = header.getGuid();
 
-          return header.equals(new MessageHeader(nguid, MessageHeader.F_PING, (byte) maxTtl,
-              (byte) 0, MessageHeader.UNKNOWN_PAYLOAD_LENGTH));
-        }
-      }));
-    }
+        return header.equals(new MessageHeader(nguid, MessageHeader.F_PING, (byte) maxTtl,
+            (byte) 0, MessageHeader.UNKNOWN_PAYLOAD_LENGTH));
+      }
+    }), eq(HandshakeOptions.WAIT_FOR_HANDSHAKE));
   }
 
   @Test
@@ -475,7 +474,8 @@ public class PingModuleTests extends AbstractGnutellaTest {
         Sets.<SessionModel>newHashSet());
 
 
-    InetSocketAddress remoteAddress = new InetSocketAddress(InetAddresses.forString("5.5.5.5"), 1613);
+    InetSocketAddress remoteAddress =
+        new InetSocketAddress(InetAddresses.forString("5.5.5.5"), 1613);
     SessionModel pingSesson = createSession(inj, remoteAddress, gnutellaConfig);
     NetworkIdentity remoteIdentity = pingSesson.getIdentity();
 
@@ -653,8 +653,7 @@ public class PingModuleTests extends AbstractGnutellaTest {
     MessageHeader forwardedHeader =
         new MessageHeader(askGuid, MessageHeader.F_PING_REPLY, (byte) 1, (byte) (targetHops + 1));
 
-    verify(writer).write(eq(activeSessionIdentity),
-        eq(new GnutellaMessage(forwardedHeader, pongBody)),
-        eq(ConnectionOptions.EXIT_IF_NO_CONNECTION), eq(HandshakeOptions.EXIT_IF_HANDSHAKING));
+    verify(writer).write(eq(new GnutellaMessage(forwardedHeader, pongBody)),
+        eq(HandshakeOptions.EXIT_IF_HANDSHAKING));
   }
 }
