@@ -3,13 +3,14 @@ package org.protobee.gnutella.filters;
 import org.protobee.gnutella.constants.MaxHops;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
+import org.protobee.util.PreFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 
 @Singleton
-public class InvalidMessageFilter implements GnutellaPreFilter {
+public class InvalidMessageFilter implements PreFilter<GnutellaMessage> {
 
   private final int maxHops;
 

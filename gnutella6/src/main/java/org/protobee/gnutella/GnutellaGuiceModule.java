@@ -12,11 +12,9 @@ import org.protobee.gnutella.modules.ModulesGuiceModule;
 import org.protobee.gnutella.session.FlowControlHandler;
 import org.protobee.gnutella.session.GnutellaMessageReceiver;
 import org.protobee.gnutella.session.GnutellaMessageWriter;
-import org.protobee.gnutella.session.GnutellaSessionModel;
+import org.protobee.gnutella.session.GnutellaPrefilterHandler;
 import org.protobee.gnutella.session.NoOpFlowControl;
-import org.protobee.gnutella.session.PreFilterChannelHandler;
 import org.protobee.guice.scopes.IdentityScope;
-import org.protobee.guice.scopes.SessionScope;
 import org.protobee.plugin.GnutellaPluginGuiceModule;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
@@ -37,7 +35,6 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
 
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
-    bind(GnutellaSessionModel.class).in(SessionScope.class);
     bind(GnutellaServantModel.class).in(IdentityScope.class);
 
     addProtocolConfig(GnutellaProtocolConfig.class);
@@ -52,13 +49,14 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     bind(RequestFilter.class).to(SimpleRequestFilter.class).in(Singleton.class);
 
     bind(SlotsController.class).to(DefaultSlotsController.class).in(Singleton.class);
+    
     addPreFilter(InvalidMessageFilter.class).in(Singleton.class);
   }
 
   @Provides
   @Gnutella
   public ChannelHandler[] getChannelHandlers(GnutellaDecoderHandler decoder,
-      GnutellaEncoderHandler encoder, FlowControlHandler flow, PreFilterChannelHandler prefilter,
+      GnutellaEncoderHandler encoder, FlowControlHandler flow, GnutellaPrefilterHandler prefilter,
       GnutellaMessageReceiver receiver, GnutellaMessageWriter writer) {
     return new ChannelHandler[] {decoder, encoder, flow, writer, prefilter, receiver};
   }
