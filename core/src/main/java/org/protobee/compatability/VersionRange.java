@@ -2,7 +2,6 @@ package org.protobee.compatability;
 
 import java.util.Comparator;
 
-import org.protobee.protocol.headers.CompatabilityHeader;
 import org.protobee.util.VersionComparator;
 
 import com.google.common.base.Preconditions;

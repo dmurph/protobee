@@ -1,4 +1,4 @@
-package org.protobee.protocol.headers;
+package org.protobee.compatability;
 
 import java.lang.annotation.Documented;
 import java.lang.annotation.ElementType;

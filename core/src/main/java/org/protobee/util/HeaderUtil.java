@@ -4,10 +4,10 @@ import java.util.Collection;
 import java.util.List;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
+import org.protobee.compatability.CompatabilityHeader;
+import org.protobee.compatability.Headers;
 import org.protobee.compatability.VersionRange;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.protocol.headers.CompatabilityHeader;
-import org.protobee.protocol.headers.Headers;
 
 import com.google.common.base.Function;
 import com.google.common.base.Preconditions;

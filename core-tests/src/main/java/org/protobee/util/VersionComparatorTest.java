@@ -14,6 +14,8 @@ public class VersionComparatorTest {
 
     assertEquals(0, comparator.compare("1", "1"));
     assertEquals(0, comparator.compare("1.0", "1.0"));
+    assertEquals(0, comparator.compare("1.0.0", "1"));
+    assertEquals(0, comparator.compare("3.000.1", "3.0.1"));
     testBothWays(comparator, 1, "1.1", "1.0");
     testBothWays(comparator, 1, "0.4.1", "0.3.1");
     testBothWays(comparator, 1, "1", "0");
