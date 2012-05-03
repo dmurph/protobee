@@ -40,7 +40,7 @@ public class ProtocolModuleFilter {
 
     while (it.hasNext()) {
       ProtocolModule module = it.next();
-      Headers headers = module.getClass().getAnnotation(Headers.class);
+      Headers headers = module.getHeaders();
 
       if (headers == null) {
         continue;

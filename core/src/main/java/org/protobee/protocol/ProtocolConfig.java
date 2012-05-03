@@ -12,12 +12,23 @@ import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
 import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
 import org.protobee.modules.ProtocolModule;
 
+import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Provider;
 
 public abstract class ProtocolConfig implements Provider<Protocol> {
 
+  private final Protocol protocol;
 
+  public ProtocolConfig() {
+    this.protocol = this.getClass().getAnnotation(Protocol.class);
+    Preconditions.checkNotNull(protocol, "Protocol config must be annotated with @Protocol");
+  }
+
+  @Override
+  public Protocol get() {
+    return protocol;
+  }
 
   public HttpMessageDecoder createRequestDecoder() {
     return new HttpRequestDecoder();

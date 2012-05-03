@@ -28,7 +28,7 @@ import com.google.common.eventbus.Subscribe;
  * 
  * @author Daniel
  */
-public abstract class SimpleConnectionFilterModule implements ProtocolModule {
+public abstract class SimpleConnectionFilterModule extends ProtocolModule {
 
   @InjectLogger
   protected Logger log;

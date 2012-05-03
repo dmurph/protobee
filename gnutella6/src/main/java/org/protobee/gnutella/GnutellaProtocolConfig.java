@@ -26,9 +26,7 @@ public class GnutellaProtocolConfig extends ProtocolConfig {
   private final Provider<GnutellaHttpRequestEncoder> encoderProvider;
   private final Provider<Set<ProtocolModule>> gnutellaModules;
   private final Set<Class<? extends ProtocolModule>> gnutellaModuleClasses;
-
-  private final Protocol protocol;
-
+  
   @Inject
   public GnutellaProtocolConfig(@Gnutella Provider<ChannelHandler[]> channelsProvider,
       @Gnutella Provider<Set<ProtocolModule>> gnutellaModules,
@@ -40,17 +38,11 @@ public class GnutellaProtocolConfig extends ProtocolConfig {
     this.encoderProvider = encoderProvider;
     this.gnutellaModules = gnutellaModules;
     this.gnutellaModuleClasses = gnutellaModuleClasses;
-    this.protocol = this.getClass().getAnnotation(Protocol.class);
   }
 
   @Override
   public ChannelHandler[] createProtocolHandlers() {
     return channelsProvider.get();
-  }
-
-  @Override
-  public Protocol get() {
-    return protocol;
   }
 
   @Override

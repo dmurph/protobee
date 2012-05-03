@@ -1,5 +1,6 @@
 package org.protobee.gnutella.modules;
 
+import org.protobee.compatability.Headers;
 import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
@@ -20,9 +21,9 @@ import org.protobee.network.ProtocolMessageWriter;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
-
+@Headers(required = {})
 @SessionScope
-public class QueryHitModule implements ProtocolModule {
+public class QueryHitModule extends ProtocolModule {
 
   private final RequestFilter filter;
   private final PushRoutingTableManager pushRTManager;
