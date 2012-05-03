@@ -14,9 +14,12 @@ import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.gnutella.util.GUID;
 import org.protobee.guice.scopes.SessionScope;
+import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ProtobeeMessageWriter;
+import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
+import org.protobee.session.SessionModel;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -33,11 +36,14 @@ public class QueryHitModule extends ProtocolModule {
   private final MessageHeader.Factory headerFactory;
   private final GnutellaServantModel servantModel;
 
+  private final SessionModel session;
+  private final NetworkIdentity identity;
+
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager,
       QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
       ProtobeeMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
-      GnutellaServantModel servantModel) {
+      GnutellaServantModel servantModel, SessionModel session, NetworkIdentity identity) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.queryHitRTManager = queryHitRTManager;
@@ -45,6 +51,8 @@ public class QueryHitModule extends ProtocolModule {
     this.messageDispatcher = messageDispatcher;
     this.headerFactory = headerFactory;
     this.servantModel = servantModel;
+    this.session = session;
+    this.identity = identity;
   }
 
   // map message header to an null when originally sending query
@@ -72,8 +80,15 @@ public class QueryHitModule extends ProtocolModule {
         MessageHeader newHeader =
             headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
                 (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
-        messageDispatcher.write(qgrPair.getHost(), new GnutellaMessage(newHeader, event
-            .getMessage().getBody()));
+        session.exitScope();
+        identity.exitScope();
+        try {
+          qgrPair.getHost().enterScope();
+          messageDispatcher.write(new GnutellaMessage(newHeader, event.getMessage().getBody()),
+              HandshakeOptions.WAIT_FOR_HANDSHAKE);
+        } finally {
+          qgrPair.getHost().exitScope();
+        }
       }
     }
   }
