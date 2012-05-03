@@ -2,62 +2,48 @@ package org.protobee.network;
 
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.protobee.identity.NetworkIdentity;
-import org.protobee.network.ProtobeeMessageWriterImpl.ConnectionOptions;
-import org.protobee.network.ProtobeeMessageWriterImpl.HandshakeOptions;
 
 
-
+/**
+ * Writes a message to an identity or session with any protocol registered in the framework.
+ * 
+ * @author Daniel
+ */
 public interface ProtobeeMessageWriter {
 
-  /**
-   * Writes the object to this object's session.
-   * 
-   * @param message
-   * @return
-   */
-  public abstract ChannelFuture write(Object message);
+  public static enum ConnectionOptions {
+    CAN_CREATE_CONNECTION, EXIT_IF_NO_CONNECTION
+  }
+
+  public static enum HandshakeOptions {
+    WAIT_FOR_HANDSHAKE, EXIT_IF_HANDSHAKING
+  }
 
   /**
-   * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Defaults with options {@link ConnectionOptions#CAN_CREATE_CONNECTION} and
-   * {@link HandshakeOptions#WAIT_FOR_HANDSHAKE}, with method of "CONNECT" and uri of ""
-   * 
-   * @param identity
-   * @param message
-   * @return
+   * Writes the object the scoped session (using it's protocol) Preconditions: in session scope
    */
-  public abstract ChannelFuture write(NetworkIdentity identity, final Object message);
+  ChannelFuture write(Object message);
 
   /**
-   * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Uses connection and handshake options. If a new connection is required, method
-   * defaults to "CONNECT" and uri is ""
-   * 
-   * @param identity
-   * @param message
-   * @param connectionOptions
-   * @param handshakeOptions
-   * @return
+   * Writes the object the scoped identity using the scoped protocol, using the handshake options.
+   * Connection options defaults to {@link ConnectionOptions#CAN_CREATE_CONNECTION}, with handshake
+   * options of {@link HandshakeOptions#WAIT_FOR_HANDSHAKE}. method and uri are for making
+   * connections if needed. Preconditions: in identity and protocol scope, NOT in a session scope
    */
-  public abstract ChannelFuture write(final NetworkIdentity identity, final Object message,
-      ConnectionOptions connectionOptions, HandshakeOptions handshakeOptions);
+  ChannelFuture write(final Object message, HttpMethod method, String uri);
 
   /**
-   * Writes the object to the given identity's session, using the the protocol of this object's
-   * session. Uses connection and handshake options. If a new connection is required, the given
-   * method and uri are used
-   * 
-   * @param identity
-   * @param message
-   * @param connectionOptions
-   * @param method
-   * @param uri
-   * @param handshakeOptions
-   * @return
+   * Writes the object the scoped identity using the scoped protocol, using the handshake options.
+   * Connection options defaults to {@link ConnectionOptions#EXIT_IF_NO_CONNECTION}. Preconditions:
+   * in identity and protocol scope, NOT in a session scope
    */
-  public abstract ChannelFuture write(final NetworkIdentity identity, final Object message,
-      ConnectionOptions connectionOptions, HttpMethod method, String uri,
-      HandshakeOptions handshakeOptions);
+  ChannelFuture write(final Object message, HandshakeOptions handshakeOptions);
 
+  /**
+   * Sends the message to the scoped identity using the scoped protocol, with the give options.
+   * method and uri are for making new connections if needed. Preconditions: in identity and
+   * protocol scope, NOT in a session scope
+   */
+  ChannelFuture write(Object message, ConnectionOptions connectionOptions, HttpMethod method,
+      String uri, HandshakeOptions handshakeOptions);
 }
