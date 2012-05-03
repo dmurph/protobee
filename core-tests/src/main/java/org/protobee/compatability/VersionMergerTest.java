@@ -115,11 +115,10 @@ public class VersionMergerTest {
         Sets.newHashSet(new VersionRange("1.0", "1.2"), new VersionRange("1.3", "1.4.3"));
     assertEquals(result, merger.subtract(subtractFrom, ranges));
   }
-  
+
   @Test
   public void testSubtractWithHole2() {
-    Set<VersionRange> ranges =
-        Sets.newHashSet(new VersionRange("0.1", "1.0"));
+    Set<VersionRange> ranges = Sets.newHashSet(new VersionRange("0.1", "1.0"));
 
     VersionRange subtractFrom = new VersionRange("0.1", "1.0");
 
@@ -130,5 +129,20 @@ public class VersionMergerTest {
     Set<VersionRange> result =
         Sets.newHashSet(new VersionRange("0.1", "0.1"), new VersionRange("1.0", "1.0"));
     assertEquals(result, merger.subtract(subtractFrom, ranges));
+  }
+
+  @Test
+  public void testContains() {
+
+    Injector inj = Guice.createInjector(new Module());
+
+    VersionRangeMerger merger = inj.getInstance(VersionRangeMerger.class);
+
+    assertTrue(merger.containsInclusive("0.1", new VersionRange("0.1", "0.1")));
+    assertTrue(merger.containsInclusive("0.1", new VersionRange("0.1", "1.0")));
+    assertTrue(merger.containsInclusive("5", new VersionRange("1", "5.0")));
+    assertFalse(merger.containsInclusive("5", new VersionRange("1", "4")));
+    assertFalse(merger.containsInclusive("0.1", new VersionRange("1", "4.3")));
+
   }
 }
