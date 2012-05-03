@@ -16,7 +16,7 @@ import org.protobee.gnutella.util.GUID;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.network.ProtocolMessageWriter;
+import org.protobee.network.ProtobeeMessageWriter;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -28,7 +28,7 @@ public class QueryHitModule extends ProtocolModule {
   private final RequestFilter filter;
   private final PushRoutingTableManager pushRTManager;
   private final QueryRoutingTableManager queryHitRTManager;
-  private final ProtocolMessageWriter messageDispatcher;
+  private final ProtobeeMessageWriter messageDispatcher;
   private final NetworkIdentityManager identityManager;
   private final MessageHeader.Factory headerFactory;
   private final GnutellaServantModel servantModel;
@@ -36,7 +36,7 @@ public class QueryHitModule extends ProtocolModule {
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager,
       QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
-      ProtocolMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
+      ProtobeeMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
       GnutellaServantModel servantModel) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;

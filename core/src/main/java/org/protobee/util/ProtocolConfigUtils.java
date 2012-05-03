@@ -7,7 +7,6 @@ import java.util.Set;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.protocol.ProtocolModel;
-import org.protobee.protocol.ServerOptionsMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -16,7 +15,6 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableSet;
 import com.google.common.collect.Iterables;
 import com.google.common.collect.Maps;
-import com.google.inject.Provider;
 
 
 public class ProtocolConfigUtils {

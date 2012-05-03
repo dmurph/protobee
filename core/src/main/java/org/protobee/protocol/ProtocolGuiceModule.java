@@ -15,6 +15,8 @@ import org.protobee.guice.scopes.PrescopedProvider;
 import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
+import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
+import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 import org.protobee.util.ProtocolConfigUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,6 +27,7 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
+import com.google.inject.assistedinject.FactoryModuleBuilder;
 
 public class ProtocolGuiceModule extends AbstractModule {
 
@@ -32,7 +35,10 @@ public class ProtocolGuiceModule extends AbstractModule {
 
   @Override
   protected void configure() {
-    bind(ModuleCompatabilityVersionMerger.class).in(SessionScope.class);
+    install(new FactoryModuleBuilder().build(UpstreamMessagePosterHandler.Factory.class));
+    install(new FactoryModuleBuilder().build(DownstreamMessagePosterHandler.Factory.class));
+
+    bind(ModuleCompatabilityVersionMerger.class).in(ProtocolScope.class);
 
     bind(ProtocolConfig.class).toProvider(new PrescopedProvider<ProtocolConfig>("ProtocolConfig"))
         .in(ProtocolScope.class);
@@ -81,6 +87,8 @@ public class ProtocolGuiceModule extends AbstractModule {
     return ProtocolConfigUtils.getProtocolSetFromModels(configs);
   }
 
+  // protocol model providers
+
   @Provides
   @ProtocolScope
   public Protocol getProtocol(ProtocolModel model) {
@@ -114,7 +122,7 @@ public class ProtocolGuiceModule extends AbstractModule {
     return model.getLocalListeningAddress();
   }
 
-
+  // ////// config bound providers
 
   @Provides
   @ProtocolChannelHandlers
