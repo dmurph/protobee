@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 
 
 @SessionScope
-public class HeadersModule implements ProtocolModule {
+public class HeadersModule extends ProtocolModule {
 
   @InjectLogger
   private Logger log;

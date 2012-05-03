@@ -48,7 +48,7 @@ import com.google.inject.Provider;
  */
 @Headers(required = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requested = {})
 @SessionScope
-public class PingModule implements ProtocolModule {
+public class PingModule extends ProtocolModule {
 
   private final NetworkIdentityManager identityManager;
   private final IdentityTagManager tagManager;

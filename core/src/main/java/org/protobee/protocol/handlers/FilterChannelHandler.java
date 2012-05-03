@@ -1,4 +1,4 @@
-package org.protobee.network.handlers;
+package org.protobee.protocol.handlers;
 
 import java.util.Set;
 
@@ -19,10 +19,6 @@ import com.google.common.base.Preconditions;
  * @param <T> the message type for the filters
  */
 public class FilterChannelHandler<T> extends SimpleChannelUpstreamHandler {
-
-  public static enum FilterMode {
-    ERROR_ON_MISMATCHED_TYPE, SKIP_MISMATCHED_TYPES
-  }
 
   private final Set<PreFilter<T>> filters;
   private final DropLog dropLog;

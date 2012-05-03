@@ -4,8 +4,9 @@ import java.util.Set;
 
 import org.protobee.gnutella.Gnutella;
 import org.protobee.gnutella.messages.GnutellaMessage;
-import org.protobee.network.handlers.FilterChannelHandler;
 import org.protobee.protocol.Protocol;
+import org.protobee.protocol.handlers.FilterChannelHandler;
+import org.protobee.protocol.handlers.FilterMode;
 import org.protobee.stats.DropLog;
 import org.protobee.util.PreFilter;
 

@@ -1,5 +1,6 @@
 package org.protobee.gnutella.modules;
 
+import org.protobee.compatability.Headers;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.routing.InvalidMessageException;
@@ -12,9 +13,9 @@ import org.protobee.modules.ProtocolModule;
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
-
+@Headers(required = {})
 @SessionScope
-public class RoutingModule implements ProtocolModule {
+public class RoutingModule extends ProtocolModule {
 
   private final RequestFilter filter;
   private final CoreRoutingTableManager coreRTManager;

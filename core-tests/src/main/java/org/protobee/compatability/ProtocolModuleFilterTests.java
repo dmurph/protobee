@@ -22,10 +22,10 @@ import com.google.common.eventbus.EventBus;
 public class ProtocolModuleFilterTests {
 
   @Headers(required = {@CompatabilityHeader(name = "a", minVersion = "1", maxVersion = "2")}, requested = {})
-  private static class a12 implements ProtocolModule {}
+  private static class a12 extends ProtocolModule {}
 
   @Headers(required = {@CompatabilityHeader(name = "a", minVersion = "2", maxVersion = "+")}, requested = {})
-  private static class a2plus implements ProtocolModule {}
+  private static class a2plus extends ProtocolModule {}
 
   @Test
   public void testLowerVersion() {
