@@ -23,9 +23,9 @@ import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.network.ProtocolMessageWriter;
-import org.protobee.network.ProtocolMessageWriter.ConnectionOptions;
-import org.protobee.network.ProtocolMessageWriter.HandshakeOptions;
+import org.protobee.network.ProtobeeMessageWriter;
+import org.protobee.network.ProtobeeMessageWriterImpl.ConnectionOptions;
+import org.protobee.network.ProtobeeMessageWriterImpl.HandshakeOptions;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
@@ -56,7 +56,7 @@ public class PingModule extends ProtocolModule {
   private final SlotsController slots;
 
   private final NetworkIdentity identity;
-  private final ProtocolMessageWriter messageDispatcher;
+  private final ProtobeeMessageWriter messageDispatcher;
   private final MessageBodyFactory bodyFactory;
   private final MessageHeader.Factory headerFactory;
   private final Protocol gnutella;
@@ -76,7 +76,7 @@ public class PingModule extends ProtocolModule {
 
   @Inject
   public PingModule(NetworkIdentityManager identityManager, IdentityTagManager tagManager,
-      NetworkIdentity identity, ProtocolMessageWriter messageDispatcher,
+      NetworkIdentity identity, ProtobeeMessageWriter messageDispatcher,
       MessageBodyFactory bodyFactory, MessageHeader.Factory headerFactory,
       @Gnutella Protocol gnutella, @MaxPongsSent int threshold, @MaxTTL int maxTtl,
       @PongExpireTime int expireTime, PingSessionModel pingModel, AdvancedPongCache pongCache,
