@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
 
+import org.protobee.compatability.CompatabilityHeader;
+import org.protobee.compatability.Headers;
 import org.protobee.gnutella.Gnutella;
 import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.SlotsController;
@@ -25,8 +27,6 @@ import org.protobee.network.ProtocolMessageWriter;
 import org.protobee.network.ProtocolMessageWriter.ConnectionOptions;
 import org.protobee.network.ProtocolMessageWriter.HandshakeOptions;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.headers.CompatabilityHeader;
-import org.protobee.protocol.headers.Headers;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
 import org.protobee.stats.DropLog;

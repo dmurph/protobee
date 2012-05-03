@@ -4,9 +4,9 @@ import org.jboss.netty.handler.codec.http.DefaultHttpRequest;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.jboss.netty.handler.codec.http.HttpRequest;
 import org.jboss.netty.handler.codec.http.HttpVersion;
+import org.protobee.compatability.ModuleCompatabilityVersionMerger;
 import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.headers.ModuleCompatabilityVersionMerger;
 
 import com.google.inject.Inject;
 

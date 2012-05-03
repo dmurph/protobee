@@ -1,8 +1,10 @@
-package org.protobee.protocol.headers;
+package org.protobee.session.handshake;
 
 import java.util.Iterator;
 import java.util.Map;
 
+import org.protobee.compatability.CompatabilityHeader;
+import org.protobee.compatability.Headers;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.session.SessionProtocolModules;

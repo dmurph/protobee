@@ -5,7 +5,7 @@ import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
 @RunWith(Suite.class)
-@SuiteClasses({VersionMergerTest.class})
+@SuiteClasses({VersionMergerTest.class, ProtocolModuleFilterTests.class, HeaderMergerTest.class})
 public class CompatabilityTestSuite {
 
 }
