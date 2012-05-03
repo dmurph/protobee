@@ -182,7 +182,7 @@ public class VersionRangeMerger {
     return result;
   }
 
-  public boolean contains(String version, VersionRange range) {
+  public boolean containsInclusive(String version, VersionRange range) {
     Preconditions.checkArgument(VersionComparator.isValidVersionString(version),
         "Not a valid version string");
     Preconditions.checkNotNull(range);

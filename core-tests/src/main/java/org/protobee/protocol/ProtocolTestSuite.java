@@ -3,11 +3,11 @@ package org.protobee.protocol;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
-import org.protobee.protocol.headers.HeaderMergerTest;
+import org.protobee.compatability.HeaderMergerTest;
 
 
 @RunWith(Suite.class)
-@SuiteClasses({HandshakeUpstreamTests.class, HeaderMergerTest.class})
+@SuiteClasses({HandshakeUpstreamTests.class})
 public class ProtocolTestSuite {
 
 }

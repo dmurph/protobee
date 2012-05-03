@@ -1,4 +1,4 @@
-package org.protobee.protocol.headers;
+package org.protobee.compatability;
 
 import java.util.Collection;
 import java.util.Map;
@@ -6,8 +6,6 @@ import java.util.Set;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
-import org.protobee.compatability.VersionRange;
-import org.protobee.compatability.VersionRangeMerger;
 import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.session.SessionProtocolModules;
