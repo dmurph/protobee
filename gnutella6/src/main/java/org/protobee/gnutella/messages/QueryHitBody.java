@@ -2,11 +2,14 @@ package org.protobee.gnutella.messages;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.protobee.gnutella.extension.GGEP;
+import org.protobee.gnutella.util.URN;
 import org.protobee.gnutella.util.VendorCode;
 
 import com.google.common.base.Preconditions;
@@ -119,6 +122,16 @@ public class QueryHitBody implements MessageBody {
 
   public byte[] getServantID() {
     return servantID;
+  }
+  
+  public URN[] getUrns(){
+    List<URN> urns = new ArrayList<URN>();
+    for (ResponseBody repsonse : hitList){
+      for (URN urn : repsonse.getHUGE().getUrns()){
+        urns.add(urn);
+      }
+    } 
+    return urns.toArray(new URN[urns.size()]);
   }
 
   @Override

@@ -54,8 +54,8 @@ public class QueryHitModule implements ProtocolModule {
     QueryGUIDRoutingPair qgrPair =
         queryHitRTManager.findRoutingForQuerys(new GUID(header.getGuid()),
             queryHitBody.getNumHits());
-    // iterate through responses and get huges --> urns
-    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getHuge().getUrns());
+    
+    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns());
 
     if (!filter.shouldAcceptQueryHitMessage(qgrPair, servantModel.getGuid(),
         queryHitBody.getServantID(), queryHash)) {
