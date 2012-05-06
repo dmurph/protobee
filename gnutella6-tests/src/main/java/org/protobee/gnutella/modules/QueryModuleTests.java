@@ -1,59 +1,27 @@
 package org.protobee.gnutella.modules;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertNotNull;
 import static org.mockito.Matchers.any;
-import static org.mockito.Matchers.argThat;
 import static org.mockito.Matchers.eq;
 import static org.mockito.Mockito.mock;
-import static org.mockito.Mockito.never;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
-import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 
 import org.junit.Test;
-import org.mockito.ArgumentMatcher;
 import org.protobee.gnutella.AbstractGnutellaTest;
-import org.protobee.gnutella.GnutellaServantModel;
-import org.protobee.gnutella.SlotsController;
-import org.protobee.gnutella.constants.MaxTTL;
-import org.protobee.gnutella.extension.GGEP;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
-import org.protobee.gnutella.messages.PingBody;
-import org.protobee.gnutella.messages.PongBody;
-import org.protobee.gnutella.modules.ping.AdvancedPongCache;
-import org.protobee.gnutella.modules.ping.AdvancedPongCache.CacheEntry;
-import org.protobee.gnutella.modules.ping.MaxPongsSent;
 import org.protobee.gnutella.modules.ping.PingModule;
 import org.protobee.gnutella.modules.ping.PingSessionModel;
-import org.protobee.gnutella.modules.ping.PongExpireTime;
 import org.protobee.gnutella.session.MessageReceivedEvent;
-import org.protobee.gnutella.util.GUID;
-import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
-import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.ProtocolMessageWriter;
-import org.protobee.network.ProtocolMessageWriter.ConnectionOptions;
-import org.protobee.network.ProtocolMessageWriter.HandshakeOptions;
-import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
-import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
 import org.protobee.stats.DropLog;
 import org.protobee.util.Clock;
 
-import com.google.common.collect.Lists;
-import com.google.common.collect.Maps;
-import com.google.common.collect.Sets;
-import com.google.common.net.InetAddresses;
 import com.google.inject.AbstractModule;
 import com.google.inject.Injector;
 
@@ -66,7 +34,6 @@ public class QueryModuleTests extends AbstractGnutellaTest {
   public void testDropOnFastRepeat() {
     final DropLog dropLog = mock(DropLog.class);
     final Clock clock = mock(Clock.class);
-    final ProtocolMessageWriter writer = mock(ProtocolMessageWriter.class);
 
     final int expireTime = 6000;
     final long firstAcceptTime = 3000;
@@ -74,10 +41,9 @@ public class QueryModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(writer);
+        bind(ProtocolMessageWriter.class).toInstance(mock(ProtocolMessageWriter.class));
         bind(DropLog.class).toInstance(dropLog);
         bind(Clock.class).toInstance(clock);
-        bindConstant().annotatedWith(PongExpireTime.class).to(expireTime);
       }
     });
     when(clock.currentTimeMillis()).thenReturn(firstTime);
@@ -89,9 +55,10 @@ public class QueryModuleTests extends AbstractGnutellaTest {
 
     identity.enterScope();
     session.enterScope();
+    
+    
     PingSessionModel pingModel = inj.getInstance(PingSessionModel.class);
     pingModel.setAcceptTime(firstAcceptTime);
-
 
     PingModule module = inj.getInstance(PingModule.class);
 
@@ -100,6 +67,7 @@ public class QueryModuleTests extends AbstractGnutellaTest {
             (byte) 0), null);
     module.messageReceived(new MessageReceivedEvent(null, message));
 
+    
     session.exitScope();
     identity.exitScope();
 

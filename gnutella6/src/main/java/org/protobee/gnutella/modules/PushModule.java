@@ -3,14 +3,18 @@ package org.protobee.gnutella.modules;
 import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
+import org.protobee.gnutella.messages.MessageBodyFactory;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.PushBody;
 import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.PushRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.guice.SessionScope;
+import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ProtocolMessageWriter;
+import org.protobee.protocol.Protocol;
+import org.protobee.stats.DropLog;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -24,19 +28,26 @@ public class PushModule implements ProtocolModule {
   private final ProtocolMessageWriter messageDispatcher;
   private final MessageHeader.Factory headerFactory;
   private final GnutellaServantModel servantModel;
+  private final NetworkIdentity identity;
+  private final Protocol gnutella;
+  
+  private final DropLog dropLog;
 
   @Inject
   public PushModule(RequestFilter filter, MessageHeader.Factory headerFactory,
       PushRoutingTableManager pushRTManager, ProtocolMessageWriter messageDispatcher,
-      GnutellaServantModel servantModel) {
+      GnutellaServantModel servantModel, DropLog dropLog, NetworkIdentity identity,
+      Protocol gnutella) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.messageDispatcher = messageDispatcher;
     this.headerFactory = headerFactory;
     this.servantModel = servantModel;
+    this.dropLog = dropLog;
+    this.identity = identity;
+    this.gnutella = gnutella;
   }
 
-  // map message header to an null when originally sending query
   private void pushMessageRecieved(MessageReceivedEvent event, MessageHeader header)
       throws InvalidMessageException {
 
@@ -46,7 +57,10 @@ public class PushModule implements ProtocolModule {
       // use locally
     }
 
-    if (!filter.shouldRoutePushMessage(header.getTtl(), servantModel.getGuid())) {
+    
+    String filterOutput = (filter.shouldRoutePushMessage(header.getTtl(), servantModel.getGuid()));
+    if (!filterOutput.equals("")) {
+      dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
       return;
     }
 
