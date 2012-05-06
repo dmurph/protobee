@@ -70,7 +70,7 @@ public class QueryHitModule implements ProtocolModule {
       // if localhost, use locally
     } else {
       String filterOutput = filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl());
-      if (!filterOutput.equals("")) {
+      if (filterOutput != null) {
         dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
         return;
       }

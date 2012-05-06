@@ -3,7 +3,6 @@ package org.protobee.gnutella.modules;
 import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
-import org.protobee.gnutella.messages.MessageBodyFactory;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.PushBody;
 import org.protobee.gnutella.routing.InvalidMessageException;
@@ -18,7 +17,6 @@ import org.protobee.stats.DropLog;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
-
 
 @SessionScope
 public class PushModule implements ProtocolModule {
@@ -59,7 +57,7 @@ public class PushModule implements ProtocolModule {
 
     
     String filterOutput = (filter.shouldRoutePushMessage(header.getTtl(), servantModel.getGuid()));
-    if (!filterOutput.equals("")) {
+    if (filterOutput != null) {
       dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
       return;
     }

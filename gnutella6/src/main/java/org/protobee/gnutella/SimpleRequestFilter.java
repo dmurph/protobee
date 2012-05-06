@@ -28,7 +28,7 @@ public class SimpleRequestFilter implements RequestFilter {
     if (qgrPair.getRoutedResultCount() >= MAX_ROUTED_QUERY_RESULTS){
       return "Query Hit not routed - routed result count to this node exceeds maximum.";
     }
-    return "";
+    return null;
   }
 
   @Override
@@ -36,7 +36,7 @@ public class SimpleRequestFilter implements RequestFilter {
     if (!pushRTManager.isRouted(serventGUID)){
       return "Push not routed - there is no routing address stored for this guid.";
     }
-    return "";
+    return null;
   }
 
 }

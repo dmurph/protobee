@@ -32,13 +32,15 @@ public class NetworkIdentityManager {
   private final Object identitiesLock = new Object();
   private final NetworkIdentityFactory identityFactory;
   private final NetworkIdentity me;
+  private final IdentityTagManager tagManager;
 
   @Inject
-  public NetworkIdentityManager(NetworkIdentityFactory identityFactory) {
+  public NetworkIdentityManager(NetworkIdentityFactory identityFactory, IdentityTagManager tagManager) {
     this.identityFactory = identityFactory;
     me = identityFactory.create();
     me.setDescription("Me");
     identities.add(me);
+    this.tagManager = tagManager;
   }
 
   public NetworkIdentity createNetworkIdentity() {
@@ -157,5 +159,9 @@ public class NetworkIdentityManager {
       identityLocationMap.put(address, identity);
       identity.setListeningAddress(protocol, address);
     }
+  }
+  
+  public boolean hasIdentity(NetworkIdentity identity){
+    return taggedIdentities.get(tagManager.getLeafKey()).contains(identity);
   }
 }
