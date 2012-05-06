@@ -4,6 +4,8 @@ import java.net.InetSocketAddress;
 import java.util.List;
 import java.util.Set;
 
+import org.protobee.compatability.CompatabilityHeader;
+import org.protobee.compatability.Headers;
 import org.protobee.gnutella.Gnutella;
 import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.SlotsController;
@@ -16,17 +18,14 @@ import org.protobee.gnutella.messages.PongBody;
 import org.protobee.gnutella.modules.ping.AdvancedPongCache.CacheEntry;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.gnutella.util.GUID;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.network.ProtocolMessageWriter;
-import org.protobee.network.ProtocolMessageWriter.ConnectionOptions;
-import org.protobee.network.ProtocolMessageWriter.HandshakeOptions;
+import org.protobee.network.ProtobeeMessageWriter;
+import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.headers.CompatabilityHeader;
-import org.protobee.protocol.headers.Headers;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
 import org.protobee.stats.DropLog;
@@ -48,7 +47,7 @@ import com.google.inject.Provider;
  */
 @Headers(required = {@CompatabilityHeader(name = "Pong-Caching", minVersion = "0.1", maxVersion = "+")}, requested = {})
 @SessionScope
-public class PingModule implements ProtocolModule {
+public class PingModule extends ProtocolModule {
 
   private final NetworkIdentityManager identityManager;
   private final IdentityTagManager tagManager;
@@ -56,7 +55,8 @@ public class PingModule implements ProtocolModule {
   private final SlotsController slots;
 
   private final NetworkIdentity identity;
-  private final ProtocolMessageWriter messageDispatcher;
+  private final SessionModel thisSession;
+  private final ProtobeeMessageWriter messageDispatcher;
   private final MessageBodyFactory bodyFactory;
   private final MessageHeader.Factory headerFactory;
   private final Protocol gnutella;
@@ -76,13 +76,13 @@ public class PingModule implements ProtocolModule {
 
   @Inject
   public PingModule(NetworkIdentityManager identityManager, IdentityTagManager tagManager,
-      NetworkIdentity identity, ProtocolMessageWriter messageDispatcher,
+      NetworkIdentity identity, ProtobeeMessageWriter messageDispatcher,
       MessageBodyFactory bodyFactory, MessageHeader.Factory headerFactory,
       @Gnutella Protocol gnutella, @MaxPongsSent int threshold, @MaxTTL int maxTtl,
       @PongExpireTime int expireTime, PingSessionModel pingModel, AdvancedPongCache pongCache,
       Clock clock, Descoper descoper, Provider<GnutellaServantModel> servantProvider,
       SessionManager sessionManager, SlotsController slots, DropLog dropLog,
-      Provider<PingSessionModel> pingModelProvider) {
+      Provider<PingSessionModel> pingModelProvider, SessionModel thisSession) {
     this.identityManager = identityManager;
     this.tagManager = tagManager;
     this.identity = identity;
@@ -102,6 +102,7 @@ public class PingModule implements ProtocolModule {
     this.slots = slots;
     this.dropLog = dropLog;
     this.pingModelProvider = pingModelProvider;
+    this.thisSession = thisSession;
   }
 
   @Subscribe
@@ -148,7 +149,16 @@ public class PingModule implements ProtocolModule {
         for (SessionModel session : sessions) {
           MessageHeader newHeader =
               headerFactory.create(new GUID().getBytes(), MessageHeader.F_PING, (byte) maxTtl);
-          messageDispatcher.write(session.getIdentity(), createMePing(newHeader));
+          thisSession.exitScope();
+          identity.exitScope();
+          try {
+            session.getIdentity().enterScope();
+            messageDispatcher.write(createMePing(newHeader), HandshakeOptions.WAIT_FOR_HANDSHAKE);
+          } finally {
+            session.getIdentity().exitScope();
+          }
+          identity.exitScope();
+          thisSession.exitScope();
         }
       }
     }
@@ -276,20 +286,26 @@ public class PingModule implements ProtocolModule {
       if (sessionModel.getIdentity() == identity) {
         continue;
       }
-      descoper.descope();
+      thisSession.exitScope();
+      identity.exitScope();
       sessionModel.enterScope();
       PingSessionModel pingModel = pingModelProvider.get();
+      sessionModel.exitScope();
       if (pingModel.getNeeded()[hops].get() > 0) {
         pingModel.getNeeded()[hops].decrementAndGet();
         GnutellaMessage newMessage =
             new GnutellaMessage(headerFactory.create(pingModel.getAcceptGuid(),
                 MessageHeader.F_PING_REPLY, (byte) 1, hops), body);
-        messageDispatcher.write(sessionModel.getIdentity(), newMessage,
-            ConnectionOptions.EXIT_IF_NO_CONNECTION, HandshakeOptions.EXIT_IF_HANDSHAKING);
+        try {
+          sessionModel.getIdentity().enterScope();
+
+          messageDispatcher.write(newMessage, HandshakeOptions.EXIT_IF_HANDSHAKING);
+        } finally {
+          sessionModel.getIdentity().exitScope();
+        }
       }
-      sessionModel.exitScope();
-      descoper.rescope();
+      identity.enterScope();
+      thisSession.enterScope();
     }
   }
-
 }

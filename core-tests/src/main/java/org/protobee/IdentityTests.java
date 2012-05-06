@@ -3,6 +3,7 @@ package org.protobee;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertSame;
 import static org.junit.Assert.assertTrue;
+import static org.mockito.Mockito.mock;
 
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
@@ -10,25 +11,24 @@ import java.util.Map;
 import java.util.Set;
 
 import org.junit.Test;
-import org.protobee.guice.IdentityScope;
-import org.protobee.guice.IdentityScopeMap;
-import org.protobee.guice.JnutellaScopes;
 import org.protobee.guice.LogModule;
+import org.protobee.guice.scopes.IdentityScope;
+import org.protobee.guice.scopes.ProtobeeScopes;
+import org.protobee.guice.scopes.ScopesGuiceModule;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.session.SessionManager;
 
 import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.ImmutableSet;
-import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
-
 
 public class IdentityTests extends AbstractTest {
 
@@ -40,8 +40,9 @@ public class IdentityTests extends AbstractTest {
       @Override
       protected void configure() {
         install(new LogModule());
+        install(new ScopesGuiceModule());
 
-        bindScope(IdentityScope.class, JnutellaScopes.IDENTITY);
+        bind(SessionManager.class).toInstance(mock(SessionManager.class));
       }
 
       @SuppressWarnings("unused")
@@ -63,13 +64,6 @@ public class IdentityTests extends AbstractTest {
       @Singleton
       public Set<Protocol> getProtocolss() {
         return ImmutableSet.of();
-      }
-
-      @SuppressWarnings("unused")
-      @Provides
-      @IdentityScopeMap
-      public Map<String, Object> createScopeMap() {
-        return Maps.newHashMap();
       }
     });
 

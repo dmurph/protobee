@@ -6,15 +6,15 @@ import java.net.SocketAddress;
 
 import org.jboss.netty.handler.codec.http.HttpMessage;
 import org.protobee.annotation.InjectLogger;
+import org.protobee.annotation.UserAgent;
+import org.protobee.events.HandshakeReceivedEvent;
+import org.protobee.events.HandshakeSendingEvent;
 import org.protobee.gnutella.Gnutella;
-import org.protobee.guice.SessionScope;
-import org.protobee.guice.UserAgent;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
-import org.protobee.session.HandshakeReceivedEvent;
-import org.protobee.session.HandshakeSendingEvent;
 import org.protobee.session.SessionModel;
 import org.slf4j.Logger;
 
@@ -25,7 +25,7 @@ import com.google.inject.Inject;
 
 
 @SessionScope
-public class HeadersModule implements ProtocolModule {
+public class HeadersModule extends ProtocolModule {
 
   @InjectLogger
   private Logger log;

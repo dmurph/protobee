@@ -11,8 +11,8 @@ import java.util.Comparator;
  * 
  */
 public class VersionComparator implements Comparator<String> {
-
-  public boolean isValidVersionString(String str) {
+  
+  public static boolean isValidVersionString(String str) {
     return str.matches("[0-9]+(\\.[0-9]+)*");
   }
   

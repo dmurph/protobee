@@ -1,24 +1,27 @@
 package org.protobee.network;
 
-import java.net.InetSocketAddress;
+import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.network.handlers.MultipleRequestReceiver;
+import org.protobee.network.handlers.SingleRequestReceiver;
+import org.protobee.protocol.Protocol;
+import org.protobee.protocol.ProtocolModel;
 import org.protobee.util.ProtocolConfigUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
 
@@ -28,80 +31,89 @@ public class ConnectionBinderImpl implements ConnectionBinder {
   @InjectLogger
   private Logger log;
   private final NetworkIdentityManager identityManager;
-  private final ChannelFactory channelFactory;
+  private final Provider<ServerBootstrap> bootstrapProvider;
   private final MultipleRequestReceiver.Factory requestMultiplexerFactory;
-  private final SingleRequestReceiver.Factory requestHandlerFactory;
-  private final JnutellaChannels channels;
+  private final Provider<SingleRequestReceiver> requestHandlerFactory;
+  private final ProtobeeChannels channels;
 
   @Inject
   public ConnectionBinderImpl(NetworkIdentityManager identityManager,
-      ChannelFactory channelFactory, MultipleRequestReceiver.Factory multiplexer,
-      SingleRequestReceiver.Factory requestHandlerFactory, JnutellaChannels channels) {
+      Provider<ServerBootstrap> bootstrapProvider, MultipleRequestReceiver.Factory multiplexer,
+      Provider<SingleRequestReceiver> requestHandlerFactory, ProtobeeChannels channels) {
     this.identityManager = identityManager;
-    this.channelFactory = channelFactory;
+    this.bootstrapProvider = bootstrapProvider;
     this.requestMultiplexerFactory = multiplexer;
     this.requestHandlerFactory = requestHandlerFactory;
     this.channels = channels;
   }
 
   @Override
-  public Channel bind(final ProtocolConfig config) {
-    Preconditions.checkNotNull(config);
+  public Channel bind(final ProtocolModel model) {
+    Preconditions.checkNotNull(model);
+
+    Protocol protocol = model.getProtocol();
 
     ChannelPipelineFactory factory = new ChannelPipelineFactory() {
       @Override
       public ChannelPipeline getPipeline() throws Exception {
-        SingleRequestReceiver handler = requestHandlerFactory.create(config);
+        SingleRequestReceiver handler;
+        try {
+          model.enterScope();
+          handler = requestHandlerFactory.get();
+        } finally {
+          model.exitScope();
+        }
         return Channels.pipeline(handler);
       }
     };
 
-    ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
-    bootstrap.setOptions(config.getNettyBootstrapOptions());
+    SocketAddress localAddress;
+    ServerBootstrap bootstrap = bootstrapProvider.get();
+    bootstrap.setOptions(model.getServerOptions());
     bootstrap.setPipelineFactory(factory);
 
-    InetSocketAddress localAddress = new InetSocketAddress(config.getPort());
-    // yes, this means our address will be a localhost address for a little bit. This should change
-    // when we get the 'Remote-IP' header for the first time
-    identityManager.setListeningAddress(identityManager.getMe(), config.get(), localAddress);
+    localAddress = model.getLocalListeningAddress();
+    NetworkIdentity me = identityManager.getMe();
+    identityManager.setListeningAddress(me, protocol, localAddress);
 
     Channel channel = bootstrap.bind(localAddress);
-    log.info("Port " + config.getPort() + " bound for protocol " + config);
-    channels.addChannel(channel, config.get());
+    log.info("Address " + localAddress + " bound for protocol " + model);
+    channels.addChannel(channel, protocol);
+
     return channel;
   }
 
   @Override
-  public Channel bind(final Set<ProtocolConfig> configs, int port) {
-    Preconditions.checkNotNull(configs);
-    Preconditions.checkArgument(port > 0, "port must be > 0");
+  public Channel bind(final Set<ProtocolModel> models, SocketAddress address) {
+    Preconditions.checkNotNull(models);
+    Preconditions.checkNotNull(address);
 
-    Map<String, Object> options = ProtocolConfigUtils.mergeNettyBindOptions(configs);
+    Map<String, Object> options = ProtocolConfigUtils.mergeNettyBindOptions(models);
 
     ChannelPipelineFactory factory = new ChannelPipelineFactory() {
       @Override
       public ChannelPipeline getPipeline() throws Exception {
-        MultipleRequestReceiver handler = requestMultiplexerFactory.create(configs);
+        MultipleRequestReceiver handler = requestMultiplexerFactory.create(models);
         return Channels.pipeline(handler);
       }
     };
 
-    ServerBootstrap bootstrap = new ServerBootstrap(channelFactory);
+    ServerBootstrap bootstrap = bootstrapProvider.get();
     bootstrap.setOptions(options);
     bootstrap.setPipelineFactory(factory);
 
-    InetSocketAddress localAddress = new InetSocketAddress(port);
-
-    // yes, this means our address will be a localhost address for a little bit. This should change
-    // when we get the 'Remote-IP' header for the first time
-    NetworkIdentity me = identityManager.getMe();
-    for (ProtocolConfig protocolConfig : configs) {
-      identityManager.setListeningAddress(me, protocolConfig.get(), localAddress);
+    for (ProtocolModel model : models) {
+      Protocol protocol = model.getProtocol();
+      NetworkIdentity me = identityManager.getMe();
+      SocketAddress listeningAddress = model.getLocalListeningAddress();
+      Preconditions.checkArgument(address.equals(listeningAddress),
+          "Listening addresses do not match.");
+      identityManager.setListeningAddress(me, protocol, address);
     }
-    Channel channel = bootstrap.bind(new InetSocketAddress(port));
-    channels.addChannel(channel, ProtocolConfigUtils.getProtocolSet(configs));
+    Channel channel = bootstrap.bind(address);
+    channels.addChannel(channel, ProtocolConfigUtils.getProtocolSetFromModels(models));
 
-    log.info("Port " + port + " bound for protocols " + configs);
+    log.info("Address " + address + " bound for protocols " + models);
     return channel;
   }
 }
