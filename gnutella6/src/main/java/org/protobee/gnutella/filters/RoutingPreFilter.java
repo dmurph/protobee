@@ -17,6 +17,6 @@ public class RoutingPreFilter implements GnutellaPreFilter {
   @Override
   public String shouldFilter(GnutellaMessage message) {
     // // TODO Auto-generated method stub IF ULTRAPEER I THINK
-    return "";
+    return null;
   }
 }

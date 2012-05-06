@@ -8,7 +8,6 @@ import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.QueryHitBody;
 import org.protobee.gnutella.routing.IdentityHash;
 import org.protobee.gnutella.routing.InvalidMessageException;
-import org.protobee.gnutella.routing.QueryGUIDRoutingPair;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.util.GUID;
 
@@ -35,38 +34,41 @@ public class QueryHitPreFilter implements GnutellaPreFilter {
     
     // check query hit message type
     if (header.getPayloadType() != MessageHeader.F_QUERY_REPLY) {
-      return "";
+      return null;
     }
     
-    // generate info
+    // generate body
     QueryHitBody queryHitBody = (QueryHitBody) message.getBody();
-    QueryGUIDRoutingPair qgrPair;
-    try {
-      qgrPair = queryHitRTManager.findRoutingForQuerys(new GUID(header.getGuid()),
-          queryHitBody.getNumHits());
-    } catch (InvalidMessageException e) {
-      return "Query Hit dropped - query guid could not be rendered from guid bytes.";
-    }
     
-    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns());
-    
-
-    // other checks
-    if (qgrPair == null){
-      return "Query Hit dropped - no query guid routing pair was found.";
+    // body check
+    if(queryHitBody.getServantID() == null){ 
+      return "Query Hit dropped - servent id cant be null.";
     }
     if (Arrays.equals(servantModel.getGuid(), queryHitBody.getServantID())){
       return "Query Hit dropped - my query response should never reach me.";
     }
+    
+    //generate queryHash
+    GUID messageGuid;
+    try {
+      messageGuid = new GUID(header.getGuid());
+    } catch (InvalidMessageException e) {
+      return "Query Hit dropped - query guid could not be rendered from guid bytes.";
+    }
+    
+    if (queryHitRTManager.hasRoutingForQuerys(messageGuid, queryHitBody.getNumHits())){
+      return "Query Hit dropped - no query guid routing pair was found.";
+    }
+    
+    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns()); 
+
+    // check queryHash
     if(Arrays.equals(queryHitBody.getServantID(), queryHash.getGuid())){
       return "Query Hit dropped - message id can't equal servent id.";
-    }
-    if(queryHitBody.getServantID() == null){ 
-      return "Query Hit dropped - servent id cant be null.";
     }
     if (queryHitRTManager.hasQueryHit(queryHash)){
       return "Query Hit dropped - it's a duplicate.";
     }
-    return "";
+    return null;
   }
 }
