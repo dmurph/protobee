@@ -13,6 +13,7 @@ import java.util.Set;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
 import org.junit.Test;
 import org.protobee.AbstractTest;
 import org.protobee.identity.NetworkIdentityManager;
@@ -67,12 +68,15 @@ public class ConnectionBinderTest extends AbstractTest {
 
   @Test
   public void testMultipleBound() {
+    ChannelFactory serverFactory = mock(ChannelFactory.class);
     int port = 10;
     SocketAddress address = new InetSocketAddress(port);
     ProtocolConfig config = mockDefaultProtocolConfig();
     ProtocolConfig config2 = mockDefaultProtocolConfig();
     when(config.getListeningAddress()).thenReturn(address);
+    when(config.getServerChannelFactory()).thenReturn(serverFactory);
     when(config2.getListeningAddress()).thenReturn(address);
+    when(config2.getServerChannelFactory()).thenReturn(serverFactory);
     Set<ProtocolConfig> configs = ImmutableSet.of(config, config2);
 
     final ProtobeeChannels channels = mock(ProtobeeChannels.class);

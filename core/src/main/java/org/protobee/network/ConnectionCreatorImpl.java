@@ -4,7 +4,6 @@ import java.net.SocketAddress;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelFuture;
 import org.jboss.netty.channel.ChannelFutureListener;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -30,7 +29,6 @@ import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
-
 @Singleton
 public class ConnectionCreatorImpl implements ConnectionCreator {
 
@@ -39,7 +37,6 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
   private final Provider<HandshakeCreator> handshakeCreator;
   private final NetworkIdentityManager identityManager;
   private final HandshakeStateBootstrapper handshakeBootstrapper;
-  private final ChannelFactory channelFactory;
   private final Provider<Channel> channelProvider;
   private final Object connectLock = new Object();
   private final ProtobeeChannels channels;
@@ -47,11 +44,10 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
   @Inject
   public ConnectionCreatorImpl(Provider<HandshakeCreator> handshakeCreator,
       NetworkIdentityManager identityManager, HandshakeStateBootstrapper handshakeBootstrapper,
-      ChannelFactory channelFactory, Provider<Channel> channelProvider, ProtobeeChannels channels) {
+      Provider<Channel> channelProvider, ProtobeeChannels channels) {
     this.handshakeCreator = handshakeCreator;
     this.identityManager = identityManager;
     this.handshakeBootstrapper = handshakeBootstrapper;
-    this.channelFactory = channelFactory;
     this.channelProvider = channelProvider;
     this.channels = channels;
   }
@@ -82,7 +78,7 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
       };
 
 
-      ClientBootstrap bootstrap = new ClientBootstrap(channelFactory);
+      ClientBootstrap bootstrap = new ClientBootstrap(protocolModel.getClientFactory());
       SocketAddress listeningAddress = protocolModel.getLocalListeningAddress();
       bootstrap.setOptions(protocolModel.getConnectionOptions());
       bootstrap.setPipelineFactory(factory);

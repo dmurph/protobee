@@ -14,6 +14,7 @@ import org.protobee.protocol.ProtocolModel;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
 import com.google.common.collect.Iterables;
+import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
@@ -29,7 +30,7 @@ public class JnutellaServantBootstrapper {
   private final Set<ProtocolModel> protocols;
 
   private final ConnectionBinder connectionBinder;
-  private final ChannelFactory channelFactory;
+  private final Set<ChannelFactory> serverChannelFactories = Sets.newHashSet();
   private final ProtobeeChannels channels;
   private final AtomicBoolean started = new AtomicBoolean(false);
   private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
@@ -37,10 +38,9 @@ public class JnutellaServantBootstrapper {
 
   @Inject
   public JnutellaServantBootstrapper(Set<ProtocolModel> protocols,
-      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels) {
+      ConnectionBinder connectionBinder, ProtobeeChannels channels) {
     this.protocols = protocols;
     this.connectionBinder = connectionBinder;
-    this.channelFactory = factory;
     this.channels = channels;
   }
 
@@ -58,6 +58,7 @@ public class JnutellaServantBootstrapper {
       }
       HashMultimap<SocketAddress, ProtocolModel> portToProtocols = HashMultimap.create();
 
+      serverChannelFactories.clear();
       try {
         for (ProtocolModel model : protocols) {
           portToProtocols.put(model.getLocalListeningAddress(), model);
@@ -67,8 +68,23 @@ public class JnutellaServantBootstrapper {
           Set<ProtocolModel> models = portToProtocols.get(address);
 
           if (models.size() == 1) {
+            ProtocolModel model = Iterables.getOnlyElement(models);
+            serverChannelFactories.add(model.getServerFactory());
             connectionBinder.bind(Iterables.getOnlyElement(models));
           } else {
+            ChannelFactory serverFactory = null;
+            for (ProtocolModel protocolModel : models) {
+              if (serverFactory == null) {
+                serverFactory = protocolModel.getServerFactory();
+                Preconditions.checkState(serverFactory != null,
+                    "Client or server channel factories were null");
+                continue;
+              }
+              Preconditions
+                  .checkState(serverFactory == protocolModel.getServerFactory(),
+                      "Protocols with the same listening address must have the same server channel factory");
+            }
+            serverChannelFactories.add(serverFactory);
             connectionBinder.bind(models, address);
           }
         }
@@ -87,7 +103,9 @@ public class JnutellaServantBootstrapper {
 
       ChannelGroupFuture future = channels.getChannels().close();
       future.awaitUninterruptibly(maxWaitMillis);
-      channelFactory.releaseExternalResources();
+      for (ChannelFactory factory : serverChannelFactories) {
+        factory.releaseExternalResources();
+      }
       channels.clear();
       shuttingDown.set(false);
     }

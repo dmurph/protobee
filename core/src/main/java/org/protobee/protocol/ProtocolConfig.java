@@ -5,6 +5,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
@@ -16,11 +17,33 @@ import com.google.common.base.Preconditions;
 import com.google.common.collect.Maps;
 import com.google.inject.Provider;
 
+/**
+ * Describes a protocol.
+ * 
+ * @author Daniel
+ */
 public abstract class ProtocolConfig implements Provider<Protocol> {
 
   private final Protocol protocol;
+  private final Provider<? extends ChannelFactory> clientChannelFactory;
+  private final Provider<? extends ChannelFactory> serverChannelFactory;
+  private final Provider<Set<ProtocolModule>> modulesProvider;
+  private final Set<Class<? extends ProtocolModule>> moduleClasses;
+  private final Provider<ChannelHandler[]> handlersProvider;
+  private final SocketAddress localAddress;
 
-  public ProtocolConfig() {
+  protected ProtocolConfig(Provider<? extends ChannelFactory> clientChannelFactory,
+      Provider<? extends ChannelFactory> serverChannelFactory,
+      Provider<Set<ProtocolModule>> modulesProvider,
+      Set<Class<? extends ProtocolModule>> moduleClasses,
+      Provider<ChannelHandler[]> handlersProvider,
+      SocketAddress localListeningAddress) {
+    this.clientChannelFactory = clientChannelFactory;
+    this.serverChannelFactory = serverChannelFactory;
+    this.modulesProvider = modulesProvider;
+    this.moduleClasses = moduleClasses;
+    this.handlersProvider = handlersProvider;
+    this.localAddress = localListeningAddress;
     this.protocol = this.getClass().getAnnotation(Protocol.class);
     Preconditions.checkNotNull(protocol, "Protocol config must be annotated with @Protocol");
   }
@@ -52,16 +75,22 @@ public abstract class ProtocolConfig implements Provider<Protocol> {
    */
   public void scopedInit() {}
 
-  public abstract Set<ProtocolModule> createProtocolModules();
+  public Set<ProtocolModule> createProtocolModules() {
+    return modulesProvider.get();
+  }
 
-  public abstract Set<Class<? extends ProtocolModule>> getModuleClasses();
+  public Set<Class<? extends ProtocolModule>> getModuleClasses() {
+    return moduleClasses;
+  }
 
   /**
    * Precondition: we are correct session and identity scope
    * 
    * @return
    */
-  public abstract ChannelHandler[] createProtocolHandlers();
+  public ChannelHandler[] createProtocolHandlers() {
+    return handlersProvider.get();
+  }
 
 
   /**
@@ -84,5 +113,15 @@ public abstract class ProtocolConfig implements Provider<Protocol> {
    * 
    * @return
    */
-  public abstract SocketAddress getListeningAddress();
+  public SocketAddress getListeningAddress() {
+    return localAddress;
+  }
+
+  public ChannelFactory getServerChannelFactory() {
+    return serverChannelFactory.get();
+  }
+
+  public ChannelFactory getClientChannelFactory() {
+    return clientChannelFactory.get();
+  }
 }

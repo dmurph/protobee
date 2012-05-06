@@ -4,6 +4,7 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.netty.channel.ChannelFactory;
 import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.guice.scopes.ProtocolScopeHolder;
 import org.protobee.guice.scopes.ScopeHolder;
@@ -28,6 +29,8 @@ public class ProtocolModel {
   private final Map<String, Object> connectionOptions;
   private final SocketAddress localListeningAddress;
   private final Set<Class<? extends ProtocolModule>> moduleClasses;
+  private final ChannelFactory clientFactory;
+  private final ChannelFactory serverFactory;
 
   @Inject
   public ProtocolModel(@ProtocolScopeHolder ScopeHolder scopeHolder, ProtocolConfig config) {
@@ -37,6 +40,8 @@ public class ProtocolModel {
     this.connectionOptions = config.getConnectionOptions();
     this.localListeningAddress = config.getListeningAddress();
     this.moduleClasses = config.getModuleClasses();
+    this.clientFactory = config.getClientChannelFactory();
+    this.serverFactory = config.getServerChannelFactory();
   }
 
   public Set<Class<? extends ProtocolModule>> getModuleClasses() {
@@ -57,6 +62,14 @@ public class ProtocolModel {
 
   public Protocol getProtocol() {
     return protocol;
+  }
+
+  public ChannelFactory getClientFactory() {
+    return clientFactory;
+  }
+
+  public ChannelFactory getServerFactory() {
+    return serverFactory;
   }
 
   public ScopeHolder getScope() {
