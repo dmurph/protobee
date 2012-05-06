@@ -10,13 +10,14 @@ import org.protobee.gnutella.routing.IdentityHash;
 import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.util.GUID;
+import org.protobee.util.PreFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 
 @Singleton
-public class QueryHitPreFilter implements GnutellaPreFilter {
+public class QueryHitPreFilter implements PreFilter<GnutellaMessage> {
 
   private final GnutellaServantModel servantModel;
   private final QueryRoutingTableManager queryHitRTManager;

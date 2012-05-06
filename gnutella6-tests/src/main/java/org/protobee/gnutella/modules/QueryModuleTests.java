@@ -16,7 +16,7 @@ import org.protobee.gnutella.modules.ping.PingModule;
 import org.protobee.gnutella.modules.ping.PingSessionModel;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.identity.NetworkIdentity;
-import org.protobee.network.ProtocolMessageWriter;
+import org.protobee.network.ProtobeeMessageWriter;
 import org.protobee.protocol.ProtocolConfig;
 import org.protobee.session.SessionModel;
 import org.protobee.stats.DropLog;
@@ -41,7 +41,7 @@ public class QueryModuleTests extends AbstractGnutellaTest {
     Injector inj = getInjector(new AbstractModule() {
       @Override
       protected void configure() {
-        bind(ProtocolMessageWriter.class).toInstance(mock(ProtocolMessageWriter.class));
+        bind(ProtobeeMessageWriter.class).toInstance(mock(ProtobeeMessageWriter.class));
         bind(DropLog.class).toInstance(dropLog);
         bind(Clock.class).toInstance(clock);
       }
