@@ -3,9 +3,10 @@ package org.protobee.session.handshake;
 import java.util.Set;
 
 import org.jboss.netty.channel.ChannelHandler;
+import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.logging.InternalLogLevel;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
 import org.protobee.network.handlers.CloseOnExceptionHandler;
-import org.protobee.network.handlers.LoggingUpstreamHandler;
 
 import com.google.common.collect.ImmutableSet;
 import com.google.inject.Inject;
@@ -23,7 +24,6 @@ public class DefaultHandshakeHandlersProvider implements Provider<Set<ChannelHan
   private final Provider<HandshakeHttpMessageEncoder> encoderFactory;
   private final Provider<SessionUpstreamHandshaker> upShakerProvider;
   private final Provider<SessionDownstreamHandshaker> downShakerProvider;
-  private final Provider<LoggingUpstreamHandler> loggingHandler;
   private final Provider<CleanupOnDisconnectHandler> cleanupHandler;
   private final Provider<CloseOnExceptionHandler> closeHandler;
 
@@ -32,22 +32,20 @@ public class DefaultHandshakeHandlersProvider implements Provider<Set<ChannelHan
       Provider<HandshakeHttpMessageEncoder> encoderFactory,
       Provider<SessionUpstreamHandshaker> upShakerProvider,
       Provider<SessionDownstreamHandshaker> downShakerProvider,
-      Provider<LoggingUpstreamHandler> loggingHandler,
       Provider<CleanupOnDisconnectHandler> cleanupHandler,
       Provider<CloseOnExceptionHandler> closeHandler) {
     this.decoderFactory = decoderFactory;
     this.encoderFactory = encoderFactory;
     this.upShakerProvider = upShakerProvider;
     this.downShakerProvider = downShakerProvider;
-    this.loggingHandler = loggingHandler;
     this.cleanupHandler = cleanupHandler;
     this.closeHandler = closeHandler;
   }
 
   @Override
   public Set<ChannelHandler> get() {
-    return ImmutableSet.<ChannelHandler>of(encoderFactory.get(), decoderFactory.get(),
-        downShakerProvider.get(), upShakerProvider.get(), loggingHandler.get(), closeHandler.get(),
+    return ImmutableSet.<ChannelHandler>of(encoderFactory.get(), decoderFactory.get(),new LoggingHandler("HandshakeLogger", InternalLogLevel.DEBUG, false),
+        downShakerProvider.get(), upShakerProvider.get(), closeHandler.get(),
         cleanupHandler.get());
   }
 }

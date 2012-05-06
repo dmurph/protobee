@@ -174,5 +174,11 @@ public class NetworkIdentity {
     public SocketAddress getSendingAddress() {
       return sendingAddress;
     }
+
+    @Override
+    public String toString() {
+      return "{ sendingAddress: " + sendingAddress + ", listeningAddress: " + listeningAddress
+          + ", currentSession: " + currentSession + "}";
+    }
   }
 }

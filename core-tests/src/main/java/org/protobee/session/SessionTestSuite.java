@@ -1,11 +1,10 @@
-package org.protobee.protocol;
+package org.protobee.session;
 
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 import org.junit.runners.Suite.SuiteClasses;
 
-
 @RunWith(Suite.class)
-@SuiteClasses({PostHandlerTest.class})
-public class ProtocolTestSuite {
+@SuiteClasses({HandshakeBootstrapperTest.class})
+public class SessionTestSuite {
 }

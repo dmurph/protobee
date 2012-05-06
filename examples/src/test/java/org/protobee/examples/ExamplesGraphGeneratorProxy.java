@@ -1,5 +1,6 @@
-package org.protobee;
+package org.protobee.examples;
 
+import org.protobee.ProtobeeGuiceModule;
 import org.protobee.examples.broadcast.BroadcastGuiceModule;
 import org.protobee.util.DependencyGraphGenerator;
 

@@ -3,6 +3,7 @@ package org.protobee.network.handlers;
 import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
+import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -39,6 +40,7 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
     // update the reader index so netty doesn't yell at us
     buffer.readerIndex(buffer.readableBytes());
     if (!data.contains("\r\n")) {
+      log.debug("didn't contain '\\r\\n' yet");
       buffer.resetReaderIndex();
       return null;
     }
@@ -52,6 +54,8 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
 
     Protocol protocol = protocolModel.getProtocol();
 
+    log.info("Using protocol " + protocolModel + " for sent header: " + header);
+
     // add our newly connected channel to the group
     channels.addChannel(channel, protocol);
 
@@ -64,8 +68,7 @@ public abstract class AbstractRequestReceiver extends FrameDecoderLE {
     // this should be the only handler we added to this pipeline
     pipeline.remove(this);
 
-    ChannelBuffer newBuffer = newCumulationBuffer(ctx, buffer.readableBytes());
-    newBuffer.writeBytes(buffer);
+    ChannelBuffer newBuffer = buffer.copy(0, buffer.writerIndex());
     return newBuffer;
   }
 

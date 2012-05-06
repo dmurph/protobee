@@ -16,6 +16,8 @@ import org.protobee.session.ProtocolSessionBootstrapper;
 import org.protobee.session.SessionModel;
 import org.protobee.session.SessionModelFactory;
 import org.protobee.session.SessionProtocolModules;
+import org.protobee.session.SessionState;
+import org.protobee.util.ProtocolUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -62,9 +64,9 @@ public class HandshakeStateBootstrapper {
   public void bootstrapSession(ProtocolModel protocolModel, NetworkIdentity identity,
       @Nullable Channel channel, ChannelPipeline pipeline) {
     Preconditions.checkNotNull(identity);
-
     Protocol protocol = protocolModel.getProtocol();
 
+    log.debug("Bootstrapping session for protocol " + protocolModel + " with identity " + identity);
     SessionModel session = null;
     try {
       protocolModel.enterScope();
@@ -77,17 +79,20 @@ public class HandshakeStateBootstrapper {
         session.getScope().putInScope(Key.get(Channel.class), channel);
       }
 
+      session.setSessionState(SessionState.HANDSHAKE_0);
+
       session.enterScope();
-      
+
       identity.registerNewSession(protocol, session);
 
       SessionProtocolModules protocolSessionModel = protocolSession.get();
 
       Set<ProtocolModule> modules = protocolSessionModel.getMutableModules();
       if (modules.size() == 0) {
-        log.info("No protocol modules for protocol: " + protocol);
+        log.info("No protocol modules for protocol: " + ProtocolUtils.toString(protocol));
       } else {
-        log.info(modules.size() + " modules available for protocol session " + protocol);
+        log.info(modules.size() + " modules available for protocol session "
+            + ProtocolUtils.toString(protocol));
         log.debug(modules.toString());
         // register modules
         EventBus bus = eventBus.get();
@@ -95,7 +100,6 @@ public class HandshakeStateBootstrapper {
           bus.register(module);
         }
       }
-
 
       // create protocol bootstrap
       session.getScope().putInScope(Key.get(ProtocolSessionBootstrapper.class),

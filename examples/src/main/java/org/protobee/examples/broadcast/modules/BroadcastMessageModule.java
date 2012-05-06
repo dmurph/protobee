@@ -62,9 +62,11 @@ public class BroadcastMessageModule extends ProtocolModule {
     session.exitScope();
     identity.exitScope();
     for (SessionModel sessionModel : sessions) {
+      if(sessionModel == session) {
+        continue;
+      }
       try {
         sessionModel.getIdentity().enterScope();
-        sessionModel.enterScope();
         BroadcastMessage sendingMessage =
             BroadcastMessage.newBuilder()
                 .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
@@ -73,7 +75,6 @@ public class BroadcastMessageModule extends ProtocolModule {
             + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
       } finally {
-        sessionModel.exitScope();
         sessionModel.getIdentity().exitScope();
       }
     }

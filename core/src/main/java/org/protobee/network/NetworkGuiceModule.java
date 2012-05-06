@@ -9,7 +9,6 @@ import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
 import org.protobee.network.handlers.CloseOnExceptionHandler;
-import org.protobee.network.handlers.LoggingUpstreamHandler;
 import org.protobee.network.handlers.MultipleRequestReceiver;
 import org.protobee.network.handlers.SingleRequestReceiver;
 
@@ -40,7 +39,6 @@ public class NetworkGuiceModule extends AbstractModule {
 
     bind(CleanupOnDisconnectHandler.class).in(SessionScope.class);
     bind(CloseOnExceptionHandler.class).in(Singleton.class);
-    bind(LoggingUpstreamHandler.class).in(Singleton.class);
   }
 
   @Provides

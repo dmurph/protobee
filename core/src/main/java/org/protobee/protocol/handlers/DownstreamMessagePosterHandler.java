@@ -57,8 +57,8 @@ public class DownstreamMessagePosterHandler extends SimpleChannelDownstreamHandl
       if (!poster.postEventForMessage(ctx, message)) {
         Preconditions.checkState(mode == FilterMode.SKIP_MISMATCHED_TYPES,
             "Writing message that doesn't match an event factory: " + message);
-        super.writeRequested(ctx, e);
       }
+      super.writeRequested(ctx, e);
     } finally {
       session.exitScope();
       identity.exitScope();
