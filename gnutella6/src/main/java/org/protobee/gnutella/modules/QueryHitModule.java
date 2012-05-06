@@ -1,6 +1,5 @@
 package org.protobee.gnutella.modules;
 
-import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
@@ -13,9 +12,12 @@ import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.gnutella.util.GUID;
 import org.protobee.guice.SessionScope;
+import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ProtocolMessageWriter;
+import org.protobee.protocol.Protocol;
+import org.protobee.stats.DropLog;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
@@ -30,20 +32,25 @@ public class QueryHitModule implements ProtocolModule {
   private final ProtocolMessageWriter messageDispatcher;
   private final NetworkIdentityManager identityManager;
   private final MessageHeader.Factory headerFactory;
-  private final GnutellaServantModel servantModel;
+  private final NetworkIdentity identity;
+  private final Protocol gnutella;
+
+  private final DropLog dropLog;
 
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager,
-      QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
-      ProtocolMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
-      GnutellaServantModel servantModel) {
+                        QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
+                        ProtocolMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
+                        DropLog dropLog, NetworkIdentity identity, Protocol gnutella) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.queryHitRTManager = queryHitRTManager;
     this.identityManager = identityManager;
     this.messageDispatcher = messageDispatcher;
     this.headerFactory = headerFactory;
-    this.servantModel = servantModel;
+    this.dropLog = dropLog;
+    this.identity = identity;
+    this.gnutella = gnutella;
   }
 
   // map message header to an null when originally sending query
@@ -53,28 +60,26 @@ public class QueryHitModule implements ProtocolModule {
     QueryHitBody queryHitBody = (QueryHitBody) event.getMessage().getBody();
     QueryGUIDRoutingPair qgrPair =
         queryHitRTManager.findRoutingForQuerys(new GUID(header.getGuid()),
-            queryHitBody.getNumHits());
-    
-    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns());
+          queryHitBody.getNumHits());
 
-    if (!filter.shouldAcceptQueryHitMessage(qgrPair, servantModel.getGuid(),
-        queryHitBody.getServantID(), queryHash)) {
-      return;
-    }
+    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns());
 
     queryHitRTManager.addQueryHit(queryHash);
 
-    if (qgrPair.getHost() == identityManager.getMe()) { // if localhost, use locally
-
+    if (qgrPair.getHost() == identityManager.getMe()) { 
+      // if localhost, use locally
     } else {
-      if (filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl())) {
-        pushRTManager.addRouting(queryHitBody.getServantID(), qgrPair.getHost());
-        MessageHeader newHeader =
-            headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
-                (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
-        messageDispatcher.write(qgrPair.getHost(), new GnutellaMessage(newHeader, event
-            .getMessage().getBody()));
+      String filterOutput = filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl());
+      if (!filterOutput.equals("")) {
+        dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
+        return;
       }
+      pushRTManager.addRouting(queryHitBody.getServantID(), qgrPair.getHost());
+      MessageHeader newHeader =
+          headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
+            (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
+      messageDispatcher.write(qgrPair.getHost(), new GnutellaMessage(newHeader, event
+        .getMessage().getBody()));
     }
   }
 
