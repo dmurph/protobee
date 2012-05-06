@@ -8,30 +8,36 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.protobee.AbstractTest;
+import org.protobee.gnutella.extension.GGEP;
+import org.protobee.gnutella.extension.HUGEExtension;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.ResponseDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;
 import org.protobee.gnutella.messages.encoding.ResponseEncoder;
-import org.protobee.gnutella.util.URN;
 
 
 public class ResponseTest extends AbstractTest {
 
   @Test
   public void testResponse() throws DecodingException, EncodingException, IOException {
-    ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
 
-    ResponseBody response = new ResponseBody((long) Integer.MAX_VALUE + 1l, 
-      (long) Integer.MAX_VALUE + 1l,"FILENAME", 
-      new URN("urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C"), null);
-    // urn -- new URN("urn:sha1:YNCKHTQCWBTRNJIV4WNAE52SJUQCZO5C")
-    ResponseEncoder encoder = injector.getInstance(ResponseEncoder.class);
-    encoder.encode(buffer, response);
+    for (HUGEExtension huge: TestUtils.getHUGEArray()){
+      for (GGEP ggep: TestUtils.getGGEPArray()){
 
-    ResponseDecoder decoder = injector.getInstance(ResponseDecoder.class);
-    ResponseBody results = decoder.decode(buffer);
+        ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
 
-    assertEquals(response, results);
+        ResponseBody response = new ResponseBody((long) Integer.MAX_VALUE + 1l, 
+          (long) Integer.MAX_VALUE + 1l,"FILENAME", huge, ggep);
+
+        ResponseEncoder encoder = injector.getInstance(ResponseEncoder.class);
+        encoder.encode(buffer, response);
+
+        ResponseDecoder decoder = injector.getInstance(ResponseDecoder.class);
+        ResponseBody results = decoder.decode(buffer);
+
+        assertEquals(response, results);
+        
+      }
+    }
   }
-  
 }

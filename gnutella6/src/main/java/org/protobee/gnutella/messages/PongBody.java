@@ -27,7 +27,7 @@ public class PongBody implements MessageBody {
     this.socketAddress = address;
     this.fileCount = fileCount;
     this.fileSizeInKB = fileSizeInKB;
-    this.ggep = ggep;
+    this.ggep = (ggep == null || ggep.isEmpty()) ? null : ggep;
   }
 
   public InetSocketAddress getSocketAddress(){

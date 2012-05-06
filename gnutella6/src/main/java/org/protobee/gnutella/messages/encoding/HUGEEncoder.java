@@ -4,34 +4,32 @@ import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.protobee.gnutella.extension.HUGEExtension;
-import org.protobee.gnutella.messages.encoding.GGEPEncoder.EncoderInput;
 import org.protobee.gnutella.util.URN;
 
+import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
 
-
 public class HUGEEncoder implements PartEncoder<HUGEExtension> {
-  private final GGEPEncoder ggepEncoder;
 
   @Inject
-  public HUGEEncoder(GGEPEncoder ggepEncoder) {
-    this.ggepEncoder = ggepEncoder;
+  public HUGEEncoder( ) {
   }
 
   @Override
   public void encode(ChannelBuffer buffer, HUGEExtension toEncode) throws EncodingException {
+    
+    Preconditions.checkArgument(toEncode != null, "encode shouldn't be called if HUGE is null");
+    
     URN[] urns = toEncode.getUrns();
-    for (int i = 0; i < urns.length; i++){
-      buffer.writeBytes(urns[i].getUrnString().getBytes(Charset.forName("UTF-8")));
-      buffer.writeByte((byte) 0x1C);
+    int count = 0;
+    
+    for (URN urn : urns){
+      buffer.writeBytes(urn.getUrnString().getBytes(Charset.forName("UTF-8")));
+      if (count != urns.length){
+        buffer.writeByte((byte) 0x1C);
+      }
+      count++;
     }
-    if (toEncode.getGGEP() == null){
-      buffer.writerIndex(buffer.writerIndex() - 1);
-    }
-    else{
-      ggepEncoder.encode(buffer, new EncoderInput(toEncode.getGGEP(), false));
-    }
-    buffer.writeByte((byte) 0x0);
   }
 }
 

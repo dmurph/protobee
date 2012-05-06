@@ -76,6 +76,24 @@ public class QueryRoutingTableManager extends GUIDRoutingTableManager {
     return returnPair;
 
   }
+  
+  public boolean hasRoutingForQuerys( GUID guid, int resultCount ) {
+
+    QueryEntry entry = (QueryEntry) ((QueryGUIDRoutingTable) this.grtable).getCurrentMap().get(guid);
+    entry = (entry == null) ? (QueryEntry) ((QueryGUIDRoutingTable) this.grtable).getLastMap().get(guid) : entry;
+
+    if (entry == null){
+      return false;
+    }
+
+    NetworkIdentity host = ((QueryGUIDRoutingTable) this.grtable).getIdToIdentityMap().get(entry.getHostId());
+    if ( host == null ) {
+      return false;
+    }
+    
+    return true;
+
+  }
 
   @Override
   protected QueryEntry createNewEntry() {

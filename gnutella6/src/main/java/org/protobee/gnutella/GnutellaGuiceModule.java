@@ -4,7 +4,10 @@ import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.protobee.gnutella.constants.GnutellaConstantsModule;
 import org.protobee.gnutella.filters.InvalidMessageFilter;
+import org.protobee.gnutella.filters.QueryHitPreFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
+import org.protobee.gnutella.filters.QueryPreFilter;
+import org.protobee.gnutella.filters.RoutingPreFilter;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.decoding.DecodingModule;
 import org.protobee.gnutella.messages.decoding.GnutellaDecoderHandler;
@@ -60,6 +63,9 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     bind(SlotsController.class).to(DefaultSlotsController.class).in(Singleton.class);
 
     addPreFilter(InvalidMessageFilter.class).in(Singleton.class);
+    addPreFilter(QueryHitPreFilter.class).in(Singleton.class);
+    addPreFilter(QueryPreFilter.class).in(Singleton.class);
+    addPreFilter(RoutingPreFilter.class).in(Singleton.class);
   }
 
   @Provides

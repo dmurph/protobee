@@ -1,5 +1,6 @@
 package org.protobee.gnutella.messages.decoding;
 
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.UnknownHostException;
 
@@ -12,9 +13,7 @@ import org.protobee.gnutella.session.ForMessageType;
 import org.protobee.util.ByteUtils;
 
 import com.google.common.base.Preconditions;
-import com.google.common.net.InetAddresses;
 import com.google.inject.Inject;
-
 
 @ForMessageType(MessageHeader.F_PUSH)
 public class PushDecoder implements MessageBodyDecoder<PushBody> {
@@ -40,7 +39,7 @@ public class PushDecoder implements MessageBodyDecoder<PushBody> {
     int port = ByteUtils.ushort2int(ByteUtils.leb2short(buffer));
     InetSocketAddress socketAddress;
     try {
-      socketAddress = new InetSocketAddress(InetAddresses.fromLittleEndianByteArray(address), port);
+      socketAddress = new InetSocketAddress(InetAddress.getByAddress(address), port);
     } catch (UnknownHostException e) {
       throw new DecodingException(e);
     }

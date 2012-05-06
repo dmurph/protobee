@@ -3,7 +3,6 @@ package org.protobee.gnutella.messages.decoding;
 import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.protobee.annotation.InjectLogger;
 import org.protobee.gnutella.extension.GGEP;
 import org.protobee.gnutella.extension.HUGEExtension;
 import org.protobee.gnutella.messages.MessageBodyFactory;
@@ -11,7 +10,6 @@ import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.QueryBody;
 import org.protobee.gnutella.session.ForMessageType;
 import org.protobee.util.ByteUtils;
-import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.inject.Inject;
@@ -22,9 +20,6 @@ public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
   private final MessageBodyFactory bodyFactory;
   private final GGEPDecoder ggepDecoder;
   private final HUGEDecoder hugeDecoder;
-
-  @InjectLogger
-  private Logger log;
   
   @Inject
   public QueryDecoder(MessageBodyFactory bodyFactory, GGEPDecoder ggepDecoder, HUGEDecoder hugeDecoder) {
@@ -55,16 +50,14 @@ public class QueryDecoder implements MessageBodyDecoder<QueryBody> {
     HUGEExtension huge = null; 
     if (tag != ((byte) 0xC3)){
       huge = hugeDecoder.decode(buffer);
-      buffer.readByte();
     }
     
     GGEP ggep = null;
-    
     if (buffer.readable()) {
+      buffer.readByte();
       ggep = ggepDecoder.decode(buffer);
     }
     
-    Preconditions.checkNotNull(ggep, "GGEP is null.");
     return bodyFactory.createQueryMessage(minSpeed, query, huge, ggep);
   }
 }

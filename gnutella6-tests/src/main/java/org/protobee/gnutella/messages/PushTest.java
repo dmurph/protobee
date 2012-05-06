@@ -11,6 +11,7 @@ import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.junit.Test;
 import org.protobee.gnutella.AbstractGnutellaTest;
+import org.protobee.gnutella.extension.GGEP;
 import org.protobee.gnutella.messages.decoding.DecodingException;
 import org.protobee.gnutella.messages.decoding.PushDecoder;
 import org.protobee.gnutella.messages.encoding.EncodingException;
@@ -22,22 +23,26 @@ public class PushTest extends AbstractGnutellaTest {
 
   @Test
   public void testPush() throws DecodingException, EncodingException, UnknownHostException, UnsupportedEncodingException {
-    
-    ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
+
     MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
     GUID guid = new GUID();
-    
-    PushBody push = factory.createPushMessage(guid.getBytes(), 
-      (long) Integer.MAX_VALUE + 1l, new InetSocketAddress(InetAddress.getLocalHost(), 
-      (int) Short.MAX_VALUE + 1), null);
 
-    PushEncoder encoder = injector.getInstance(PushEncoder.class);
-    encoder.encode(buffer, push);
+    for (GGEP ggep : TestUtils.getGGEPArray()){
 
-    PushDecoder decoder = injector.getInstance(PushDecoder.class);
-    PushBody results = decoder.decode(buffer);
+      ChannelBuffer buffer = ChannelBuffers.dynamicBuffer();
+      
+      PushBody push = factory.createPushMessage(guid.getBytes(), 
+        (long) Integer.MAX_VALUE + 1l, new InetSocketAddress(InetAddress.getLocalHost(), 
+          (int) Short.MAX_VALUE + 1), ggep);
 
-    assertEquals(push, results);
+      PushEncoder encoder = injector.getInstance(PushEncoder.class);
+      encoder.encode(buffer, push);
+
+      PushDecoder decoder = injector.getInstance(PushDecoder.class);
+      PushBody results = decoder.decode(buffer);
+
+      assertEquals(push, results);
+    }
   }
 
 }

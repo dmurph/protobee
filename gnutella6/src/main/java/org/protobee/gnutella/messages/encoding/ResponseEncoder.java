@@ -12,10 +12,12 @@ import com.google.inject.Inject;
 
 public class ResponseEncoder implements PartEncoder<ResponseBody> {
   private final GGEPEncoder ggepEncoder;
+  private final HUGEEncoder hugeEncoder;
 
   @Inject
-  public ResponseEncoder(GGEPEncoder ggepEncoder) {
+  public ResponseEncoder(GGEPEncoder ggepEncoder, HUGEEncoder hugeEncoder) {
     this.ggepEncoder = ggepEncoder;
+    this.hugeEncoder = hugeEncoder;
   }
 
   public void encode(ChannelBuffer buffer, ResponseBody toEncode) throws EncodingException {
@@ -26,8 +28,8 @@ public class ResponseEncoder implements PartEncoder<ResponseBody> {
 
     buffer.writeByte((byte) 0x0);
 
-    if (toEncode.getURN() != null) {
-      buffer.writeBytes(toEncode.getURN().getUrnString().getBytes(Charset.forName("UTF-8")));
+    if (toEncode.getHUGE() != null) {
+      hugeEncoder.encode(buffer, toEncode.getHUGE());
       buffer.writeByte((byte) 0x1C);
     }
 

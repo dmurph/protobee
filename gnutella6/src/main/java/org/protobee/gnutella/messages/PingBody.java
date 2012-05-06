@@ -26,18 +26,18 @@ public class PingBody implements MessageBody {
   /** If we support incoming TLS. */
   public static final byte SCP_TLS = 0x2;
 
-  private final GGEP ggepBlock;
+  private final GGEP ggep;
 
   @InjectLogger
   private Logger log;
 
   @AssistedInject
-  public PingBody(@Nullable @Assisted("ggep") GGEP ggepBlock) {
-    this.ggepBlock = ggepBlock;
+  public PingBody(@Nullable @Assisted("ggep") GGEP ggep) {
+    this.ggep = (ggep == null || ggep.isEmpty()) ? null : ggep;
   }
 
   public GGEP getGgep() {
-    return ggepBlock;
+    return ggep;
   }
 
   @Override
@@ -59,14 +59,16 @@ public class PingBody implements MessageBody {
    * Marks this ping request as requesting a pong carrying an ip:port info.
    */
   public void addIPRequest() {
-    ggepBlock.put(GGEPKeys.GGEP_HEADER_IPPORT);
+    if (ggep != null) {
+      ggep.put(GGEPKeys.GGEP_HEADER_IPPORT);
+    }
   }
 
   /**
    * Determines if this PingRequest has the 'supports cached pongs' marking.
    */
   public boolean supportsCachedPongs() {
-    return ggepBlock.hasKey(GGEPKeys.GGEP_HEADER_SUPPORT_CACHE_PONGS);
+    return (ggep == null) ? false : ggep.hasKey(GGEPKeys.GGEP_HEADER_SUPPORT_CACHE_PONGS);
   }
 
   /**
@@ -74,9 +76,10 @@ public class PingBody implements MessageBody {
    * byte[] of some size is returned.
    */
   public byte[] getSupportsCachedPongData() {
-    if (ggepBlock.hasKey(GGEPKeys.GGEP_HEADER_SUPPORT_CACHE_PONGS)) {
+    if (ggep == null) { return null; }
+    if (ggep.hasKey(GGEPKeys.GGEP_HEADER_SUPPORT_CACHE_PONGS)) {
       try {
-        return ggepBlock.getBytes(GGEPKeys.GGEP_HEADER_SUPPORT_CACHE_PONGS);
+        return ggep.getBytes(GGEPKeys.GGEP_HEADER_SUPPORT_CACHE_PONGS);
       } catch (BadGGEPPropertyException e) {
         log.error("could not ready ggep block");
         return null;
@@ -88,28 +91,28 @@ public class PingBody implements MessageBody {
   public boolean isQueryKeyRequest(MessageHeader header) {
     if (!(header.getTtl() == 0) || !(header.getHops() == 1)) return false;
 
-    return ggepBlock.hasKey(GGEPKeys.GGEP_HEADER_QUERY_KEY_SUPPORT);
+    return (ggep == null) ? false : ggep.hasKey(GGEPKeys.GGEP_HEADER_QUERY_KEY_SUPPORT);
   }
 
   /**
    * @return whether this ping wants a reply carrying IP:Port info.
    */
   public boolean requestsIP() {
-    return ggepBlock.hasKey(GGEPKeys.GGEP_HEADER_IPPORT);
+    return (ggep == null) ? false : ggep.hasKey(GGEPKeys.GGEP_HEADER_IPPORT);
   }
 
   /**
    * @return whether this ping wants a reply carrying DHT IPP info
    */
   public boolean requestsDHTIPP() {
-    return ggepBlock.hasKey(GGEPKeys.GGEP_HEADER_DHT_IPPORTS);
+    return (ggep == null) ? false : ggep.hasKey(GGEPKeys.GGEP_HEADER_DHT_IPPORTS);
   }
 
   @Override
   public int hashCode() {
     final int prime = 31;
     int result = 1;
-    result = prime * result + ((ggepBlock == null) ? 0 : ggepBlock.hashCode());
+    result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
     return result;
   }
 
@@ -119,9 +122,9 @@ public class PingBody implements MessageBody {
     if (obj == null) return false;
     if (getClass() != obj.getClass()) return false;
     PingBody other = (PingBody) obj;
-    if (ggepBlock == null) {
-      if (other.ggepBlock != null) return false;
-    } else if (!ggepBlock.equals(other.ggepBlock)) return false;
+    if (ggep == null) {
+      if (other.ggep != null) return false;
+    } else if (!ggep.equals(other.ggep)) return false;
     return true;
   }
 }

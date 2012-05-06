@@ -1,9 +1,7 @@
 package org.protobee.gnutella.modules;
 
 import org.protobee.compatability.Headers;
-import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.MessageHeader;
-import org.protobee.gnutella.messages.QueryBody;
 import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
@@ -18,21 +16,16 @@ import com.google.inject.Inject;
 @SessionScope
 public class QueryModule extends ProtocolModule {
 
-  private final RequestFilter filter;
   private final NetworkIdentity identity;
   private final QueryRoutingTableManager queryRTManager;
 
   @Inject
-  public QueryModule(RequestFilter filter, NetworkIdentity identity,
-                     QueryRoutingTableManager queryRTManager) {
-    this.filter = filter;
+  public QueryModule(NetworkIdentity identity, QueryRoutingTableManager queryRTManager) {
     this.queryRTManager = queryRTManager;
     this.identity = identity;
   }
 
   private void queryMessageRecieved(MessageReceivedEvent event, MessageHeader header) throws InvalidMessageException {
-
-    if (!filter.shouldAcceptQueryMessage( header.getGuid(), header.getHops(), (QueryBody) event.getMessage().getBody())) { return; }
 
     queryRTManager.addRouting(header.getGuid(), identity);
 

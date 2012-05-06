@@ -30,7 +30,7 @@ public class PushBody implements MessageBody {
     this.servantID = servantID;
     this.index = index;
     this.socketAddress = socketAddress;
-    this.ggep = ggep;
+    this.ggep = (ggep == null || ggep.isEmpty()) ? null : ggep;
   }
 
   public byte[] getServantID() {

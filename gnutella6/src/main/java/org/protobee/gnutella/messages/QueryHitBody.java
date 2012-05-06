@@ -2,12 +2,14 @@ package org.protobee.gnutella.messages;
 
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 import javax.annotation.Nullable;
 
 import org.protobee.gnutella.extension.GGEP;
-import org.protobee.gnutella.extension.HUGEExtension;
+import org.protobee.gnutella.util.URN;
 import org.protobee.gnutella.util.VendorCode;
 
 import com.google.common.base.Preconditions;
@@ -29,7 +31,6 @@ public class QueryHitBody implements MessageBody {
   private byte[] xmlBytes;
   private byte[] privateArea2;
   private byte[] servantID;
-  private HUGEExtension huge;
 
   // xmlBytes should be stored in GGEP - set to a constant for now
   @AssistedInject
@@ -45,8 +46,10 @@ public class QueryHitBody implements MessageBody {
     }
     Preconditions.checkArgument(hitList.length < 256, "Histlist has too many hits. numHits="+hitList.length+". Only 255 are allowed.");
 
+    this.ggep = (ggep == null || ggep.isEmpty()) ? null : ggep;
+    
     // if ggep and huge will print out zero bytes, put concatenate private areas 1 and 2
-    if ((ggep == null || ggep.getHeaders().size() == 0 )  && privateArea2.length > 0){
+    if ( this.ggep == null  && privateArea2.length > 0 ){
       this.privateArea1 = new byte[privateArea1.length + privateArea2.length];
       System.arraycopy(privateArea1, 0, this.privateArea1, 0, privateArea1.length);
       System.arraycopy(privateArea2, 0, this.privateArea1, privateArea1.length, privateArea2.length);
@@ -62,15 +65,11 @@ public class QueryHitBody implements MessageBody {
     this.speed = speed;
     this.hitList = hitList;
     this.xmlBytes = Arrays.copyOfRange(xmlBytes, 0, XML_MAX_SIZE-1); // truncate xml if required
-    this.xmlBytes = new byte[4]; // filler for now until ggep is settled
+    // TODO: xmlBytes is filler for now until ggep is settled
+    this.xmlBytes = new byte[4]; 
     this.eqhd = new EQHDBody(vendorCode, (short) this.xmlBytes.length, flags, controls); // length guaranteed to be short due to xml_max_size
-    this.ggep = ggep;
     this.servantID = servantID;
 
-  }
-
-  public HUGEExtension getHuge(){
-    return huge;
   }
   
   public static int getXmlMaxSize() {
@@ -124,6 +123,16 @@ public class QueryHitBody implements MessageBody {
   public byte[] getServantID() {
     return servantID;
   }
+  
+  public URN[] getUrns(){
+    List<URN> urns = new ArrayList<URN>();
+    for (ResponseBody repsonse : hitList){
+      for (URN urn : repsonse.getHUGE().getUrns()){
+        urns.add(urn);
+      }
+    } 
+    return urns.toArray(new URN[urns.size()]);
+  }
 
   @Override
   public int hashCode() {
@@ -132,7 +141,6 @@ public class QueryHitBody implements MessageBody {
     result = prime * result + ((eqhd == null) ? 0 : eqhd.hashCode());
     result = prime * result + ((ggep == null) ? 0 : ggep.hashCode());
     result = prime * result + Arrays.hashCode(hitList);
-    result = prime * result + ((huge == null) ? 0 : huge.hashCode());
     result = prime * result + numHits;
     result = prime * result + Arrays.hashCode(privateArea1);
     result = prime * result + Arrays.hashCode(privateArea2);
@@ -156,9 +164,6 @@ public class QueryHitBody implements MessageBody {
       if (other.ggep != null) return false;
     } else if (!ggep.equals(other.ggep)) return false;
     if (!Arrays.equals(hitList, other.hitList)) return false;
-    if (huge == null) {
-      if (other.huge != null) return false;
-    } else if (!huge.equals(other.huge)) return false;
     if (numHits != other.numHits) return false;
     if (!Arrays.equals(privateArea1, other.privateArea1)) return false;
     if (!Arrays.equals(privateArea2, other.privateArea2)) return false;

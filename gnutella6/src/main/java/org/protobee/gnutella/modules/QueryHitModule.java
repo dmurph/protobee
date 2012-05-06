@@ -1,7 +1,6 @@
 package org.protobee.gnutella.modules;
 
 import org.protobee.compatability.Headers;
-import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
@@ -18,6 +17,8 @@ import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ProtobeeMessageWriter;
+import org.protobee.protocol.Protocol;
+import org.protobee.stats.DropLog;
 import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
 import org.protobee.session.SessionModel;
 
@@ -34,15 +35,19 @@ public class QueryHitModule extends ProtocolModule {
   private final ProtobeeMessageWriter messageDispatcher;
   private final NetworkIdentityManager identityManager;
   private final MessageHeader.Factory headerFactory;
-  private final GnutellaServantModel servantModel;
+  private final NetworkIdentity identity;
+  private final Protocol gnutella;
+
+  private final DropLog dropLog;
 
   private final SessionModel session;
   private final NetworkIdentity identity;
 
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager,
-      QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
+                        QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
       ProtobeeMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
+                        DropLog dropLog, 
       GnutellaServantModel servantModel, SessionModel session, NetworkIdentity identity) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
@@ -50,9 +55,10 @@ public class QueryHitModule extends ProtocolModule {
     this.identityManager = identityManager;
     this.messageDispatcher = messageDispatcher;
     this.headerFactory = headerFactory;
-    this.servantModel = servantModel;
-    this.session = session;
+    this.dropLog = dropLog;
     this.identity = identity;
+    this.gnutella = gnutella;
+    this.session = session;
   }
 
   // map message header to an null when originally sending query
@@ -62,24 +68,24 @@ public class QueryHitModule extends ProtocolModule {
     QueryHitBody queryHitBody = (QueryHitBody) event.getMessage().getBody();
     QueryGUIDRoutingPair qgrPair =
         queryHitRTManager.findRoutingForQuerys(new GUID(header.getGuid()),
-            queryHitBody.getNumHits());
-    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getHuge().getUrns());
+          queryHitBody.getNumHits());
 
-    if (!filter.shouldAcceptQueryHitMessage(qgrPair, servantModel.getGuid(),
-        queryHitBody.getServantID(), queryHash)) {
-      return;
-    }
+    IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns());
 
     queryHitRTManager.addQueryHit(queryHash);
 
-    if (qgrPair.getHost() == identityManager.getMe()) { // if localhost, use locally
-
+    if (qgrPair.getHost() == identityManager.getMe()) { 
+      // if localhost, use locally
     } else {
-      if (filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl())) {
-        pushRTManager.addRouting(queryHitBody.getServantID(), qgrPair.getHost());
-        MessageHeader newHeader =
-            headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
-                (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
+      String filterOutput = filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl());
+      if (filterOutput != null) {
+        dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
+        return;
+      }
+      pushRTManager.addRouting(queryHitBody.getServantID(), qgrPair.getHost());
+      MessageHeader newHeader =
+          headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
+            (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
         session.exitScope();
         identity.exitScope();
         try {
@@ -89,7 +95,6 @@ public class QueryHitModule extends ProtocolModule {
         } finally {
           qgrPair.getHost().exitScope();
         }
-      }
     }
   }
 
