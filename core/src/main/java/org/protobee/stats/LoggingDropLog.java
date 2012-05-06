@@ -23,7 +23,7 @@ public class LoggingDropLog implements DropLog {
 
   @Override
   public void connectionDisconnected(SocketAddress address, Protocol protocol) {
-    log.info("Connection disconneted: { address: " + address + ", protocol: " + protocol + "}");
+    log.info("Connection disconnected: { address: " + address + ", protocol: " + protocol + "}");
   }
 
   @Override

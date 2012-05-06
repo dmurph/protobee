@@ -216,7 +216,11 @@ public class ProtobeeMessageWriterImpl implements ProtobeeMessageWriter {
     Preconditions.checkNotNull(channel, "Channel address is null");
     Preconditions.checkNotNull(message, "Message is null");
     Preconditions.checkNotNull(address, "Remote address is null");
-    log.debug("Writing object '" + message + "' to address " + address);
-    return Channels.write(channel, message, address);
+    log.debug("Writing object [" + message + "] to address " + address);
+    Descoper descoper = descoperProvider.get();
+    descoper.descope();
+    ChannelFuture future = Channels.write(channel, message, address);
+    descoper.rescope();
+    return future;
   }
 }

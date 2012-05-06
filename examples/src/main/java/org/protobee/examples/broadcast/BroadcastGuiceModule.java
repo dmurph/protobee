@@ -5,6 +5,7 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.logging.LoggingHandler;
+import org.jboss.netty.logging.InternalLogLevel;
 import org.protobee.events.BasicMessageReceivedEvent;
 import org.protobee.events.BasicMessageSendingEvent;
 import org.protobee.examples.broadcast.constants.BroadcastConstantsGuiceModule;
@@ -54,7 +55,7 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
   public ChannelHandler[] getProtocolHandlers(EventBus eventBus, ProtobufEncoder encoder,
       DownstreamMessagePosterHandler.Factory writerFactory,
       UpstreamMessagePosterHandler.Factory readerFactory, CleanupOnDisconnectHandler cleanup,
-      CloseOnExceptionHandler closeOnException, LoggingHandler logging) {
+      CloseOnExceptionHandler closeOnException) {
     ChannelMessagePoster writerPoster =
         new ChannelMessagePoster(
             Sets.<PosterEventFactory<?>>newHashSet(new PosterEventFactory<BroadcastMessage>(
@@ -76,9 +77,9 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
             }), eventBus);
 
     return new ChannelHandler[] {encoder,
-        new ProtobufDecoder(BroadcastMessage.getDefaultInstance()),
+        new ProtobufDecoder(BroadcastMessage.getDefaultInstance()), new LoggingHandler("org.protobee.examples.broadcast.BroadcastLoggingHandler", InternalLogLevel.DEBUG, false),
         writerFactory.create(writerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE),
-        readerFactory.create(readerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE), logging,
+        readerFactory.create(readerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE), 
         closeOnException, cleanup};
   }
 

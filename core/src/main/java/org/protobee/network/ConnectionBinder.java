@@ -4,9 +4,7 @@ import java.net.SocketAddress;
 import java.util.Set;
 
 import org.jboss.netty.channel.Channel;
-import org.jboss.netty.channel.ChannelFactory;
 import org.protobee.protocol.ProtocolModel;
-
 
 /**
  * Class for binding connections on servant startup

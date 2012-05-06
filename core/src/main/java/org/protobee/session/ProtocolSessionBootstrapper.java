@@ -43,14 +43,14 @@ public class ProtocolSessionBootstrapper {
    */
   public void bootstrapProtocolPipeline(ChannelPipeline pipeline, EventBus eventBus,
       SessionModel model, ChannelHandlerContext context) {
-    // add new handlers
-    for (ChannelHandler handler : handlersProvider.get()) {
-      pipeline.addLast(handler.toString(), handler);
-    }
     // remove handshaker handlers
     Set<ChannelHandler> handlersToRemove = handshakeHandlersToRemove.get();
     for (ChannelHandler handler : handlersToRemove) {
       pipeline.remove(handler);
+    }
+    // add new handlers
+    for (ChannelHandler handler : handlersProvider.get()) {
+      pipeline.addLast(handler.toString(), handler);
     }
     ChannelFuture handshake = handshakeComplete.get();
     handshake.setSuccess();

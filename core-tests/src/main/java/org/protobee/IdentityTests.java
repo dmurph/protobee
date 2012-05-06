@@ -12,8 +12,6 @@ import java.util.Set;
 
 import org.junit.Test;
 import org.protobee.guice.LogModule;
-import org.protobee.guice.scopes.IdentityScope;
-import org.protobee.guice.scopes.ProtobeeScopes;
 import org.protobee.guice.scopes.ScopesGuiceModule;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
