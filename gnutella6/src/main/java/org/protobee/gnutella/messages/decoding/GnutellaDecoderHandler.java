@@ -14,8 +14,8 @@ import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageBody;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.session.ForMessageType;
-import org.protobee.guice.SessionScope;
-import org.protobee.network.FrameDecoderLE;
+import org.protobee.guice.scopes.SessionScope;
+import org.protobee.network.handlers.FrameDecoderLE;
 import org.slf4j.Logger;
 
 import com.google.common.collect.ImmutableMap;

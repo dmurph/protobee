@@ -1,40 +1,40 @@
 package org.protobee.session;
 
-import java.util.Map;
-
-import org.protobee.guice.JnutellaScopes;
-import org.protobee.guice.SessionScope;
-import org.protobee.guice.SessionScopeMap;
+import org.protobee.guice.scopes.ScopeHolder;
+import org.protobee.guice.scopes.SessionScope;
+import org.protobee.guice.scopes.SessionScopeHolder;
 import org.protobee.identity.NetworkIdentity;
+import org.protobee.protocol.ProtocolModel;
 
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
-
-/**
- * On construction, puts itself and the network identity into it's scope map
- * 
- * @author Daniel
- */
 @SessionScope
 public class SessionModel {
 
   private final NetworkIdentity identity;
-  private final Map<String, Object> sessionScopeMap;
+  private final ScopeHolder scope;
+  private final ProtocolModel protocol;
 
   private SessionState sessionState;
 
   @Inject
-  public SessionModel(NetworkIdentity identity, 
-      @SessionScopeMap Map<String, Object> sessionScopeMap) {
+  public SessionModel(NetworkIdentity identity, @SessionScopeHolder ScopeHolder scope,
+      ProtocolModel protocol) {
     this.identity = identity;
-    this.sessionScopeMap = sessionScopeMap;
-    JnutellaScopes.putObjectInScope(Key.get(SessionModel.class), this, sessionScopeMap);
-    JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), identity, sessionScopeMap);
+    this.scope = scope;
+    this.protocol = protocol;
+
+    // in case we're subclassed, make sure we include ourself as a session model in the scope
+    scope.putInScope(Key.get(SessionModel.class), this);
   }
 
   public NetworkIdentity getIdentity() {
     return identity;
+  }
+
+  public ProtocolModel getProtocol() {
+    return protocol;
   }
 
   public SessionState getSessionState() {
@@ -45,23 +45,19 @@ public class SessionModel {
     this.sessionState = sessionState;
   }
 
-  Map<String, Object> getSessionScopeMap() {
-    return sessionScopeMap;
+  public ScopeHolder getScope() {
+    return scope;
   }
 
   public void enterScope() {
-    JnutellaScopes.enterSessionScope(sessionScopeMap);
+    scope.enterScope();
   }
 
   public boolean isInScope() {
-    return JnutellaScopes.isInSessionScope(sessionScopeMap);
-  }
-
-  public void addObjectToScope(Key<?> key, Object object) {
-    JnutellaScopes.putObjectInScope(key, object, sessionScopeMap);
+    return scope.isInScope();
   }
 
   public void exitScope() {
-    JnutellaScopes.exitSessionScope();
+    scope.exitScope();
   }
 }

@@ -1,19 +1,20 @@
 package org.protobee.gnutella.modules;
 
+import org.protobee.compatability.Headers;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.CoreRoutingTableManager;
 import org.protobee.gnutella.routing.message.RoutingBody;
 import org.protobee.gnutella.session.MessageReceivedEvent;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
-
+@Headers(required = {})
 @SessionScope
-public class RoutingModule implements ProtocolModule {
+public class RoutingModule extends ProtocolModule {
 
   private final CoreRoutingTableManager coreRTManager;
 

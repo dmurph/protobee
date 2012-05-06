@@ -1,31 +1,88 @@
 package org.protobee.protocol;
 
+import java.net.SocketAddress;
 import java.util.Map;
+import java.util.Set;
+import java.util.Map.Entry;
 
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.handler.codec.http.HttpMessageDecoder;
 import org.jboss.netty.handler.codec.http.HttpMessageEncoder;
-import org.protobee.session.ProtocolSessionModel;
+import org.jboss.netty.handler.codec.http.HttpRequestDecoder;
+import org.jboss.netty.handler.codec.http.HttpRequestEncoder;
+import org.protobee.modules.ProtocolModule;
 
+import com.google.common.base.Preconditions;
+import com.google.common.collect.Maps;
 import com.google.inject.Provider;
 
+public abstract class ProtocolConfig implements Provider<Protocol> {
 
-public interface ProtocolConfig extends Provider<Protocol> {
+  private final Protocol protocol;
+
+  public ProtocolConfig() {
+    this.protocol = this.getClass().getAnnotation(Protocol.class);
+    Preconditions.checkNotNull(protocol, "Protocol config must be annotated with @Protocol");
+  }
+
+  @Override
+  public Protocol get() {
+    return protocol;
+  }
+
+  public HttpMessageDecoder createRequestDecoder() {
+    return new HttpRequestDecoder();
+  }
+
+  public HttpMessageEncoder createRequestEncoder() {
+    return new HttpRequestEncoder();
+  }
+
+  public Map<String, Object> getMergedServerOptions() {
+    Map<String, Object> map = Maps.newHashMap();
+    map.putAll(getServerOptions());
+    for (Entry<String, Object> entry : getConnectionOptions().entrySet()) {
+      map.put("child." + entry.getKey(), entry.getValue());
+    }
+    return map;
+  }
 
   /**
-   * Precondition: we are in the session scope, but the SessionModel is not yet in the scope.
+   * Called in the corresponding protocol scope for this config when the scope is created.
+   */
+  public void scopedInit() {}
+
+  public abstract Set<ProtocolModule> createProtocolModules();
+
+  public abstract Set<Class<? extends ProtocolModule>> getModuleClasses();
+
+  /**
+   * Precondition: we are correct session and identity scope
    * 
    * @return
    */
-  ProtocolSessionModel createSessionModel();
+  public abstract ChannelHandler[] createProtocolHandlers();
 
-  ChannelHandler[] createProtocolHandlers();
 
-  HttpMessageDecoder createRequestDecoder();
+  /**
+   * Options set on the server. "child" options are generated later from
+   * {@link #getConnectionOptions()}
+   * 
+   * @return
+   */
+  public abstract Map<String, Object> getServerOptions();
 
-  HttpMessageEncoder createRequestEncoder();
+  /**
+   * Options set on connection channels.
+   * 
+   * @return
+   */
+  public abstract Map<String, Object> getConnectionOptions();
 
-  Map<String, Object> getNettyBootstrapOptions();
-  
-  int getPort();
+  /**
+   * The local address used for listening
+   * 
+   * @return
+   */
+  public abstract SocketAddress getListeningAddress();
 }

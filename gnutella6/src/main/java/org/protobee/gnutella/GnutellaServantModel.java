@@ -1,6 +1,6 @@
 package org.protobee.gnutella;
 
-import org.protobee.guice.IdentityScope;
+import org.protobee.guice.scopes.IdentityScope;
 
 @IdentityScope
 public class GnutellaServantModel {

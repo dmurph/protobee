@@ -1,7 +1,7 @@
 package org.protobee.integrity;
 
 import org.junit.Before;
-import org.protobee.guice.JnutellaModuleCombiner;
+import org.protobee.guice.ProtobeeModuleCombiner;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -13,6 +13,6 @@ public class AbstractIntegrityTest {
 
   @Before
   public void setup() {
-    injector = Guice.createInjector(JnutellaModuleCombiner.getCombinedModules());
+    injector = Guice.createInjector(ProtobeeModuleCombiner.getCombinedModules());
   }
 }

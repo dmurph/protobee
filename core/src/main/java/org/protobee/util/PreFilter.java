@@ -8,7 +8,7 @@ package org.protobee.util;
  */
 public interface PreFilter<T> {
   /**
-   * If the message should be filtered.
+   * If the message should be filtered.  Precondition: not in any scope
    * 
    * @param message
    * @return the reason the message should be filtered, or null otherwise
