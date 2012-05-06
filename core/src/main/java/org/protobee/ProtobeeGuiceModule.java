@@ -9,6 +9,7 @@ import org.jboss.netty.logging.Slf4JLoggerFactory;
 import org.protobee.annotation.UserAgent;
 import org.protobee.guice.LogModule;
 import org.protobee.guice.netty.ExecutorModule;
+import org.protobee.guice.netty.NettyGuiceModule;
 import org.protobee.guice.scopes.ScopesGuiceModule;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.NetworkGuiceModule;
@@ -36,6 +37,7 @@ public class ProtobeeGuiceModule extends AbstractModule {
     install(new ProtocolGuiceModule());
     install(new StatsGuiceModule());
     install(new SessionGuiceModule());
+    install(new NettyGuiceModule());
 
     install(new ExecutorModule(new Provider<Executor>() {
       @Override

@@ -6,6 +6,7 @@ import java.util.Set;
 
 import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.channel.Channel;
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelPipeline;
 import org.jboss.netty.channel.ChannelPipelineFactory;
 import org.jboss.netty.channel.Channels;
@@ -20,6 +21,7 @@ import org.protobee.util.ProtocolConfigUtils;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
+import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
@@ -31,20 +33,21 @@ public class ConnectionBinderImpl implements ConnectionBinder {
   @InjectLogger
   private Logger log;
   private final NetworkIdentityManager identityManager;
-  private final Provider<ServerBootstrap> bootstrapProvider;
   private final MultipleRequestReceiver.Factory requestMultiplexerFactory;
   private final Provider<SingleRequestReceiver> requestHandlerFactory;
   private final ProtobeeChannels channels;
+  private final Provider<ServerBootstrap> bootstrapProvider;
 
   @Inject
   public ConnectionBinderImpl(NetworkIdentityManager identityManager,
-      Provider<ServerBootstrap> bootstrapProvider, MultipleRequestReceiver.Factory multiplexer,
-      Provider<SingleRequestReceiver> requestHandlerFactory, ProtobeeChannels channels) {
+      MultipleRequestReceiver.Factory multiplexer,
+      Provider<SingleRequestReceiver> requestHandlerFactory, ProtobeeChannels channels,
+      Provider<ServerBootstrap> bootstrapProvider) {
     this.identityManager = identityManager;
-    this.bootstrapProvider = bootstrapProvider;
     this.requestMultiplexerFactory = multiplexer;
     this.requestHandlerFactory = requestHandlerFactory;
     this.channels = channels;
+    this.bootstrapProvider = bootstrapProvider;
   }
 
   @Override
@@ -68,7 +71,13 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     };
 
     SocketAddress localAddress;
-    ServerBootstrap bootstrap = bootstrapProvider.get();
+    ServerBootstrap bootstrap;
+    try {
+      model.enterScope();
+      bootstrap = bootstrapProvider.get();
+    } finally {
+      model.exitScope();
+    }
     bootstrap.setOptions(model.getServerOptions());
     bootstrap.setPipelineFactory(factory);
 
@@ -98,18 +107,33 @@ public class ConnectionBinderImpl implements ConnectionBinder {
       }
     };
 
-    ServerBootstrap bootstrap = bootstrapProvider.get();
-    bootstrap.setOptions(options);
-    bootstrap.setPipelineFactory(factory);
-
+    ChannelFactory serverChannelFactory = null;
     for (ProtocolModel model : models) {
       Protocol protocol = model.getProtocol();
       NetworkIdentity me = identityManager.getMe();
+      if (serverChannelFactory == null) {
+        serverChannelFactory = model.getServerFactory();
+      } else {
+        Preconditions.checkArgument(serverChannelFactory == model.getServerFactory(),
+            "Server factories are not the same.");
+      }
       SocketAddress listeningAddress = model.getLocalListeningAddress();
       Preconditions.checkArgument(address.equals(listeningAddress),
           "Listening addresses do not match.");
       identityManager.setListeningAddress(me, protocol, address);
     }
+
+    ProtocolModel model = Iterables.getFirst(models, null);
+    ServerBootstrap bootstrap;
+    try {
+      model.enterScope();
+      bootstrap = bootstrapProvider.get();
+    } finally {
+      model.exitScope();
+    }
+    bootstrap.setOptions(options);
+    bootstrap.setPipelineFactory(factory);
+
     Channel channel = bootstrap.bind(address);
     channels.addChannel(channel, ProtocolConfigUtils.getProtocolSetFromModels(models));
 

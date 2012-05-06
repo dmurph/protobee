@@ -26,13 +26,13 @@ public class ServantBootstrapTest {
   public void testSingleBind() {
     ProtocolModel model = mock(ProtocolModel.class);
     when(model.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
+    when(model.getServerFactory()).thenReturn(mock(ChannelFactory.class));
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
-    ChannelFactory channelFactory = mock(ChannelFactory.class);
     ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
     JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channelFactory, channels);
+        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channels);
 
     bootstrapper.startup();
 
@@ -41,19 +41,21 @@ public class ServantBootstrapTest {
 
   @Test
   public void testSamePort() {
+    ChannelFactory serverFactory = mock(ChannelFactory.class);
     ProtocolModel model = mock(ProtocolModel.class);
     when(model.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
+    when(model.getServerFactory()).thenReturn(serverFactory);
     ProtocolModel model2 = mock(ProtocolModel.class);
     when(model2.getLocalListeningAddress()).thenReturn(new InetSocketAddress(10));
+    when(model2.getServerFactory()).thenReturn(serverFactory);
 
     Set<ProtocolModel> models = ImmutableSet.of(model, model2);
 
     ConnectionBinder binder = mock(ConnectionBinder.class);
-    ChannelFactory channelFactory = mock(ChannelFactory.class);
     ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
     JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(models, binder, channelFactory, channels);
+        new JnutellaServantBootstrapper(models, binder, channels);
 
     bootstrapper.startup();
 
@@ -72,9 +74,10 @@ public class ServantBootstrapTest {
     ChannelGroupFuture closeFuture = mock(ChannelGroupFuture.class);
     when(channels.getChannels()).thenReturn(channelGroup);
     when(channelGroup.close()).thenReturn(closeFuture);
+    when(model.getServerFactory()).thenReturn(channelFactory);
 
     JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channelFactory, channels);
+        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channels);
 
     bootstrapper.startup();
 
