@@ -5,7 +5,7 @@ import java.net.SocketAddress;
 
 import org.junit.Before;
 import org.protobee.AbstractTest;
-import org.protobee.guice.JnutellaMainModule;
+import org.protobee.ProtobeeGuiceModule;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.protocol.Protocol;
@@ -22,11 +22,11 @@ public class AbstractGnutellaTest extends AbstractTest {
 
   @Before
   public void setup() {
-    injector = Guice.createInjector(new JnutellaMainModule(), new GnutellaGuiceModule());
+    injector = Guice.createInjector(new ProtobeeGuiceModule(), new GnutellaGuiceModule());
   }
 
   public Injector getInjector(Module overridingModule) {
-    return Guice.createInjector(Modules.override(new JnutellaMainModule(),
+    return Guice.createInjector(Modules.override(new ProtobeeGuiceModule(),
         new GnutellaGuiceModule()).with(overridingModule));
   }
 

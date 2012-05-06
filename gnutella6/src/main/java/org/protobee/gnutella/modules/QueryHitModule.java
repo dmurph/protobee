@@ -1,5 +1,6 @@
 package org.protobee.gnutella.modules;
 
+import org.protobee.compatability.Headers;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
@@ -11,25 +12,27 @@ import org.protobee.gnutella.routing.managers.PushRoutingTableManager;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
 import org.protobee.gnutella.util.GUID;
-import org.protobee.guice.SessionScope;
+import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
-import org.protobee.network.ProtocolMessageWriter;
+import org.protobee.network.ProtobeeMessageWriter;
 import org.protobee.protocol.Protocol;
 import org.protobee.stats.DropLog;
+import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
+import org.protobee.session.SessionModel;
 
 import com.google.common.eventbus.Subscribe;
 import com.google.inject.Inject;
 
-
+@Headers(required = {})
 @SessionScope
-public class QueryHitModule implements ProtocolModule {
+public class QueryHitModule extends ProtocolModule {
 
   private final RequestFilter filter;
   private final PushRoutingTableManager pushRTManager;
   private final QueryRoutingTableManager queryHitRTManager;
-  private final ProtocolMessageWriter messageDispatcher;
+  private final ProtobeeMessageWriter messageDispatcher;
   private final NetworkIdentityManager identityManager;
   private final MessageHeader.Factory headerFactory;
   private final NetworkIdentity identity;
@@ -37,11 +40,15 @@ public class QueryHitModule implements ProtocolModule {
 
   private final DropLog dropLog;
 
+  private final SessionModel session;
+  private final NetworkIdentity identity;
+
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager,
                         QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
-                        ProtocolMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
-                        DropLog dropLog, NetworkIdentity identity, Protocol gnutella) {
+      ProtobeeMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
+                        DropLog dropLog, 
+      GnutellaServantModel servantModel, SessionModel session, NetworkIdentity identity) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.queryHitRTManager = queryHitRTManager;
@@ -51,6 +58,7 @@ public class QueryHitModule implements ProtocolModule {
     this.dropLog = dropLog;
     this.identity = identity;
     this.gnutella = gnutella;
+    this.session = session;
   }
 
   // map message header to an null when originally sending query
@@ -78,8 +86,15 @@ public class QueryHitModule implements ProtocolModule {
       MessageHeader newHeader =
           headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
             (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
-      messageDispatcher.write(qgrPair.getHost(), new GnutellaMessage(newHeader, event
-        .getMessage().getBody()));
+        session.exitScope();
+        identity.exitScope();
+        try {
+          qgrPair.getHost().enterScope();
+          messageDispatcher.write(new GnutellaMessage(newHeader, event.getMessage().getBody()),
+              HandshakeOptions.WAIT_FOR_HANDSHAKE);
+        } finally {
+          qgrPair.getHost().exitScope();
+        }
     }
   }
 

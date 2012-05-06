@@ -1,13 +1,15 @@
 package org.protobee;
 
+import java.net.SocketAddress;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.group.ChannelGroupFuture;
+import org.protobee.guice.scopes.ProtobeeScopes;
 import org.protobee.network.ConnectionBinder;
-import org.protobee.network.JnutellaChannels;
-import org.protobee.protocol.ProtocolConfig;
+import org.protobee.network.ProtobeeChannels;
+import org.protobee.protocol.ProtocolModel;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.HashMultimap;
@@ -24,17 +26,18 @@ import com.google.inject.Singleton;
 @Singleton
 public class JnutellaServantBootstrapper {
 
-  private final Set<ProtocolConfig> protocols;
+  private final Set<ProtocolModel> protocols;
+
   private final ConnectionBinder connectionBinder;
   private final ChannelFactory channelFactory;
-  private final JnutellaChannels channels;
+  private final ProtobeeChannels channels;
   private final AtomicBoolean started = new AtomicBoolean(false);
   private final AtomicBoolean shuttingDown = new AtomicBoolean(false);
   private final Object lock = new Object();
 
   @Inject
-  public JnutellaServantBootstrapper(Set<ProtocolConfig> protocols,
-      ConnectionBinder connectionBinder, ChannelFactory factory, JnutellaChannels channels) {
+  public JnutellaServantBootstrapper(Set<ProtocolModel> protocols,
+      ConnectionBinder connectionBinder, ChannelFactory factory, ProtobeeChannels channels) {
     this.protocols = protocols;
     this.connectionBinder = connectionBinder;
     this.channelFactory = factory;
@@ -53,26 +56,29 @@ public class JnutellaServantBootstrapper {
         started.set(false);
         throw new IllegalStateException("We're currently shutting down the servant");
       }
-      HashMultimap<Integer, ProtocolConfig> portToProtocols = HashMultimap.create();
+      HashMultimap<SocketAddress, ProtocolModel> portToProtocols = HashMultimap.create();
 
-      for (ProtocolConfig config : protocols) {
-        portToProtocols.put(config.getPort(), config);
-      }
-
-      for (Integer port : portToProtocols.keySet()) {
-        Set<ProtocolConfig> configs = portToProtocols.get(port);
-
-        if (configs.size() == 1) {
-          connectionBinder.bind(Iterables.getOnlyElement(configs));
-        } else {
-          connectionBinder.bind(configs, port);
+      try {
+        for (ProtocolModel model : protocols) {
+          portToProtocols.put(model.getLocalListeningAddress(), model);
         }
+
+        for (SocketAddress address : portToProtocols.keySet()) {
+          Set<ProtocolModel> models = portToProtocols.get(address);
+
+          if (models.size() == 1) {
+            connectionBinder.bind(Iterables.getOnlyElement(models));
+          } else {
+            connectionBinder.bind(models, address);
+          }
+        }
+      } finally {
+        ProtobeeScopes.PROTOCOL.exitScope();
       }
     }
-
   }
 
-  public void shutdown(int maxWaitMillis) {
+  public void shutdown(long maxWaitMillis) {
     Preconditions.checkState(shuttingDown.compareAndSet(false, true),
         "Jnutella servant was already started");
     synchronized (lock) {

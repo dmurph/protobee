@@ -4,14 +4,12 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
-import org.protobee.annotation.InjectLogger;
-import org.protobee.guice.IdentityScope;
-import org.protobee.guice.IdentityScopeMap;
-import org.protobee.guice.JnutellaScopes;
+import org.protobee.guice.scopes.IdentityScope;
+import org.protobee.guice.scopes.IdentityScopeHolder;
+import org.protobee.guice.scopes.ScopeHolder;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
-import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
 import com.google.common.collect.ImmutableMap;
@@ -20,23 +18,26 @@ import com.google.common.collect.Sets;
 import com.google.inject.Inject;
 import com.google.inject.Key;
 
-
+/**
+ * An identity on the network. This class is a scope holder for it's identity scope, and also
+ * contains {@link ProtocolData} for each protocol registered in protobee.
+ * 
+ * @author Daniel
+ */
 @IdentityScope
 public class NetworkIdentity {
 
-  @InjectLogger
-  private Logger log;
   private final Map<Protocol, ProtocolData> protocolData;
-  private final Map<String, Object> identityScopeMap;
   private final Set<Object> tags = Sets.newHashSet();
+  private final ScopeHolder scope;
   private final SessionManager sessionManager;
   private String description;
 
   @Inject
-  public NetworkIdentity(Set<Protocol> protocols,
-      @IdentityScopeMap Map<String, Object> identityScopeMap, SessionManager sessions) {
+  public NetworkIdentity(Set<Protocol> protocols, SessionManager sessions,
+      @IdentityScopeHolder ScopeHolder scopeHolder) {
     this.sessionManager = sessions;
-    this.identityScopeMap = identityScopeMap;
+    this.scope = scopeHolder;
     ImmutableMap.Builder<Protocol, ProtocolData> builder = ImmutableMap.builder();
 
     for (Protocol protocol : protocols) {
@@ -45,7 +46,7 @@ public class NetworkIdentity {
     protocolData = builder.build();
     // this should happen automatically because this object is in the identity scope, but we'll keep
     // this here in case of subclasses
-    JnutellaScopes.putObjectInScope(Key.get(NetworkIdentity.class), this, identityScopeMap);
+    scope.putInScope(Key.get(NetworkIdentity.class), this);
   }
 
   public ProtocolData getProtocolData(Protocol protocol) {
@@ -89,7 +90,7 @@ public class NetworkIdentity {
     ProtocolData data = getProtocolData(protocol);
     return data.sendingAddress;
   }
-  
+
   public SocketAddress getListeningAddress(Protocol protocol) {
     ProtocolData data = getProtocolData(protocol);
     return data.listeningAddress;
@@ -122,10 +123,6 @@ public class NetworkIdentity {
     return tags.contains(tag);
   }
 
-  Map<String, Object> getIdentityScopeMap() {
-    return identityScopeMap;
-  }
-
   @Override
   public final int hashCode() {
     return super.hashCode();
@@ -141,24 +138,24 @@ public class NetworkIdentity {
 
   @Override
   public String toString() {
-    return "{ description: " + description + ", tags: " + tags.toString() + ", protocolData: "
-        + protocolData + "}";
+    return "{ description: " + description + ", tags: " + tags.toString() + ", scope: " + scope
+        + ", protocolData: " + protocolData + "}";
+  }
+
+  public ScopeHolder getScope() {
+    return scope;
   }
 
   public void enterScope() {
-    JnutellaScopes.enterIdentityScope(identityScopeMap);
+    scope.enterScope();
   }
 
   public boolean isInScope() {
-    return JnutellaScopes.isInIdentityScope(identityScopeMap);
-  }
-
-  public void addObjectToScope(Key<?> key, Object object) {
-    JnutellaScopes.putObjectInScope(key, object, identityScopeMap);
+    return scope.isInScope();
   }
 
   public void exitScope() {
-    JnutellaScopes.exitIdentityScope();
+    scope.exitScope();
   }
 
   public static class ProtocolData {
