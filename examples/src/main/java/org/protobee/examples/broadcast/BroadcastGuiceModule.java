@@ -11,6 +11,7 @@ import org.protobee.events.BasicMessageSendingEvent;
 import org.protobee.examples.broadcast.constants.BroadcastConstantsGuiceModule;
 import org.protobee.examples.broadcast.filters.InvalidMessageFilter;
 import org.protobee.examples.broadcast.modules.BroadcastMessageModule;
+import org.protobee.examples.broadcast.modules.TimeBroadcastMessageModule;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
@@ -47,6 +48,7 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
 
 
     addModuleBinding(BroadcastMessageModule.class, Broadcast.class).in(SessionScope.class);
+    addModuleBinding(TimeBroadcastMessageModule.class, Broadcast.class).in(SessionScope.class);
   }
 
 

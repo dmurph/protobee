@@ -26,6 +26,9 @@ public class ProtocolModuleFilterTests {
 
   @Headers(required = {@CompatabilityHeader(name = "a", minVersion = "2", maxVersion = "+")}, requested = {})
   private static class a2plus extends ProtocolModule {}
+  
+  @Headers(required = {}, silentExcluding={@CompatabilityHeader(name = "a", minVersion = "0.1", maxVersion = "+")})
+  private static class noa extends ProtocolModule {}
 
   @Test
   public void testLowerVersion() {
@@ -86,6 +89,20 @@ public class ProtocolModuleFilterTests {
   @Test
   public void testAboveExpandable() {
     Set<ProtocolModule> modules = Sets.newHashSet((ProtocolModule) new a2plus());
+    SessionProtocolModules pmodules = new SessionProtocolModules(modules);
+    EventBus bus = mock(EventBus.class);
+    ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);
+
+    Map<String, String> httpHeaders = Maps.newHashMap();
+    httpHeaders.put("a", "4");
+    filter.filterModules(httpHeaders);
+
+    assertEquals(1, pmodules.getMutableModules().size());
+  }
+  
+  @Test
+  public void testRemoveSilently() {
+    Set<ProtocolModule> modules = Sets.<ProtocolModule>newHashSet(new a2plus(), new noa());
     SessionProtocolModules pmodules = new SessionProtocolModules(modules);
     EventBus bus = mock(EventBus.class);
     ProtocolModuleFilter filter = new ProtocolModuleFilter(new VersionComparator(), pmodules, bus);

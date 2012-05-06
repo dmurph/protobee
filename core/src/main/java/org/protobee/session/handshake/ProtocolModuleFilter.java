@@ -5,6 +5,7 @@ import java.util.Map;
 
 import org.protobee.compatability.CompatabilityHeader;
 import org.protobee.compatability.Headers;
+import org.protobee.compatability.VersionRange;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.session.SessionProtocolModules;
@@ -12,6 +13,7 @@ import org.protobee.util.ArrayIterator;
 import org.protobee.util.CombinedIterator;
 import org.protobee.util.VersionComparator;
 
+import com.google.common.base.Preconditions;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Inject;
 
@@ -29,10 +31,15 @@ public class ProtocolModuleFilter {
   private final EventBus eventBus;
 
   @Inject
-  public ProtocolModuleFilter(VersionComparator comp, SessionProtocolModules modules, EventBus eventBus) {
+  public ProtocolModuleFilter(VersionComparator comp, SessionProtocolModules modules,
+      EventBus eventBus) {
     this.comp = comp;
     this.modules = modules;
     this.eventBus = eventBus;
+  }
+
+  public String getFilterModulesString() {
+    return modules.getMutableModules().toString();
   }
 
   public void filterModules(Map<String, String> httpHeaders) {
@@ -71,8 +78,17 @@ public class ProtocolModuleFilter {
         }
         String value = httpHeaders.get(header.name());
 
-        if (comp.compare(header.minVersion(), value) <= 0
-            || (header.maxVersion().equals("+") && comp.compare(header.maxVersion(), value) >= 0)) {
+        String minVersion = header.minVersion();
+        String maxVersion = header.maxVersion();
+        Preconditions.checkArgument(VersionComparator.isValidVersionString(minVersion),
+            "Invalid header min version" + minVersion);
+        Preconditions.checkArgument(
+            maxVersion.equals(VersionRange.PLUS)
+                || VersionComparator.isValidVersionString(maxVersion),
+            "Invalid header max version " + maxVersion);
+
+        if (comp.compare(minVersion, value) <= 0
+            && (maxVersion.equals("+") || comp.compare(maxVersion, value) >= 0)) {
           eventBus.unregister(module);
           it.remove();
           continue;

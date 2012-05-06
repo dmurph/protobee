@@ -24,8 +24,8 @@ import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 
 @SessionScope
-@Headers(required = {@CompatabilityHeader(name = "Timed-Message", maxVersion = "0.1", minVersion = "0.1")})
-public class TimedBroadcastMessageModule extends ProtocolModule {
+@Headers(required = {@CompatabilityHeader(name = "Time-Support", maxVersion = "0.1", minVersion = "0.1")})
+public class TimeBroadcastMessageModule extends ProtocolModule {
 
   @InjectLogger
   private Logger log;
@@ -36,7 +36,7 @@ public class TimedBroadcastMessageModule extends ProtocolModule {
   private final ProtobeeMessageWriter writer;
 
   @Inject
-  public TimedBroadcastMessageModule(SessionManager sessionManager, SessionModel session,
+  public TimeBroadcastMessageModule(SessionManager sessionManager, SessionModel session,
       NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer) {
     this.sessionManager = sessionManager;
     this.session = session;
@@ -54,6 +54,7 @@ public class TimedBroadcastMessageModule extends ProtocolModule {
     Header header = message.getHeader();
     int hops = header.getHops();
     int ttl = header.getTtl();
+    long time = message.getSendTimeMillis();
     ByteString id = header.getId();
 
     log.info("Received message " + message);
@@ -71,7 +72,7 @@ public class TimedBroadcastMessageModule extends ProtocolModule {
         BroadcastMessage sendingMessage =
             BroadcastMessage.newBuilder()
                 .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
-                .setMessage(message.getMessage()).build();
+                .setMessage(message.getMessage()).setSendTimeMillis(time).build();
         log.info("Sending message " + sendingMessage + " to "
             + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);

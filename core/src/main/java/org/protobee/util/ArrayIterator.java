@@ -15,7 +15,7 @@ public class ArrayIterator<T> implements Iterator<T> {
   }
 
   public T next() {
-    return array[currentIndex];
+    return array[currentIndex++];
   }
 
   public void remove() {

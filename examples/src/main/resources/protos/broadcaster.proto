@@ -8,4 +8,5 @@ option java_outer_classname = "BroadcasterProtos";
 message BroadcastMessage {
   required Header header = 1;
   optional string message = 2;
+  optional int64 sendTimeMillis = 3;
 }
