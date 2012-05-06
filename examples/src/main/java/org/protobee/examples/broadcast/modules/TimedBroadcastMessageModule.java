@@ -24,8 +24,8 @@ import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 
 @SessionScope
-@Headers(required = {}, silentExcluding={@CompatabilityHeader(name="Timed-Message", maxVersion="0.1", minVersion="0.1")})
-public class BroadcastMessageModule extends ProtocolModule {
+@Headers(required = {@CompatabilityHeader(name = "Timed-Message", maxVersion = "0.1", minVersion = "0.1")})
+public class TimedBroadcastMessageModule extends ProtocolModule {
 
   @InjectLogger
   private Logger log;
@@ -36,7 +36,7 @@ public class BroadcastMessageModule extends ProtocolModule {
   private final ProtobeeMessageWriter writer;
 
   @Inject
-  public BroadcastMessageModule(SessionManager sessionManager, SessionModel session,
+  public TimedBroadcastMessageModule(SessionManager sessionManager, SessionModel session,
       NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer) {
     this.sessionManager = sessionManager;
     this.session = session;
@@ -63,7 +63,7 @@ public class BroadcastMessageModule extends ProtocolModule {
     session.exitScope();
     identity.exitScope();
     for (SessionModel sessionModel : sessions) {
-      if(sessionModel == session) {
+      if (sessionModel == session) {
         continue;
       }
       try {
