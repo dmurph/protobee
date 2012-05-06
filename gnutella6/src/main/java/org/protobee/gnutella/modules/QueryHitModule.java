@@ -1,6 +1,7 @@
 package org.protobee.gnutella.modules;
 
 import org.protobee.compatability.Headers;
+import org.protobee.gnutella.GnutellaServantModel;
 import org.protobee.gnutella.RequestFilter;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
@@ -41,14 +42,13 @@ public class QueryHitModule extends ProtocolModule {
   private final DropLog dropLog;
 
   private final SessionModel session;
-  private final NetworkIdentity identity;
 
   @Inject
   public QueryHitModule(RequestFilter filter, PushRoutingTableManager pushRTManager,
-                        QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
+      QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager,
       ProtobeeMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
-                        DropLog dropLog, 
-      GnutellaServantModel servantModel, SessionModel session, NetworkIdentity identity) {
+      DropLog dropLog, GnutellaServantModel servantModel, SessionModel session,
+      NetworkIdentity identity, Protocol gnutella) {
     this.filter = filter;
     this.pushRTManager = pushRTManager;
     this.queryHitRTManager = queryHitRTManager;
@@ -68,33 +68,34 @@ public class QueryHitModule extends ProtocolModule {
     QueryHitBody queryHitBody = (QueryHitBody) event.getMessage().getBody();
     QueryGUIDRoutingPair qgrPair =
         queryHitRTManager.findRoutingForQuerys(new GUID(header.getGuid()),
-          queryHitBody.getNumHits());
+            queryHitBody.getNumHits());
 
     IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns());
 
     queryHitRTManager.addQueryHit(queryHash);
 
-    if (qgrPair.getHost() == identityManager.getMe()) { 
+    if (qgrPair.getHost() == identityManager.getMe()) {
       // if localhost, use locally
     } else {
       String filterOutput = filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl());
       if (filterOutput != null) {
-        dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
+        dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(),
+            filterOutput);
         return;
       }
       pushRTManager.addRouting(queryHitBody.getServantID(), qgrPair.getHost());
       MessageHeader newHeader =
           headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY,
-            (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
-        session.exitScope();
-        identity.exitScope();
-        try {
-          qgrPair.getHost().enterScope();
-          messageDispatcher.write(new GnutellaMessage(newHeader, event.getMessage().getBody()),
-              HandshakeOptions.WAIT_FOR_HANDSHAKE);
-        } finally {
-          qgrPair.getHost().exitScope();
-        }
+              (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
+      session.exitScope();
+      identity.exitScope();
+      try {
+        qgrPair.getHost().enterScope();
+        messageDispatcher.write(new GnutellaMessage(newHeader, event.getMessage().getBody()),
+            HandshakeOptions.WAIT_FOR_HANDSHAKE);
+      } finally {
+        qgrPair.getHost().exitScope();
+      }
     }
   }
 
