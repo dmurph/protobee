@@ -23,6 +23,13 @@
       <type>jar</type>
       <scope>compile</scope>
     </dependency>
+    <dependency>
+      <groupId>org.protobee</groupId>
+      <artifactId>protobee-core-tests</artifactId>
+      <version>0.0.1-SNAPSHOT</version>
+      <type>jar</type>
+      <scope>test</scope>
+    </dependency>
   </dependencies>
   <build>
     <plugins>
@@ -38,7 +45,9 @@
                 <exec executable="/usr/local/bin/protoc"
                   failifexecutionfails="false">
                   <arg value="--java_out=src/main/java" />
-                  <arg value="src/main/resources/protos/questions.proto" />
+                  <arg value="--proto_path=src/main/resources/protos/"/>
+                  <arg value="src/main/resources/protos/common.proto" />
+                  <arg value="src/main/resources/protos/broadcaster.proto" />
                 </exec>
               </target>
             </configuration>
