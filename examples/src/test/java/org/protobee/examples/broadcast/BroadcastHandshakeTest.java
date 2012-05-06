@@ -17,9 +17,24 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();
 
-    LocalNettyTester tester = new LocalNettyTester();
+    LocalNettyTester tester = createLocalNettyTester();
     tester.connect(new LocalAddress("broadcast-example"), new LocalAddress("test"));
     basicHandshake(tester);
+    tester.verifyNotClosed();
+
+    bootstrap.shutdown(1000);
+  }
+  
+  @Test
+  public void testTimedHandshake() throws Exception {
+    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+
+    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    bootstrap.startup();
+
+    LocalNettyTester tester = createLocalNettyTester();
+    tester.connect(new LocalAddress("broadcast-example"), new LocalAddress("test"));
+    timedHandshake(tester);
     tester.verifyNotClosed();
 
     bootstrap.shutdown(1000);

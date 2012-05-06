@@ -24,7 +24,7 @@ import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 
 @SessionScope
-@Headers(required = {}, silentExcluding={@CompatabilityHeader(name="Timed-Message", maxVersion="0.1", minVersion="0.1")})
+@Headers(required = {}, silentExcluding={@CompatabilityHeader(name="Time-Support", minVersion="0.1", maxVersion="+")})
 public class BroadcastMessageModule extends ProtocolModule {
 
   @InjectLogger

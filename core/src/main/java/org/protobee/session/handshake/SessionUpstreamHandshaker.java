@@ -90,6 +90,7 @@ public class SessionUpstreamHandshaker extends SimpleChannelUpstreamHandler {
       sessionModel.enterScope();
 
       if (sessionModel.getSessionState() == SessionState.HANDSHAKE_2) {
+        log.info("Resulting filtered modules: " + filter.getFilterModulesString());
         eventBus.post(new HandshakeReceivedEvent(ctx, request, null));
         bootstrapper.bootstrapProtocolPipeline(ctx.getPipeline(), eventBus, sessionModel, ctx);
         sessionModel.setSessionState(SessionState.MESSAGES);

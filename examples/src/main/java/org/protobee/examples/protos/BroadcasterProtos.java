@@ -19,6 +19,10 @@ public final class BroadcasterProtos {
     // optional string message = 2;
     boolean hasMessage();
     String getMessage();
+    
+    // optional int64 sendTimeMillis = 3;
+    boolean hasSendTimeMillis();
+    long getSendTimeMillis();
   }
   public static final class BroadcastMessage extends
       com.google.protobuf.GeneratedMessage
@@ -94,9 +98,20 @@ public final class BroadcasterProtos {
       }
     }
     
+    // optional int64 sendTimeMillis = 3;
+    public static final int SENDTIMEMILLIS_FIELD_NUMBER = 3;
+    private long sendTimeMillis_;
+    public boolean hasSendTimeMillis() {
+      return ((bitField0_ & 0x00000004) == 0x00000004);
+    }
+    public long getSendTimeMillis() {
+      return sendTimeMillis_;
+    }
+    
     private void initFields() {
       header_ = org.protobee.examples.protos.Common.Header.getDefaultInstance();
       message_ = "";
+      sendTimeMillis_ = 0L;
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -124,6 +139,9 @@ public final class BroadcasterProtos {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         output.writeBytes(2, getMessageBytes());
       }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        output.writeInt64(3, sendTimeMillis_);
+      }
       getUnknownFields().writeTo(output);
     }
     
@@ -140,6 +158,10 @@ public final class BroadcasterProtos {
       if (((bitField0_ & 0x00000002) == 0x00000002)) {
         size += com.google.protobuf.CodedOutputStream
           .computeBytesSize(2, getMessageBytes());
+      }
+      if (((bitField0_ & 0x00000004) == 0x00000004)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt64Size(3, sendTimeMillis_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -274,6 +296,8 @@ public final class BroadcasterProtos {
         bitField0_ = (bitField0_ & ~0x00000001);
         message_ = "";
         bitField0_ = (bitField0_ & ~0x00000002);
+        sendTimeMillis_ = 0L;
+        bitField0_ = (bitField0_ & ~0x00000004);
         return this;
       }
       
@@ -324,6 +348,10 @@ public final class BroadcasterProtos {
           to_bitField0_ |= 0x00000002;
         }
         result.message_ = message_;
+        if (((from_bitField0_ & 0x00000004) == 0x00000004)) {
+          to_bitField0_ |= 0x00000004;
+        }
+        result.sendTimeMillis_ = sendTimeMillis_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -345,6 +373,9 @@ public final class BroadcasterProtos {
         }
         if (other.hasMessage()) {
           setMessage(other.getMessage());
+        }
+        if (other.hasSendTimeMillis()) {
+          setSendTimeMillis(other.getSendTimeMillis());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -397,6 +428,11 @@ public final class BroadcasterProtos {
             case 18: {
               bitField0_ |= 0x00000002;
               message_ = input.readBytes();
+              break;
+            }
+            case 24: {
+              bitField0_ |= 0x00000004;
+              sendTimeMillis_ = input.readInt64();
               break;
             }
           }
@@ -531,6 +567,27 @@ public final class BroadcasterProtos {
         onChanged();
       }
       
+      // optional int64 sendTimeMillis = 3;
+      private long sendTimeMillis_ ;
+      public boolean hasSendTimeMillis() {
+        return ((bitField0_ & 0x00000004) == 0x00000004);
+      }
+      public long getSendTimeMillis() {
+        return sendTimeMillis_;
+      }
+      public Builder setSendTimeMillis(long value) {
+        bitField0_ |= 0x00000004;
+        sendTimeMillis_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearSendTimeMillis() {
+        bitField0_ = (bitField0_ & ~0x00000004);
+        sendTimeMillis_ = 0L;
+        onChanged();
+        return this;
+      }
+      
       // @@protoc_insertion_point(builder_scope:protobee.BroadcastMessage)
     }
     
@@ -557,10 +614,10 @@ public final class BroadcasterProtos {
   static {
     java.lang.String[] descriptorData = {
       "\n\021broadcaster.proto\022\010protobee\032\014common.pr" +
-      "oto\"E\n\020BroadcastMessage\022 \n\006header\030\001 \002(\0132" +
-      "\020.protobee.Header\022\017\n\007message\030\002 \001(\tB1\n\034or" +
-      "g.protobee.examples.protosB\021BroadcasterP" +
-      "rotos"
+      "oto\"]\n\020BroadcastMessage\022 \n\006header\030\001 \002(\0132" +
+      "\020.protobee.Header\022\017\n\007message\030\002 \001(\t\022\026\n\016se" +
+      "ndTimeMillis\030\003 \001(\003B1\n\034org.protobee.examp" +
+      "les.protosB\021BroadcasterProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -572,7 +629,7 @@ public final class BroadcasterProtos {
           internal_static_protobee_BroadcastMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_protobee_BroadcastMessage_descriptor,
-              new java.lang.String[] { "Header", "Message", },
+              new java.lang.String[] { "Header", "Message", "SendTimeMillis", },
               org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage.class,
               org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage.Builder.class);
           return null;

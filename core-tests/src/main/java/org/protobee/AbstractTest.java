@@ -17,6 +17,7 @@ import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityFactory;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
+import org.protobee.netty.LocalNettyTester;
 import org.protobee.plugin.PluginGuiceModule;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
@@ -41,10 +42,18 @@ import com.google.inject.util.Modules;
 public abstract class AbstractTest {
 
   protected Injector injector;
+  protected Set<LocalNettyTester> localTesters;
 
   @Before
   public void setup() {
+    localTesters = Sets.newHashSet();
     injector = Guice.createInjector(new ProtobeeGuiceModule());
+  }
+
+  public LocalNettyTester createLocalNettyTester() {
+    LocalNettyTester tester = new LocalNettyTester();
+    localTesters.add(tester);
+    return tester;
   }
 
   public Injector getInjector(Module overridingModule) {
@@ -159,6 +168,9 @@ public abstract class AbstractTest {
 
   @After
   public void freeScopes() {
+    for (LocalNettyTester tester : localTesters) {
+      tester.shutdown(1000);
+    }
     ProtobeeScopes.IDENTITY.exitScope();
     ProtobeeScopes.PROTOCOL.exitScope();
     ProtobeeScopes.SESSION.exitScope();
