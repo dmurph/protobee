@@ -6,13 +6,14 @@ import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.identity.NetworkIdentityManager;
+import org.protobee.util.PreFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 
 @Singleton
-public class QueryPreFilter implements GnutellaPreFilter {
+public class QueryPreFilter implements PreFilter<GnutellaMessage> {
 
   private final QueryRoutingTableManager queryRTManager;
   private final NetworkIdentityManager identityManager;
