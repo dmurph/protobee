@@ -7,6 +7,10 @@
     <version>0.0.1-SNAPSHOT</version>
     <relativePath>..</relativePath>
   </parent>
+  
+  <properties>
+    <test>org.protobee.CoreTestSuiteProxy</test>
+  </properties>
   <artifactId>protobee-core-tests</artifactId>
   <name>core-tests</name>
   <description>tests for the protobee core project.</description>
