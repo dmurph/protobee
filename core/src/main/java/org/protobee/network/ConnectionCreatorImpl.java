@@ -67,22 +67,17 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
         @Override
         public ChannelPipeline getPipeline() throws Exception {
           ChannelPipeline pipeline = Channels.pipeline();
-          try {
-            protocolModel.enterScope();
-            handshakeBootstrapper.bootstrapSession(protocolModel, identity, null, pipeline);
-          } finally {
-            protocolModel.exitScope();
-          }
+          handshakeBootstrapper.bootstrapSession(protocolModel, identity, null, pipeline);
           return pipeline;
         }
       };
 
 
       ClientBootstrap bootstrap = new ClientBootstrap(protocolModel.getClientFactory());
-      SocketAddress listeningAddress = protocolModel.getLocalListeningAddress();
+      // SocketAddress listeningAddress = protocolModel.getLocalListeningAddress();
       bootstrap.setOptions(protocolModel.getConnectionOptions());
       bootstrap.setPipelineFactory(factory);
-      ChannelFuture future = bootstrap.connect(listeningAddress, remoteAddress);
+      ChannelFuture future = bootstrap.connect(remoteAddress);
 
       channels.addChannel(future.getChannel(), protocol);
 
@@ -111,6 +106,8 @@ public class ConnectionCreatorImpl implements ConnectionCreator {
             protocolModel.enterScope();
             HandshakeCreator handshake = handshakeCreator.get();
             request = handshake.createHandshakeRequest(protocol, method, uri);
+            log.info("Handshake request: " + request);
+
           } finally {
             protocolModel.exitScope();
           }
