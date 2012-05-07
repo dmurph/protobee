@@ -7,9 +7,7 @@ import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.QueryHitBody;
 import org.protobee.gnutella.routing.IdentityHash;
-import org.protobee.gnutella.routing.InvalidMessageException;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
-import org.protobee.gnutella.util.GUID;
 import org.protobee.util.PreFilter;
 
 import com.google.inject.Inject;
@@ -50,17 +48,6 @@ public class QueryHitPreFilter implements PreFilter<GnutellaMessage> {
     }
     
     //generate queryHash
-    GUID messageGuid;
-    try {
-      messageGuid = new GUID(header.getGuid());
-    } catch (InvalidMessageException e) {
-      return "Query Hit dropped - query guid could not be rendered from guid bytes.";
-    }
-    
-    if (queryHitRTManager.hasRoutingForQuerys(messageGuid, queryHitBody.getNumHits())){
-      return "Query Hit dropped - no query guid routing pair was found.";
-    }
-    
     IdentityHash queryHash = new IdentityHash(header.getGuid(), queryHitBody.getUrns()); 
 
     // check queryHash

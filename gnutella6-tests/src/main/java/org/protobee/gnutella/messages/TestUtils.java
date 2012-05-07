@@ -35,15 +35,18 @@ public class TestUtils {
   }
 
   public static HUGEExtension[] getHUGEArray(){
+    HUGEExtension[] hugeArr = {null, new HUGEExtension(new URN[0]), getHUGE()};
+    return hugeArr;
+  }
+  
+  public static HUGEExtension getHUGE(){
     URN[] urns = new URN[5];
     urns[0] = new URN("urn:sha1:ANCKHTQCWBTRNJIV4WNAE52SJUQCZO5C");
     urns[1] = new URN("urn:sha1:BBCKHTQCWBTRNJIV4WNAE52SJUQCZO5F");
     urns[2] = new URN("urn:sha1:CNCKHTQABCTRNJIV4WNAE52SJUQCZO5G");
     urns[3] = new URN("urn:sha1:DNCKHTQCWBTRNJIV4WNAE52SJUQCZO5H");
     urns[4] = new URN("urn:sha1:ENCKHTQCWABCNJIV4WNAE52SJUQCZO5J");
-
-    HUGEExtension[] hugeArr = {null, new HUGEExtension(new URN[0]), new HUGEExtension(urns)};
-    return hugeArr;
+    return new HUGEExtension(urns);
   }
 
 }

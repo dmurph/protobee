@@ -5,7 +5,6 @@ import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
-import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.util.PreFilter;
 
 import com.google.inject.Inject;
@@ -16,15 +15,15 @@ import com.google.inject.Singleton;
 public class QueryPreFilter implements PreFilter<GnutellaMessage> {
 
   private final QueryRoutingTableManager queryRTManager;
-  private final NetworkIdentityManager identityManager;
   private final NetworkIdentity identity;
+  private final IdentityTagManager tagManager;
   
   @Inject
-  public QueryPreFilter(QueryRoutingTableManager queryHitRTManager, NetworkIdentityManager identityManager, 
-                        NetworkIdentity identity) {
+  public QueryPreFilter(QueryRoutingTableManager queryHitRTManager, 
+                        NetworkIdentity identity, IdentityTagManager tagManager) {
     this.queryRTManager = queryHitRTManager;
-    this.identityManager = identityManager;
     this.identity = identity;
+    this.tagManager = tagManager;
   }
 
   @Override
@@ -40,7 +39,7 @@ public class QueryPreFilter implements PreFilter<GnutellaMessage> {
       return "Query dropped - it's a duplicate.";
     }
 
-    if (header.getHops() > 2 && identityManager.hasIdentity(identity)) {
+    if (header.getHops() > 2 && identity.hasTag(tagManager.getLeafKey())) {
         return "Query dropped - it's from a leaf and has hops greater than 2.";
     }
 

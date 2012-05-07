@@ -32,6 +32,8 @@ public class QueryHitBody implements MessageBody {
   private byte[] privateArea2;
   private byte[] servantID;
 
+  public QueryHitBody(){ }
+  
   // xmlBytes should be stored in GGEP - set to a constant for now
   @AssistedInject
   public QueryHitBody( @Assisted InetSocketAddress socketAddress, @Assisted long speed,

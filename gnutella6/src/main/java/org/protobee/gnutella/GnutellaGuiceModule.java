@@ -5,15 +5,16 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.protobee.gnutella.constants.GnutellaConstantsModule;
 import org.protobee.gnutella.filters.InvalidMessageFilter;
 import org.protobee.gnutella.filters.QueryHitPreFilter;
-import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.filters.QueryPreFilter;
 import org.protobee.gnutella.filters.RoutingPreFilter;
+import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.decoding.DecodingModule;
 import org.protobee.gnutella.messages.decoding.GnutellaDecoderHandler;
 import org.protobee.gnutella.messages.encoding.EncodingModule;
 import org.protobee.gnutella.messages.encoding.GnutellaEncoderHandler;
 import org.protobee.gnutella.modules.ModulesGuiceModule;
+import org.protobee.gnutella.routing.RoutingGuiceModule;
 import org.protobee.gnutella.session.FlowControlHandler;
 import org.protobee.gnutella.session.GnutellaPrefilterHandler;
 import org.protobee.gnutella.session.MessageReceivedEvent;
@@ -44,6 +45,7 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     install(new EncodingModule());
     install(new ModulesGuiceModule());
     install(new GnutellaConstantsModule());
+    install(new RoutingGuiceModule());
 
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 

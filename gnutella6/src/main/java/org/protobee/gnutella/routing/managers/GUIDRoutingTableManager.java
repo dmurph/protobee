@@ -1,5 +1,6 @@
 package org.protobee.gnutella.routing.managers;
 
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentMap;
 
 import org.protobee.gnutella.routing.tables.GUIDRoutingTable;
@@ -11,7 +12,7 @@ import com.google.inject.Inject;
 
 public abstract class GUIDRoutingTableManager {
   protected GUIDRoutingTable grtable;
-  
+
   @Inject
   public GUIDRoutingTableManager(GUIDRoutingTable grtable) {
     this.grtable = grtable;
@@ -24,13 +25,26 @@ public abstract class GUIDRoutingTableManager {
    * @precondition guid is not in table (isRouted returned false)
    */
   public void addRouting( byte[] messageGuid, NetworkIdentity identity ) {
-    checkForSwitch();
     grtable.putInCurrentMap(messageGuid, createNewEntry(getIdForHost( identity )));
   }
 
-  // keeps guid in current table
+  public void clearLastMap(){
+    Iterator<byte[]> itr = grtable.getLastMapKeySet();
+    while (itr.hasNext()){
+      byte[] key = itr.next();
+      Entry entry = grtable.getLastMapValue(key);
+      if (!grtable.currentMapHasKey(key)){
+        NetworkIdentity identity = grtable.removefromIdtoIdentityMap(entry.getHostId());
+        grtable.removefromIdentitytoIdMap(identity);
+      }
+    }
+    grtable.clearLastMap();
+  }
+
+  // puts guid in current table
   // returns true if is ready, false if routing must be added
   public boolean isRouted(byte[] messageGUID){
+    checkForSwitch();
 
     boolean inCurrentTable = (grtable.getCurrentMap().get(messageGUID) != null);
     boolean inLastTable = (grtable.getLastMap().get(messageGUID) != null);
@@ -60,7 +74,12 @@ public abstract class GUIDRoutingTableManager {
     Entry entry = grtable.getCurrentMap().get( guid );
     if ( entry == null ) {
       entry = grtable.getLastMap().get( guid );
+      if (entry != null){
+        grtable.removefromLasttMap(guid);
+        grtable.putInCurrentMap(guid, entry);
+      }
     }
+    
     if ( entry != null ) {
       // returns null if there is no host for the id anymore.
       return grtable.getIdToIdentityMap().get( entry.getHostId() );
@@ -85,18 +104,22 @@ public abstract class GUIDRoutingTableManager {
   /**
    * Check to delete old entries. If the lifetime has passed.
    */
-  protected void checkForSwitch() {
+  public void checkForSwitch() {
     long currentTime = System.currentTimeMillis();
     // check if enough time has passed or the map size reached the max.
     if ( currentTime < grtable.getNextReplaceTime() && grtable.getCurrentMap().size() < grtable.MAX_ROUTE_TABLE_SIZE ) {
       return;
     }
 
+    doSwitch();
+    grtable.setNextReplaceTime(currentTime+grtable.getLifetime());
+  }
+  
+  public void doSwitch() {
+    clearLastMap();
     ConcurrentMap<byte[], Entry> temp = grtable.getLastMap();
     grtable.setLastMap(grtable.getCurrentMap());
     grtable.setCurrentMap(temp);
-    grtable.setNextReplaceTime(currentTime+grtable.getLifetime());
-    return;
   }
 
 
@@ -112,7 +135,7 @@ public abstract class GUIDRoutingTableManager {
     if (id != null){
       return id;
     }
-    
+
     else{ // find free id
       id = Integer.valueOf( grtable.getNextId() + 1 );
       while ( grtable.getIdToIdentityMap().get( id ) != null ) {
@@ -127,7 +150,7 @@ public abstract class GUIDRoutingTableManager {
   protected Entry createNewEntry() {
     return new Entry();
   }
-  
+
   protected Entry createNewEntry(Integer idForHost) {
     return new Entry(idForHost);
   }

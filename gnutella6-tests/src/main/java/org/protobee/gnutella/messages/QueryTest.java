@@ -28,15 +28,17 @@ public class QueryTest extends AbstractGnutellaTest {
 
         MessageBodyFactory factory = injector.getInstance(MessageBodyFactory.class);
 
-        QueryBody query = factory.createQueryMessage( (short) (Integer.MAX_VALUE + 1), "kjhsdfkjs", huge, ggep);
+        QueryBody query1 = factory.createQueryMessage( (short) (Integer.MAX_VALUE + 1), "kjhsdfkjs", huge, ggep);
 
         QueryEncoder encoder = injector.getInstance(QueryEncoder.class);
-        encoder.encode(buffer, query);
+        encoder.encode(buffer, query1);
 
         QueryDecoder decoder = injector.getInstance(QueryDecoder.class);
         QueryBody results = decoder.decode(buffer);
 
-        assertEquals(query, results);
+        assertEquals(query1, results);
+        
+        assertEquals(query1, results);
 
       }
     }
