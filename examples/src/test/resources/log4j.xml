@@ -9,7 +9,7 @@
   </appender>
   
   <logger name="org.protobee">
-    <level value="info" />
+    <level value="debug" />
   </logger>
   
   <root>

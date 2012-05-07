@@ -9,6 +9,7 @@ import org.protobee.protocol.ProtocolConfig;
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
+import com.google.inject.Key;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.ScopedBindingBuilder;
@@ -23,6 +24,7 @@ import com.google.inject.multibindings.Multibinder;
 public abstract class PluginGuiceModule extends AbstractModule {
 
   private Multibinder<ProtocolConfig> configBinder = null;
+
   private final Map<Class<? extends Annotation>, Multibinder<ProtocolModule>> moduleBinders = Maps
       .newHashMap();
 
@@ -56,8 +58,10 @@ public abstract class PluginGuiceModule extends AbstractModule {
     return moduleClassBinders.get(annotationClass);
   }
 
-  public void addProtocolConfig(Class<? extends ProtocolConfig> klass) {
-    getConfigBinder().addBinding().to(klass).in(Singleton.class);
+  public void addProtocolConfig(Class<? extends ProtocolConfig> klass,
+      Class<? extends Annotation> configAnnotation) {
+    bind(ProtocolConfig.class).annotatedWith(configAnnotation).to(klass).in(Singleton.class);
+    getConfigBinder().addBinding().to(Key.get(ProtocolConfig.class, configAnnotation)).in(Singleton.class);
   }
 
   public ScopedBindingBuilder addModuleBinding(Class<? extends ProtocolModule> moduleClass,
