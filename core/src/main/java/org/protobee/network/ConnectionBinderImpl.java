@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import com.google.common.base.Preconditions;
 import com.google.common.collect.Iterables;
 import com.google.inject.Inject;
+import com.google.inject.Key;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
 
@@ -88,6 +89,8 @@ public class ConnectionBinderImpl implements ConnectionBinder {
     Channel channel = bootstrap.bind(localAddress);
     log.info("Address " + localAddress + " bound for protocol " + model);
     channels.addChannel(channel, protocol);
+
+    model.getScope().putInScope(Key.get(Channel.class, ServerChannel.class), channel);
 
     return channel;
   }

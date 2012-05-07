@@ -5,9 +5,9 @@ import org.jboss.netty.channel.ChannelHandlerContext;
 import org.protobee.gnutella.constants.GnutellaConstantsModule;
 import org.protobee.gnutella.filters.InvalidMessageFilter;
 import org.protobee.gnutella.filters.QueryHitPreFilter;
-import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.filters.QueryPreFilter;
 import org.protobee.gnutella.filters.RoutingPreFilter;
+import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageHeader;
 import org.protobee.gnutella.messages.decoding.DecodingModule;
 import org.protobee.gnutella.messages.decoding.GnutellaDecoderHandler;
@@ -22,7 +22,6 @@ import org.protobee.gnutella.session.NoOpFlowControl;
 import org.protobee.guice.scopes.IdentityScope;
 import org.protobee.plugin.GnutellaPluginGuiceModule;
 import org.protobee.protocol.Protocol;
-import org.protobee.protocol.ProtocolConfig;
 import org.protobee.protocol.handlers.ChannelMessagePoster;
 import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
@@ -49,10 +48,7 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
 
     bind(GnutellaServantModel.class).in(IdentityScope.class);
 
-    addProtocolConfig(GnutellaProtocolConfig.class);
-
-    bind(ProtocolConfig.class).annotatedWith(Gnutella.class).to(GnutellaProtocolConfig.class)
-        .in(Singleton.class);
+    addProtocolConfig(GnutellaProtocolConfig.class, Gnutella.class);
 
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)
         .in(Singleton.class);

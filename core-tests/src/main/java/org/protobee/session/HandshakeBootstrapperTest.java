@@ -2,8 +2,10 @@ package org.protobee.session;
 
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
-import static org.mockito.Mockito.*;
-import static org.mockito.Mockito.when;
+import static org.mockito.Matchers.anyString;
+import static org.mockito.Matchers.eq;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.verify;
 
 import java.net.SocketAddress;
 import java.util.Set;
@@ -87,13 +89,9 @@ public class HandshakeBootstrapperTest extends AbstractTest {
 
     Injector inj =
         getInjector(Modules.combine(getModuleWithProtocolConfig(config), new AbstractModule() {
-
           @Override
-          protected void configure() {
-            // TODO Auto-generated method stub
-
-          }
-
+          protected void configure() {}
+          @SuppressWarnings("unused")
           @Provides
           @HandshakeHandlers
           @SessionScope

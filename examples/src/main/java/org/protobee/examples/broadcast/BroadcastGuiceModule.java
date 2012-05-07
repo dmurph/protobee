@@ -37,7 +37,7 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
   protected void configure() {
     install(new BroadcastConstantsGuiceModule());
 
-    addProtocolConfig(BroadcastProtocolConfig.class);
+    addProtocolConfig(BroadcastProtocolConfig.class, Broadcast.class);
 
     TypeLiteral<PreFilter<BroadcastMessage>> filterType =
         new TypeLiteral<PreFilter<BroadcastMessage>>() {};

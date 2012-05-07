@@ -3,6 +3,7 @@ package org.protobee;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
+import java.lang.annotation.Annotation;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Map;
@@ -58,6 +59,10 @@ public abstract class AbstractTest {
 
   public Injector getInjector(Module overridingModule) {
     return Guice.createInjector(Modules.override(new ProtobeeGuiceModule()).with(overridingModule));
+  }
+
+  public static ProtocolConfig getConfig(Injector inj, Class<? extends Annotation> annotation) {
+    return inj.getInstance(Key.get(ProtocolConfig.class, annotation));
   }
 
   public static NetworkIdentity createIdentity(Injector inj) {

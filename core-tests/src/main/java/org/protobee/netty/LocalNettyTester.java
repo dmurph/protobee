@@ -13,6 +13,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.jboss.netty.bootstrap.ClientBootstrap;
+import org.jboss.netty.bootstrap.ServerBootstrap;
 import org.jboss.netty.buffer.ChannelBuffer;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelFactory;
@@ -24,6 +25,7 @@ import org.jboss.netty.channel.ChannelUpstreamHandler;
 import org.jboss.netty.channel.Channels;
 import org.jboss.netty.channel.MessageEvent;
 import org.jboss.netty.channel.local.DefaultLocalClientChannelFactory;
+import org.jboss.netty.channel.local.DefaultLocalServerChannelFactory;
 import org.jboss.netty.channel.local.LocalAddress;
 import org.jboss.netty.handler.logging.LoggingHandler;
 import org.jboss.netty.logging.InternalLogLevel;
@@ -42,6 +44,7 @@ public class LocalNettyTester {
   private final ChannelUpstreamHandler receiver;
   private Channel channel;
   private ChannelFactory factory;
+  private Channel clientChannel;
 
   public LocalNettyTester() {
     receiver = mock(ChannelUpstreamHandler.class);
@@ -50,9 +53,12 @@ public class LocalNettyTester {
         @Override
         public Void answer(InvocationOnMock invocation) throws Throwable {
           MessageEvent event = (MessageEvent) invocation.getArguments()[1];
+          clientChannel = event.getChannel();
+          log.debug("got message: " + event);
           if (!(event.getMessage() instanceof ChannelBuffer)) {
             log.error("Didn't get a channel buffer from message event " + event);
           } else if (!received.compareAndSet(null, (ChannelBuffer) event.getMessage())) {
+            log.error("Received buffer isn't null!");
             throw new IllegalStateException("Received buffer wasn't null!");
           }
           return null;
@@ -83,7 +89,27 @@ public class LocalNettyTester {
 
     ChannelFuture connect = testBootstrap.connect(remote, local);
     connect.awaitUninterruptibly(1000);
-    channel = connect.getChannel();
+    channel = clientChannel = connect.getChannel();
+  }
+
+  public void bind(LocalAddress local) {
+    Preconditions.checkState(started.compareAndSet(false, true), "Already started");
+
+    factory = new DefaultLocalServerChannelFactory();
+    ServerBootstrap testBootstrap = new ServerBootstrap(factory);
+
+    testBootstrap.setPipelineFactory(new ChannelPipelineFactory() {
+      @Override
+      public ChannelPipeline getPipeline() throws Exception {
+        ChannelPipeline pipeline = Channels.pipeline();
+        pipeline.addLast("logger", new LoggingHandler("org.protobee.netty.LocalNettyTesterLogger",
+            InternalLogLevel.DEBUG, false));
+        pipeline.addLast("reader", receiver);
+        return pipeline;
+      }
+    });
+
+    channel = testBootstrap.bind(local);
   }
 
   public ChannelUpstreamHandler getMockedReceiver() {
@@ -92,7 +118,7 @@ public class LocalNettyTester {
 
   public void writeAndWait(ChannelBuffer data, long maxWait) {
     clearReceived();
-    Channels.write(channel, data).awaitUninterruptibly(maxWait);
+    Channels.write(clientChannel, data).awaitUninterruptibly(maxWait);
   }
 
   public void clearReceived() {
@@ -110,11 +136,12 @@ public class LocalNettyTester {
   }
 
   public void verifyNotClosed() {
-    assertTrue(channel.isConnected());
+    assertTrue(clientChannel.isConnected());
   }
 
   public void shutdown(int millis) {
     channel.close().awaitUninterruptibly(millis);
     factory.releaseExternalResources();
+    started.set(false);
   }
 }

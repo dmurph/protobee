@@ -3,7 +3,6 @@ package org.protobee.network.handlers;
 import java.nio.charset.Charset;
 
 import org.jboss.netty.buffer.ChannelBuffer;
-import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.Channel;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ChannelPipeline;
@@ -15,7 +14,6 @@ import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.handshake.HandshakeStateBootstrapper;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 public abstract class AbstractRequestReceiver extends FrameDecoderLE {
 
