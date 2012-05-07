@@ -1,5 +1,6 @@
 package org.protobee.gnutella.routing.tables;
 
+import java.util.Iterator;
 import java.util.concurrent.ConcurrentMap;
 
 import org.protobee.identity.NetworkIdentity;
@@ -53,7 +54,7 @@ public class GUIDRoutingTable {
   public static interface Factory {
     GUIDRoutingTable create(long lifetime);
   }
-  
+
   /**
    * The routing table will store at least lifetime to 2 * lifetime of GUID mappings.
    * @param lifetime the lifetime in millis of a map. After this time is passed
@@ -62,14 +63,15 @@ public class GUIDRoutingTable {
   @AssistedInject
   public GUIDRoutingTable( @Assisted long lifetime ) {
     this.lifetime = lifetime;
+    this.nextReplaceTime = System.currentTimeMillis() + lifetime;
     nextId = 0;
-    
+
     // TODO making it a guice constant w/ an annotation 
     currentMap = (new MapMaker().concurrencyLevel(4).makeMap());
     lastMap = (new MapMaker().concurrencyLevel(4).makeMap());
     idToIdentityMap = (new MapMaker().concurrencyLevel(4).makeMap());
     identityToIdMap = (new MapMaker().concurrencyLevel(4).makeMap());
-    
+
   }
 
   public ConcurrentMap<byte[], Entry> getCurrentMap() {
@@ -172,12 +174,28 @@ public class GUIDRoutingTable {
   public void putInIdentityToIdMap(NetworkIdentity identity, Integer id){
     this.identityToIdMap.put(identity, id);
   }
+  
+  public Iterator<byte[]> getLastMapKeySet(){
+    return lastMap.keySet().iterator();
+  }
+  
+  public Entry getLastMapValue(byte[] key){
+    return lastMap.get(key);
+  }
+  
+  public boolean currentMapHasKey(byte[] key){
+    return currentMap.containsKey(key);
+  }
+  
+  public void clearLastMap(){
+    lastMap.clear();
+  }
 
   public static class Entry {
     protected Integer hostId;
-    
+
     public Entry(){ }
-    
+
     public Entry(Integer hostId){
       this.hostId = hostId;
     }
