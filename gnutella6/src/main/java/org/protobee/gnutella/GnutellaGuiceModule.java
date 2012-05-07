@@ -3,6 +3,7 @@ package org.protobee.gnutella;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.protobee.gnutella.constants.GnutellaConstantsModule;
+import org.protobee.gnutella.file.FileGuiceModule;
 import org.protobee.gnutella.filters.InvalidMessageFilter;
 import org.protobee.gnutella.filters.QueryHitPreFilter;
 import org.protobee.gnutella.filters.QueryPreFilter;
@@ -43,6 +44,7 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     install(new EncodingModule());
     install(new ModulesGuiceModule());
     install(new GnutellaConstantsModule());
+    install(new FileGuiceModule());
 
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
