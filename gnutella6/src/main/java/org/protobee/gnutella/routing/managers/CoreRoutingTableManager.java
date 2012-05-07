@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.BitSet;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.StringTokenizer;
 
 import org.protobee.annotation.InjectLogger;
@@ -30,11 +29,15 @@ public class CoreRoutingTableManager {
   private Logger log;
   private final IOUtils ioUtils;
   private CoreRoutingTable qrtable;
-  
+
   @Inject
   public CoreRoutingTableManager(IOUtils ioUtils, CoreRoutingTable.Factory factory) {
     this.ioUtils = ioUtils;
     this.qrtable = factory.create();
+  }
+
+  public void clear(){
+    qrtable = new CoreRoutingTable();
   }
 
   public void update(RoutingBody message) throws InvalidMessageException {
@@ -64,6 +67,7 @@ public class CoreRoutingTableManager {
         qrtable.setSequenceNumber((byte) 0x1);
       }
 
+      // hmm....
       Preconditions.checkArgument(qrtable.getSequenceSize() != msgSequenceSize 
           || msgSequenceNumber != qrtable.getSequenceNumber() || msgSequenceSize == 0);
 
@@ -98,7 +102,6 @@ public class CoreRoutingTableManager {
       try {
         // used to determine if a new entry was set
         boolean prevBitSet, currBitSet;
-        int loggedInvalidPatchFieldValue = 0;
         for ( int i = 0; i < patchData.length; i++ ) {
           prevBitSet = qrtable.get( qrtable.getPatchPosition() );
 
@@ -108,18 +111,6 @@ public class CoreRoutingTableManager {
           }
           else if ( patchData[i] > 0 ){ //else if ( patchData[i] == infinity - 1 ) // use this to also accept invalid clients
             qrtable.clear( qrtable.getPatchPosition() );
-          }
-          else if ( patchData[i] != 0 )
-          {// we received a QRT with a patch data value that is not
-            // really in range...
-            // we like to log each value only once therefore we
-            // flag the logged value
-            if ( loggedInvalidPatchFieldValue == 0 ||
-                loggedInvalidPatchFieldValue != patchData[i] )
-            {
-              log.warn("Received invalid PatchData field value: " + patchData[i]);
-              loggedInvalidPatchFieldValue = patchData[i];
-            }
           }
           currBitSet = qrtable.get( qrtable.getPatchPosition() );
           if ( prevBitSet && !currBitSet ) {
@@ -139,7 +130,6 @@ public class CoreRoutingTableManager {
         qrtable.setSequenceSize((byte) 0x0);
         qrtable.setSequenceNumber((byte) 0x0);
         qrtable.setPatchPosition((byte) 0x0);
-        log.debug( "Updated QRT: " + qrtable.getEntryCount() + " / " + qrtable.getTableSize() );
       }
       else {
         qrtable.augmentSequenceNumber();
@@ -164,7 +154,11 @@ public class CoreRoutingTableManager {
     qrtable.or(bitSetToAggregate);
   }
 
-  private BitSet resizeRouteTable( CoreRoutingTable qrt, int newSize ) {
+  public CoreRoutingTable getCoreRoutingTable(){
+    return qrtable;
+  }
+  
+  public BitSet resizeRouteTable( CoreRoutingTable qrt, int newSize ) {
     if ( qrt.getTableSize() == newSize ) {
       return qrt.getQrTable();
     }
@@ -192,66 +186,66 @@ public class CoreRoutingTableManager {
     qrt.setResizedQRTable(tempQRTable);
     return tempQRTable;
   }
-  
+
   /**
    * Fills the given QueryRoutingTable with the last received 
    * QueryRoutingTables of connected leafs, when the servent is an ultrapeer.
    * @param qrTable the QueryRoutingTable to fill.
    * @param servent the Servent to act for.
    */
-//  // if ultrapeer
-//  public void fillQRTWithLeaves( NetworkIdentity[] leaves ) {
-//    // add QRT of leafs...
-//    // leaves = servent.getHostService().getNetworkHostsContainer().getLeafConnections();
-//    QueryRoutingTable hostQRT;
-//    for (NetworkIdentity leaf: leaves){
-//      if (leaf.getHopsFlowLimit() < 3){
-//        continue;
-//      }
-//      hostQRT = leaf.getLastReceivedRoutingTable();
-//      if ( hostQRT != null ) {
-//        aggregateToRouteTable( hostQRT );
-//      }
-//    }
-//  }
-  
+  //  // if ultrapeer
+  //  public void fillQRTWithLeaves( NetworkIdentity[] leaves ) {
+  //    // add QRT of leafs...
+  //    // leaves = servent.getHostService().getNetworkHostsContainer().getLeafConnections();
+  //    QueryRoutingTable hostQRT;
+  //    for (NetworkIdentity leaf: leaves){
+  //      if (leaf.getHopsFlowLimit() < 3){
+  //        continue;
+  //      }
+  //      hostQRT = leaf.getLastReceivedRoutingTable();
+  //      if ( hostQRT != null ) {
+  //        aggregateToRouteTable( hostQRT );
+  //      }
+  //    }
+  //  }
+
   /**
    * Creates the current local QueryRoutingTable that is used to update
    * remote clients.
    */
-//  public QueryRoutingTable createLocalQueryRoutingTable( List<ShareFile> sharedFiles ) {
-//    long start = System.currentTimeMillis();
-//    HashSet<String> wordSet = new HashSet<String>();
-//    for ( ShareFile file : sharedFiles ) {
-//      // add urn:sha1:xxx
-//      //URN urn = sharedFiles[i].getURN();
-//      //if ( urn != null )
-//      //{
-//      //    wordSet.add( urn.getAsString() );
-//      //}
-//
-//      // add splitted words.
-//      String[] words = splitFilePath( file.getSystemFile().getAbsolutePath() );
-//      for ( int j = 0; j < words.length; j++ ) {
-//        wordSet.add( words[ j ] );
-//      }
-//    }
-//
-//    QueryRoutingTable qrTable = new QueryRoutingTable( QueryRoutingTable.MIN_TABLE_SIZE );
-//    while( true ) {
-//      fillLocalQRTWithShare( qrTable, wordSet );
-//      if ( qrTable.getTableSize() < QueryRoutingTable.MAX_TABLE_SIZE && qrTable.getFillRatio() > QueryRoutingTable.MAX_FILL_RATIO ) {
-//        qrTable = new QueryRoutingTable((int) qrTable.getTableSize() * 2 );
-//        continue;
-//      }
-//      break;
-//    }
-//
-//    long end = System.currentTimeMillis();
-//    return qrTable;
-//  }
+  //  public QueryRoutingTable createLocalQueryRoutingTable( List<ShareFile> sharedFiles ) {
+  //    long start = System.currentTimeMillis();
+  //    HashSet<String> wordSet = new HashSet<String>();
+  //    for ( ShareFile file : sharedFiles ) {
+  //      // add urn:sha1:xxx
+  //      //URN urn = sharedFiles[i].getURN();
+  //      //if ( urn != null )
+  //      //{
+  //      //    wordSet.add( urn.getAsString() );
+  //      //}
+  //
+  //      // add splitted words.
+  //      String[] words = splitFilePath( file.getSystemFile().getAbsolutePath() );
+  //      for ( int j = 0; j < words.length; j++ ) {
+  //        wordSet.add( words[ j ] );
+  //      }
+  //    }
+  //
+  //    QueryRoutingTable qrTable = new QueryRoutingTable( QueryRoutingTable.MIN_TABLE_SIZE );
+  //    while( true ) {
+  //      fillLocalQRTWithShare( qrTable, wordSet );
+  //      if ( qrTable.getTableSize() < QueryRoutingTable.MAX_TABLE_SIZE && qrTable.getFillRatio() > QueryRoutingTable.MAX_FILL_RATIO ) {
+  //        qrTable = new QueryRoutingTable((int) qrTable.getTableSize() * 2 );
+  //        continue;
+  //      }
+  //      break;
+  //    }
+  //
+  //    long end = System.currentTimeMillis();
+  //    return qrTable;
+  //  }
 
-  private void fillLocalQRTWithShare( CoreRoutingTable qrTable, HashSet<String> wordSet ) {
+  public void fillLocalQRTWithShare( CoreRoutingTable qrTable, HashSet<String> wordSet ) {
     int counter = 0;
     for ( String word : wordSet ) {
       addWord( word );
@@ -269,7 +263,7 @@ public class CoreRoutingTableManager {
    * each word is added separately into the qrt.
    * @param absoluteFilePath the character sequence to add.
    */
-  private void add( String absoluteFilePath ) {
+  public void add( String absoluteFilePath ) {
     String[] words = splitFilePath( absoluteFilePath );
     for (String word : words){
       addWord(word);
@@ -281,16 +275,15 @@ public class CoreRoutingTableManager {
    * Adds a single word into the qrt the word is hashed without modification.
    * @param singleWord the word to add to the qrt without modification.
    */
-  private void addWord( String singleWord ) {
+  public void addWord( String singleWord ) {
     int hashVal = qrpHash( singleWord, 0, singleWord.length(), qrtable.getTableBits() );
     if ( !qrtable.get( hashVal ) ) {
       qrtable.augmentEntryCount();
-
       qrtable.set( hashVal );
     }
   }
 
-  private String[] splitFilePath( String filePath ){
+  public String[] splitFilePath( String filePath ){
     StringTokenizer tokenizer = new StringTokenizer( filePath, CoreRoutingTable.FILE_DELIMITERS );
     ArrayList<String> list = new ArrayList<String>( 20 );
     while( tokenizer.hasMoreTokens() ) {
@@ -314,8 +307,9 @@ public class CoreRoutingTableManager {
    * @return true if the hash of the query string is flagged.
    */
   public boolean containsQuery( QueryBody queryBody ) {
-    URN[] urns = queryBody.getHuge().getUrns();
     if (queryBody.hasInvalidQuery()){
+      URN[] urns = queryBody.getHuge().getUrns();
+      if (urns == null){ return false; }
       for (URN urn: urns){
         String urnString = urn.getUrnString();
         int hashVal = qrpHash( urnString, 0, urnString.length(), qrtable.getTableBits() );
@@ -329,12 +323,27 @@ public class CoreRoutingTableManager {
     }
     return true;
   }
+  
+  public void add(QueryBody queryBody){
+    if (queryBody.hasInvalidQuery()){
+      URN[] urns = queryBody.getHuge().getUrns();
+      if (urns == null){ return; }
+      for (URN urn: urns){
+        addWord(urn.getUrnString());
+      }
+      return;
+    }
+    String[] words = splitQueryString( queryBody.getQuery() );
+    for (String word: words){
+      addWord(word);
+    }
+  }
 
   /**
    * Splits a file path into pieces and takes creates a array of the pieces
    * and there prefixes.
    */
-  private static String[] splitQueryString( String queryString ) {
+  public static String[] splitQueryString( String queryString ) {
     StringTokenizer tokenizer = new StringTokenizer( queryString,
       CoreRoutingTable.FILE_DELIMITERS );
     ArrayList<String> list = new ArrayList<String>( 10 );
@@ -347,105 +356,6 @@ public class CoreRoutingTableManager {
     return strArr;
   }
 
-  public Iterator<RoutingBody> buildRoutingBodyIterator( CoreRoutingTable currentTable, CoreRoutingTable oldTable ) {
-    ArrayList<RoutingBody> msgList = new ArrayList<RoutingBody>();
-
-    if ( oldTable == null ) {
-      // never sent a table before... send reset msg first
-      msgList.add( new ResetBody( currentTable.getTableSize(), currentTable.getInfinity() ) );
-    }
-
-    boolean isPatchNeeded = false;
-    // we always send 4 signed bits tables, therefore we only need to patch half
-    // table size.
-    byte[] patchData = new byte[ ( (int) currentTable.getTableSize()) / 2 ];
-
-    for ( int i = 0; i < patchData.length; i++ ) {
-      byte b1;
-      byte b2;
-      if ( oldTable == null ) {
-        if ( currentTable.getQrTable().get( i * 2 ) ) {
-          b1 = (byte)(1 - currentTable.getInfinity());
-        }
-        else {
-          b1 = (byte)0;
-        }
-        if ( currentTable.getQrTable().get( i * 2 + 1) ) {
-          b2 = (byte)(1 - currentTable.getInfinity());
-        }
-        else {
-          b2 = (byte)0;
-        }
-      }
-      else {
-        boolean currentVal = currentTable.getQrTable().get( i * 2 );
-        if ( currentVal == oldTable.getQrTable().get( i * 2 ) ) {
-          b1 = (byte)0;
-        }
-        else if ( currentVal ) {
-          b1 = (byte)(1 - currentTable.getInfinity());
-        }
-        else {
-          b1 = (byte)(currentTable.getInfinity() - 1);
-        }
-        currentVal = currentTable.getQrTable().get( i * 2 + 1);
-        if ( currentVal == oldTable.getQrTable().get( i * 2 + 1) ) {
-          b2 = (byte)0;
-        }
-        else if ( currentVal ) {
-          b2 = (byte)(1 - currentTable.getInfinity());
-        }
-        else {
-          b2 = (byte)(currentTable.getInfinity() - 1);
-        }
-      }
-      patchData[i] = (byte)( ( b1 << 4 ) | ( b2 & 0x0F ) );
-
-      // check if we need a patch
-      if ( patchData[i] != 0 ) {
-        isPatchNeeded = true;
-      }
-    }
-
-    if ( !isPatchNeeded ) {// no patch message needed
-      return msgList.iterator();
-    }
-
-    // try to compress data
-    byte compressor = PatchBody.COMPRESSOR_NONE;
-    byte[] compressedPatchData = ioUtils.deflate( patchData );
-
-    byte[] currData = null;
-    currData = ioUtils.deflate(currData);
-
-    // verify if compressing made sense...
-    if ( compressedPatchData.length < patchData.length ) {
-      patchData = compressedPatchData;
-      compressor = PatchBody.COMPRESSOR_ZLIB;
-    }
-
-    // build patch messages
-    // 1KB max message size was proposed...
-
-    byte sequenceSize = (byte)Math.ceil( (double)patchData.length /
-      (double) PatchBody.MAX_MESSAGE_DATA_SIZE );
-
-    byte sequenceNo = 1;
-    int offset = 0;
-    do {
-      int length = Math.min( PatchBody.MAX_MESSAGE_DATA_SIZE,
-        patchData.length - offset );
-
-      PatchBody msg = new PatchBody( sequenceNo, sequenceSize,
-        compressor, (byte)4, patchData );
-
-      msgList.add( msg );
-      offset += length;
-      sequenceNo ++;
-    }
-    while ( offset < patchData.length );
-    return msgList.iterator();
-  }
 
   /**
    * Returns the same value as hash(x.substring(start, end), bits),

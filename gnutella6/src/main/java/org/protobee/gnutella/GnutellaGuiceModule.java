@@ -15,6 +15,7 @@ import org.protobee.gnutella.messages.decoding.GnutellaDecoderHandler;
 import org.protobee.gnutella.messages.encoding.EncodingModule;
 import org.protobee.gnutella.messages.encoding.GnutellaEncoderHandler;
 import org.protobee.gnutella.modules.ModulesGuiceModule;
+import org.protobee.gnutella.routing.RoutingGuiceModule;
 import org.protobee.gnutella.session.FlowControlHandler;
 import org.protobee.gnutella.session.GnutellaPrefilterHandler;
 import org.protobee.gnutella.session.MessageReceivedEvent;
@@ -23,6 +24,11 @@ import org.protobee.gnutella.session.NoOpFlowControl;
 import org.protobee.guice.scopes.IdentityScope;
 import org.protobee.plugin.GnutellaPluginGuiceModule;
 import org.protobee.protocol.Protocol;
+import org.protobee.protocol.handlers.ChannelMessagePoster;
+import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
+import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
+import org.protobee.protocol.handlers.FilterMode;
+import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 import org.protobee.protocol.handlers.ChannelMessagePoster;
 import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
@@ -45,6 +51,7 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     install(new ModulesGuiceModule());
     install(new GnutellaConstantsModule());
     install(new FileGuiceModule());
+    install(new RoutingGuiceModule());
 
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
