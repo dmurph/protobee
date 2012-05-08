@@ -36,7 +36,6 @@ public class BroadcastMessageWriter {
   }
 
   public void broadcastMessage(BroadcastMessage message) {
-
     try {
       broadcast.enterScope();
       Set<SessionModel> sessions = sessionManager.getCurrentSessions(broadcast.getProtocol());
