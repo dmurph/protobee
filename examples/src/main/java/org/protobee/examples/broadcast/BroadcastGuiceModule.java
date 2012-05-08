@@ -4,6 +4,8 @@ import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ServerChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.logging.LoggingHandler;
@@ -16,8 +18,6 @@ import org.protobee.examples.broadcast.modules.BroadcastMessageModule;
 import org.protobee.examples.broadcast.modules.TimeBroadcastMessageModule;
 import org.protobee.examples.broadcast.session.BroadcastPrefilterHandler;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
-import org.protobee.guice.netty.NioClientSocketChannelFactoryProvider;
-import org.protobee.guice.netty.NioServerSocketChannelFactoryProvider;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
 import org.protobee.network.handlers.CloseOnExceptionHandler;
@@ -52,10 +52,9 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
     filters.addBinding().to(InvalidMessageFilter.class).in(Singleton.class);
 
 
-    bind(ChannelFactory.class).annotatedWith(Broadcast.class).toProvider(
-        NioClientSocketChannelFactoryProvider.class);
-    bind(ServerChannelFactory.class).annotatedWith(Broadcast.class).toProvider(
-        NioServerSocketChannelFactoryProvider.class);
+    bind(ChannelFactory.class).annotatedWith(Broadcast.class).to(NioClientSocketChannelFactory.class);
+    bind(ServerChannelFactory.class).annotatedWith(Broadcast.class).to(
+        NioServerSocketChannelFactory.class);
 
     addModuleBinding(BroadcastMessageModule.class, Broadcast.class).in(SessionScope.class);
     addModuleBinding(TimeBroadcastMessageModule.class, Broadcast.class).in(SessionScope.class);

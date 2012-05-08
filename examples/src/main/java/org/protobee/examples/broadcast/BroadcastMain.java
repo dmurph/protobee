@@ -23,6 +23,8 @@ import org.protobee.examples.broadcast.constants.BroadcastListeningAddress;
 import org.protobee.examples.broadcast.modules.BroadcastMessageModule;
 import org.protobee.examples.broadcast.modules.FeelingsInitiatorModule;
 import org.protobee.examples.broadcast.modules.TimeBroadcastMessageModule;
+import org.protobee.examples.emotion.EmotionGuiceModule;
+import org.protobee.examples.emotion.constants.EmotionListeningAddress;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.examples.protos.Common.Header;
 import org.protobee.guice.scopes.SessionScope;
@@ -129,13 +131,16 @@ public class BroadcastMain {
       protected void configure() {
         bind(SocketAddress.class).annotatedWith(BroadcastListeningAddress.class).toInstance(
             new InetSocketAddress(localPort));
+        bind(SocketAddress.class).annotatedWith(EmotionListeningAddress.class).toInstance(
+          new InetSocketAddress(localPort));
       }
     });
 
-    Injector inj =
-        Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule())
-            .with(overridingModules));
+    Set<AbstractModule> regs =
+        Sets.newHashSet(new ProtobeeGuiceModule(), new BroadcastGuiceModule(),
+            new EmotionGuiceModule());
+
+    Injector inj = Guice.createInjector(Modules.override(regs).with(overridingModules));
 
     ProtobeeServantBootstrapper bootstrapper = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrapper.startup();

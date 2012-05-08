@@ -4,9 +4,9 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.local.LocalClientChannelFactory;
-import org.jboss.netty.channel.local.LocalServerChannelFactory;
+import org.jboss.netty.channel.ServerChannelFactory;
 import org.protobee.examples.emotion.constants.EmotionListeningAddress;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
@@ -20,8 +20,8 @@ import com.google.inject.Provider;
 public class EmotionProtocolConfig extends ProtocolConfig {
 
   @Inject
-  public EmotionProtocolConfig(Provider<LocalServerChannelFactory> serverProvider,
-      Provider<LocalClientChannelFactory> clientProvider,
+  public EmotionProtocolConfig(@Emotion Provider<ServerChannelFactory> serverProvider,
+      @Emotion Provider<ChannelFactory> clientProvider,
       @Emotion Provider<ChannelHandler[]> protocolHandlers,
       @Emotion Provider<Set<ProtocolModule>> modules,
       @Emotion Set<Class<? extends ProtocolModule>> moduleClasses,
@@ -32,11 +32,16 @@ public class EmotionProtocolConfig extends ProtocolConfig {
 
   @Override
   public Map<String, Object> getServerOptions() {
-    return Maps.newHashMap();
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("reuseAddress", true);
+    return map;
   }
 
   @Override
   public Map<String, Object> getConnectionOptions() {
-    return Maps.newHashMap();
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("keepAlive", true);
+    map.put("tcpNoDelay", true);
+    return map;
   }
 }

@@ -12,6 +12,7 @@ import org.jboss.netty.channel.local.LocalClientChannelFactory;
 import org.protobee.guice.netty.ClientFactory;
 import org.protobee.guice.scopes.ProtocolScope;
 
+import com.google.common.annotations.VisibleForTesting;
 import com.google.common.net.InetAddresses;
 import com.google.inject.Inject;
 
@@ -23,6 +24,11 @@ public class SocketAddressUtils {
   @Inject
   public SocketAddressUtils(@ClientFactory ChannelFactory clientFactory) {
     isLocal = clientFactory instanceof LocalClientChannelFactory;
+  }
+  
+  @VisibleForTesting
+  public SocketAddressUtils(boolean isLocal) {
+    this.isLocal =  isLocal;
   }
 
   public static int getIPFromAddress(SocketAddress address) {

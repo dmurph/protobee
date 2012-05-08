@@ -29,9 +29,8 @@ public class BroadcastMessageWriter {
   private final ProtobeeMessageWriter writer;
 
   @Inject
-  public BroadcastMessageWriter(SessionManager sessionManager,
-      @Me NetworkIdentity me, @Broadcast ProtocolModel protocol,
-      ProtobeeMessageWriter writer) {
+  public BroadcastMessageWriter(SessionManager sessionManager, @Me NetworkIdentity me,
+      @Broadcast ProtocolModel protocol, ProtobeeMessageWriter writer) {
     this.sessionManager = sessionManager;
     this.me = me;
     this.broadcast = protocol;
@@ -47,10 +46,10 @@ public class BroadcastMessageWriter {
         if (sessionModel.getIdentity() == me) {
           continue;
         }
-        SocketAddress address = sessionModel.getIdentity().getListeningAddress(broadcast.getProtocol());
+        SocketAddress address = me.getListeningAddress(broadcast.getProtocol());
         message.setListeningAddress(SocketAddressUtils.getIPFromAddress(address));
         message.setListeningPort(SocketAddressUtils.getPortFromAddress(address));
-        
+
         log.info("Sending message: " + message.clone().buildPartial());
         try {
           sessionModel.getIdentity().enterScope();

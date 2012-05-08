@@ -7,6 +7,7 @@ import org.jboss.netty.channel.local.LocalAddress;
 import org.junit.Test;
 import org.protobee.ProtobeeGuiceModule;
 import org.protobee.ProtobeeServantBootstrapper;
+import org.protobee.examples.emotion.EmotionGuiceModule;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.examples.protos.Common.Header;
 import org.protobee.netty.LocalNettyTester;
@@ -25,7 +26,7 @@ public class BroadcastProtocolTests extends AbstractBroadcastTest {
   public void testBroadcast() throws Exception {
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule()));
 
     ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
@@ -79,7 +80,7 @@ public class BroadcastProtocolTests extends AbstractBroadcastTest {
 
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule()));
 
     ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);

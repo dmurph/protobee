@@ -32,11 +32,16 @@ public class BroadcastProtocolConfig extends ProtocolConfig {
 
   @Override
   public Map<String, Object> getServerOptions() {
-    return Maps.newHashMap();
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("reuseAddress", true);
+    return map;
   }
 
   @Override
   public Map<String, Object> getConnectionOptions() {
-    return Maps.newHashMap();
+    Map<String, Object> map = Maps.newHashMap();
+    map.put("keepAlive", true);
+    map.put("tcpNoDelay", true);
+    return map;
   }
 }

@@ -9,6 +9,7 @@ import org.junit.Test;
 import org.protobee.ProtobeeGuiceModule;
 import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.examples.broadcast.modules.BroadcastMessageModule;
+import org.protobee.examples.emotion.EmotionGuiceModule;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.netty.LocalNettyTester;
@@ -30,7 +31,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
   public void testHandshake() throws Exception {
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule()));
 
     ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
@@ -48,7 +49,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
   public void testSendingHandshakeNoTimed() throws Exception {
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule()));
 
     ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
@@ -77,7 +78,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
   public void testSendingHandshakeNoTimeModule() throws Exception {
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule(), new AbstractModule() {
 
                   @Override
@@ -131,7 +132,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
   public void testSendingHandshakeTimed() throws Exception {
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule()));
 
     ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
@@ -161,7 +162,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
   public void testTimedHandshake() throws Exception {
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule(), new EmotionGuiceModule()).with(
                 new LocalChannelsModule()));
 
     ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);

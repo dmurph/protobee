@@ -4,6 +4,8 @@ import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
 import org.jboss.netty.channel.ServerChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioClientSocketChannelFactory;
+import org.jboss.netty.channel.socket.nio.NioServerSocketChannelFactory;
 import org.jboss.netty.handler.codec.protobuf.ProtobufDecoder;
 import org.jboss.netty.handler.codec.protobuf.ProtobufEncoder;
 import org.jboss.netty.handler.logging.LoggingHandler;
@@ -14,8 +16,6 @@ import org.protobee.examples.emotion.constants.EmotionConstantsGuiceModule;
 import org.protobee.examples.emotion.filters.InvalidMessageFilter;
 import org.protobee.examples.emotion.modules.EmotionMessageModule;
 import org.protobee.examples.protos.EmotionProtos.EmotionMessage;
-import org.protobee.guice.netty.NioClientSocketChannelFactoryProvider;
-import org.protobee.guice.netty.NioServerSocketChannelFactoryProvider;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
 import org.protobee.network.handlers.CloseOnExceptionHandler;
@@ -49,10 +49,10 @@ public class EmotionGuiceModule extends PluginGuiceModule {
 
     filters.addBinding().to(InvalidMessageFilter.class).in(Singleton.class);
 
-    bind(ChannelFactory.class).annotatedWith(Emotion.class).toProvider(
-        NioClientSocketChannelFactoryProvider.class);
-    bind(ServerChannelFactory.class).annotatedWith(Emotion.class).toProvider(
-        NioServerSocketChannelFactoryProvider.class);
+    bind(ChannelFactory.class).annotatedWith(Emotion.class).to(NioClientSocketChannelFactory.class)
+        .in(Singleton.class);
+    bind(ServerChannelFactory.class).annotatedWith(Emotion.class)
+        .to(NioServerSocketChannelFactory.class).in(Singleton.class);
 
     addModuleBinding(EmotionMessageModule.class, Emotion.class).in(SessionScope.class);
 
