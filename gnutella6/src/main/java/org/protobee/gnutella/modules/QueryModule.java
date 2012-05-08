@@ -1,20 +1,23 @@
 package org.protobee.gnutella.modules;
 
 import java.net.InetSocketAddress;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 
 import org.protobee.compatability.Headers;
 import org.protobee.gnutella.Gnutella;
 import org.protobee.gnutella.GnutellaServantModel;
+import org.protobee.gnutella.file.NoOpShareFileManager;
+import org.protobee.gnutella.file.ShareFile;
 import org.protobee.gnutella.messages.GnutellaMessage;
 import org.protobee.gnutella.messages.MessageBodyFactory;
 import org.protobee.gnutella.messages.MessageHeader;
+import org.protobee.gnutella.messages.QueryBody;
 import org.protobee.gnutella.messages.QueryHitBody;
 import org.protobee.gnutella.messages.ResponseBody;
 import org.protobee.gnutella.routing.managers.QueryRoutingTableManager;
 import org.protobee.gnutella.session.MessageReceivedEvent;
+import org.protobee.gnutella.util.VendorCode;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.IdentityTagManager;
 import org.protobee.identity.NetworkIdentity;
@@ -45,6 +48,7 @@ public class QueryModule extends ProtocolModule {
   private final MessageBodyFactory bodyFactory;
   private final GnutellaServantModel servantModel;
   private final Provider<GnutellaServantModel> servantModelProvider;
+  private final NoOpShareFileManager noOpShareFileManager;
 
   @Inject
   public QueryModule(
@@ -54,7 +58,8 @@ public class QueryModule extends ProtocolModule {
                      SessionModel session, IdentityTagManager tagManager,
                      ProtobeeMessageWriter messageDispatcher, MessageHeader.Factory headerFactory,
                      MessageBodyFactory bodyFactory, GnutellaServantModel servantModel,
-                     Provider<GnutellaServantModel> servantModelProvider) {
+                     Provider<GnutellaServantModel> servantModelProvider, 
+                     NoOpShareFileManager noOpShareFileManager) {
     this.queryRTManager = queryRTManager;
     this.identity = identity;
     this.identityManager = identityManager;
@@ -66,6 +71,7 @@ public class QueryModule extends ProtocolModule {
     this.bodyFactory = bodyFactory;
     this.servantModel = servantModel;
     this.servantModelProvider = servantModelProvider;
+    this.noOpShareFileManager = noOpShareFileManager;
   }
 
   private void queryMessageRecieved(MessageReceivedEvent event, MessageHeader header) {
@@ -74,43 +80,50 @@ public class QueryModule extends ProtocolModule {
 
     queryRTManager.addRouting(header.getGuid(), requestIdentity);
 
-    Set<NetworkIdentity> peers = identityManager.getPeers();
-    peers.remove(requestIdentity);
-
-    session.exitScope();
-    identity.exitScope();
-
-    for (NetworkIdentity peer : peers){
-      MessageHeader newHeader =
-          headerFactory.create(header.getGuid(), MessageHeader.F_QUERY,
-            (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
-      try {
-        peer.enterScope();
-        messageDispatcher.write(new GnutellaMessage(newHeader, event.getMessage().getBody()),
-          HandshakeOptions.WAIT_FOR_HANDSHAKE);
-      } finally {
-        peer.exitScope();
-      }
-    }
-
-    identity.enterScope();
-
-    // Search the shared file database and get groups of shared files.
-    // List<ShareFile> resultFiles = sharedFilesService.handleQuery( msg );
-    List<ResponseBody> hitList = new ArrayList<ResponseBody>();
-    if ( hitList != null && hitList.size() > 0) { 
-      GnutellaServantModel gnutellaModel = servantModelProvider.get();
-      // speed, vendorCode, flags, controls, ggep!!!
-      MessageHeader newHeader = 
-          headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY, header.getHops(), header.getTtl());
-      // TODO QueryHitBody newBody = bodyFactory.createQueryHitMessage(identity.getListeningAddress(gnutella), 16 , hitList, vendorCode, flags, controls, null, ggep, null, null, gnutellaModel.getGuid());
-      QueryHitBody newBody = null;
-      messageDispatcher.write(new GnutellaMessage(newHeader, newBody),
-        HandshakeOptions.WAIT_FOR_HANDSHAKE);
-    }
-
-    session.exitScope();
-    identity.exitScope();
+//    Set<NetworkIdentity> peers = identityManager.getPeers();
+//    peers.remove(requestIdentity);
+//
+//    session.exitScope();
+//    identity.exitScope();
+//
+//    for (NetworkIdentity peer : peers){
+//      MessageHeader newHeader =
+//          headerFactory.create(header.getGuid(), MessageHeader.F_QUERY,
+//            (byte) (header.getTtl() - 1), (byte) (header.getHops() + 1));
+//      try {
+//        peer.enterScope();
+//        messageDispatcher.write(new GnutellaMessage(newHeader, event.getMessage().getBody()),
+//          HandshakeOptions.WAIT_FOR_HANDSHAKE);
+//      } finally {
+//        peer.exitScope();
+//      }
+//    }
+//
+//    identity.enterScope();
+//
+//    // reply from own files
+//    QueryBody query = (QueryBody) event.getMessage().getBody();
+//    if (query.getHuge() != null && !query.getHuge().isEmpty()){
+//      List<ShareFile> files = noOpShareFileManager.getFiles();
+//      if ( files != null && files.size() > 0) { 
+//        GnutellaServantModel gnutellaModel = servantModelProvider.get();
+//        MessageHeader newHeader = headerFactory.create(header.getGuid(), MessageHeader.F_QUERY_REPLY, header.getHops(), header.getTtl());
+//        
+//        ResponseBody[] responses = new ResponseBody[ files.size() ];
+//        for (int i = 0; i < files.size(); i++){
+//          responses[i] = ResponseBody.noOpCreateFromShareFile(files.get(i));
+//        }
+//        
+////        TODO decide what to do about socketaddress v inetsocketaddress
+//        QueryHitBody newBody = bodyFactory.createQueryHitMessage((InetSocketAddress) identity.getListeningAddress(gnutella), Math.round( ((Integer) Integer.MAX_VALUE).floatValue() / 1024L ) , responses, new VendorCode((byte) 0x0, (byte) 0x0, (byte) 0x0, (byte) 0x0), (byte) 0x0, (byte) 0x0, null, null, null, null, gnutellaModel.getGuid());
+//        messageDispatcher.write(new GnutellaMessage(newHeader, newBody),
+//          HandshakeOptions.WAIT_FOR_HANDSHAKE);
+//      }
+//    }
+//    
+//
+//    session.exitScope();
+//    identity.exitScope();
   }
 
   @Subscribe
