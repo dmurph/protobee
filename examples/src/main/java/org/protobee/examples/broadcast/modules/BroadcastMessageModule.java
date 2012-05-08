@@ -65,16 +65,18 @@ public class BroadcastMessageModule extends ProtocolModule {
 
     session.exitScope();
     identity.exitScope();
+
+    BroadcastMessage sendingMessage =
+        BroadcastMessage.newBuilder()
+            .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
+            .setMessage(message.getMessage()).setListeningAddress(message.getListeningAddress())
+            .setListeningPort(message.getListeningPort()).build();
     for (SessionModel sessionModel : sessions) {
       if (sessionModel == session) {
         continue;
       }
       try {
         sessionModel.getIdentity().enterScope();
-        BroadcastMessage sendingMessage =
-            BroadcastMessage.newBuilder()
-                .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
-                .setMessage(message.getMessage()).build();
         log.info("Sending message " + sendingMessage + " to "
             + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);

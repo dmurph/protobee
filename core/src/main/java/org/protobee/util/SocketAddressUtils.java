@@ -25,7 +25,7 @@ public class SocketAddressUtils {
     isLocal = clientFactory instanceof LocalClientChannelFactory;
   }
 
-  public int getIPFromAddress(SocketAddress address) {
+  public static int getIPFromAddress(SocketAddress address) {
     if (address instanceof LocalAddress) {
       LocalAddress local = (LocalAddress) address;
       String id = local.getId();
@@ -38,7 +38,7 @@ public class SocketAddressUtils {
     throw new IllegalArgumentException("Unknown address type");
   }
 
-  public int getPortFromAddress(SocketAddress address) {
+  public static int getPortFromAddress(SocketAddress address) {
     if (address instanceof LocalAddress) {
       LocalAddress local = (LocalAddress) address;
       String id = local.getId();

@@ -1,7 +1,5 @@
 package org.protobee.examples.broadcast;
 
-import java.util.Map;
-
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
 import org.jboss.netty.channel.ChannelHandlerContext;
@@ -23,9 +21,6 @@ import org.protobee.guice.scopes.SessionScope;
 import org.protobee.network.handlers.CleanupOnDisconnectHandler;
 import org.protobee.network.handlers.CloseOnExceptionHandler;
 import org.protobee.plugin.PluginGuiceModule;
-import org.protobee.protocol.Protocol;
-import org.protobee.protocol.ProtocolConfig;
-import org.protobee.protocol.ProtocolModel;
 import org.protobee.protocol.handlers.ChannelMessagePoster;
 import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
@@ -63,13 +58,6 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
 
     addModuleBinding(BroadcastMessageModule.class, Broadcast.class).in(SessionScope.class);
     addModuleBinding(TimeBroadcastMessageModule.class, Broadcast.class).in(SessionScope.class);
-  }
-
-  @Provides
-  @Broadcast
-  public ProtocolModel broadcast(@Broadcast ProtocolConfig config,
-      Map<Protocol, ProtocolModel> protocols) {
-    return protocols.get(config.get());
   }
 
   @Provides

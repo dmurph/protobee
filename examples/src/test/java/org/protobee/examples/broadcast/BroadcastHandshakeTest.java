@@ -27,7 +27,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
     bootstrap.startup();
 
     LocalNettyTester tester = createLocalNettyTester();
-    tester.connect(new LocalAddress("broadcast-example"), new LocalAddress("test"));
+    tester.connect(new LocalAddress(LocalChannelsModule.LOCAL_ADDRESS), new LocalAddress("test"));
     basicHandshake(tester);
     tester.verifyNotClosed();
 
@@ -47,7 +47,6 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
 
     LocalNettyTester tester = createLocalNettyTester();
     tester.bind(new LocalAddress("test"));
-
 
     ProtocolConfig broadcastConfig = getConfig(inj, Broadcast.class);
     ProtocolModel model = fromConfig(inj, broadcastConfig);
@@ -105,7 +104,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
     bootstrap.startup();
 
     LocalNettyTester tester = createLocalNettyTester();
-    tester.connect(new LocalAddress("broadcast-example"), new LocalAddress("test"));
+    tester.connect(new LocalAddress(LocalChannelsModule.LOCAL_ADDRESS), new LocalAddress("test"));
     timedHandshake(tester);
     tester.verifyNotClosed();
 
