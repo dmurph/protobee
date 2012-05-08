@@ -29,11 +29,6 @@ import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
 import org.protobee.protocol.handlers.FilterMode;
 import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
-import org.protobee.protocol.handlers.ChannelMessagePoster;
-import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
-import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
-import org.protobee.protocol.handlers.FilterMode;
-import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
@@ -56,7 +51,7 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
     bind(GnutellaServantModel.class).in(IdentityScope.class);
-
+    
     addProtocolConfig(GnutellaProtocolConfig.class, Gnutella.class);
 
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)

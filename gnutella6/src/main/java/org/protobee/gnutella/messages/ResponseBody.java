@@ -2,6 +2,7 @@ package org.protobee.gnutella.messages;
 
 import org.protobee.gnutella.extension.GGEP;
 import org.protobee.gnutella.extension.HUGEExtension;
+import org.protobee.gnutella.file.ShareFile;
 
 public class ResponseBody {
 
@@ -23,7 +24,10 @@ public class ResponseBody {
     return fileIndex;
   }
 
-
+  public static ResponseBody noOpCreateFromShareFile(ShareFile file){
+    return new ResponseBody(Long.MAX_VALUE, Long.MAX_VALUE, "NOOP", null, null);
+  }
+  
   public long getFileSize() {
     return fileSize;
   }
