@@ -24,7 +24,7 @@ public class SimpleRequestFilter implements RequestFilter {
   }
 
   @Override
-  public String shouldRouteQueryHitMessage(QueryGUIDRoutingPair qgrPair, int ttl){
+  public String shouldRouteQueryHitMessage(QueryGUIDRoutingPair qgrPair){
     if (qgrPair.getRoutedResultCount() >= MAX_ROUTED_QUERY_RESULTS){
       return "Query Hit not routed - routed result count to this node exceeds maximum.";
     }

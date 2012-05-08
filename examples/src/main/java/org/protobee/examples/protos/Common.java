@@ -487,11 +487,427 @@ public final class Common {
     // @@protoc_insertion_point(class_scope:protobee.Header)
   }
   
+  public interface SourceAddressOrBuilder
+      extends com.google.protobuf.MessageOrBuilder {
+    
+    // required fixed32 address = 1;
+    boolean hasAddress();
+    int getAddress();
+    
+    // required int32 port = 2;
+    boolean hasPort();
+    int getPort();
+  }
+  public static final class SourceAddress extends
+      com.google.protobuf.GeneratedMessage
+      implements SourceAddressOrBuilder {
+    // Use SourceAddress.newBuilder() to construct.
+    private SourceAddress(Builder builder) {
+      super(builder);
+    }
+    private SourceAddress(boolean noInit) {}
+    
+    private static final SourceAddress defaultInstance;
+    public static SourceAddress getDefaultInstance() {
+      return defaultInstance;
+    }
+    
+    public SourceAddress getDefaultInstanceForType() {
+      return defaultInstance;
+    }
+    
+    public static final com.google.protobuf.Descriptors.Descriptor
+        getDescriptor() {
+      return org.protobee.examples.protos.Common.internal_static_protobee_SourceAddress_descriptor;
+    }
+    
+    protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+        internalGetFieldAccessorTable() {
+      return org.protobee.examples.protos.Common.internal_static_protobee_SourceAddress_fieldAccessorTable;
+    }
+    
+    private int bitField0_;
+    // required fixed32 address = 1;
+    public static final int ADDRESS_FIELD_NUMBER = 1;
+    private int address_;
+    public boolean hasAddress() {
+      return ((bitField0_ & 0x00000001) == 0x00000001);
+    }
+    public int getAddress() {
+      return address_;
+    }
+    
+    // required int32 port = 2;
+    public static final int PORT_FIELD_NUMBER = 2;
+    private int port_;
+    public boolean hasPort() {
+      return ((bitField0_ & 0x00000002) == 0x00000002);
+    }
+    public int getPort() {
+      return port_;
+    }
+    
+    private void initFields() {
+      address_ = 0;
+      port_ = 0;
+    }
+    private byte memoizedIsInitialized = -1;
+    public final boolean isInitialized() {
+      byte isInitialized = memoizedIsInitialized;
+      if (isInitialized != -1) return isInitialized == 1;
+      
+      if (!hasAddress()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      if (!hasPort()) {
+        memoizedIsInitialized = 0;
+        return false;
+      }
+      memoizedIsInitialized = 1;
+      return true;
+    }
+    
+    public void writeTo(com.google.protobuf.CodedOutputStream output)
+                        throws java.io.IOException {
+      getSerializedSize();
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        output.writeFixed32(1, address_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        output.writeInt32(2, port_);
+      }
+      getUnknownFields().writeTo(output);
+    }
+    
+    private int memoizedSerializedSize = -1;
+    public int getSerializedSize() {
+      int size = memoizedSerializedSize;
+      if (size != -1) return size;
+    
+      size = 0;
+      if (((bitField0_ & 0x00000001) == 0x00000001)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeFixed32Size(1, address_);
+      }
+      if (((bitField0_ & 0x00000002) == 0x00000002)) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(2, port_);
+      }
+      size += getUnknownFields().getSerializedSize();
+      memoizedSerializedSize = size;
+      return size;
+    }
+    
+    private static final long serialVersionUID = 0L;
+    @java.lang.Override
+    protected java.lang.Object writeReplace()
+        throws java.io.ObjectStreamException {
+      return super.writeReplace();
+    }
+    
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(
+        com.google.protobuf.ByteString data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(
+        com.google.protobuf.ByteString data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(byte[] data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data).buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(
+        byte[] data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return newBuilder().mergeFrom(data, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseDelimitedFrom(java.io.InputStream input)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseDelimitedFrom(
+        java.io.InputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      Builder builder = newBuilder();
+      if (builder.mergeDelimitedFrom(input, extensionRegistry)) {
+        return builder.buildParsed();
+      } else {
+        return null;
+      }
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(
+        com.google.protobuf.CodedInputStream input)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input).buildParsed();
+    }
+    public static org.protobee.examples.protos.Common.SourceAddress parseFrom(
+        com.google.protobuf.CodedInputStream input,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws java.io.IOException {
+      return newBuilder().mergeFrom(input, extensionRegistry)
+               .buildParsed();
+    }
+    
+    public static Builder newBuilder() { return Builder.create(); }
+    public Builder newBuilderForType() { return newBuilder(); }
+    public static Builder newBuilder(org.protobee.examples.protos.Common.SourceAddress prototype) {
+      return newBuilder().mergeFrom(prototype);
+    }
+    public Builder toBuilder() { return newBuilder(this); }
+    
+    @java.lang.Override
+    protected Builder newBuilderForType(
+        com.google.protobuf.GeneratedMessage.BuilderParent parent) {
+      Builder builder = new Builder(parent);
+      return builder;
+    }
+    public static final class Builder extends
+        com.google.protobuf.GeneratedMessage.Builder<Builder>
+       implements org.protobee.examples.protos.Common.SourceAddressOrBuilder {
+      public static final com.google.protobuf.Descriptors.Descriptor
+          getDescriptor() {
+        return org.protobee.examples.protos.Common.internal_static_protobee_SourceAddress_descriptor;
+      }
+      
+      protected com.google.protobuf.GeneratedMessage.FieldAccessorTable
+          internalGetFieldAccessorTable() {
+        return org.protobee.examples.protos.Common.internal_static_protobee_SourceAddress_fieldAccessorTable;
+      }
+      
+      // Construct using org.protobee.examples.protos.Common.SourceAddress.newBuilder()
+      private Builder() {
+        maybeForceBuilderInitialization();
+      }
+      
+      private Builder(BuilderParent parent) {
+        super(parent);
+        maybeForceBuilderInitialization();
+      }
+      private void maybeForceBuilderInitialization() {
+        if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
+        }
+      }
+      private static Builder create() {
+        return new Builder();
+      }
+      
+      public Builder clear() {
+        super.clear();
+        address_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000001);
+        port_ = 0;
+        bitField0_ = (bitField0_ & ~0x00000002);
+        return this;
+      }
+      
+      public Builder clone() {
+        return create().mergeFrom(buildPartial());
+      }
+      
+      public com.google.protobuf.Descriptors.Descriptor
+          getDescriptorForType() {
+        return org.protobee.examples.protos.Common.SourceAddress.getDescriptor();
+      }
+      
+      public org.protobee.examples.protos.Common.SourceAddress getDefaultInstanceForType() {
+        return org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance();
+      }
+      
+      public org.protobee.examples.protos.Common.SourceAddress build() {
+        org.protobee.examples.protos.Common.SourceAddress result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(result);
+        }
+        return result;
+      }
+      
+      private org.protobee.examples.protos.Common.SourceAddress buildParsed()
+          throws com.google.protobuf.InvalidProtocolBufferException {
+        org.protobee.examples.protos.Common.SourceAddress result = buildPartial();
+        if (!result.isInitialized()) {
+          throw newUninitializedMessageException(
+            result).asInvalidProtocolBufferException();
+        }
+        return result;
+      }
+      
+      public org.protobee.examples.protos.Common.SourceAddress buildPartial() {
+        org.protobee.examples.protos.Common.SourceAddress result = new org.protobee.examples.protos.Common.SourceAddress(this);
+        int from_bitField0_ = bitField0_;
+        int to_bitField0_ = 0;
+        if (((from_bitField0_ & 0x00000001) == 0x00000001)) {
+          to_bitField0_ |= 0x00000001;
+        }
+        result.address_ = address_;
+        if (((from_bitField0_ & 0x00000002) == 0x00000002)) {
+          to_bitField0_ |= 0x00000002;
+        }
+        result.port_ = port_;
+        result.bitField0_ = to_bitField0_;
+        onBuilt();
+        return result;
+      }
+      
+      public Builder mergeFrom(com.google.protobuf.Message other) {
+        if (other instanceof org.protobee.examples.protos.Common.SourceAddress) {
+          return mergeFrom((org.protobee.examples.protos.Common.SourceAddress)other);
+        } else {
+          super.mergeFrom(other);
+          return this;
+        }
+      }
+      
+      public Builder mergeFrom(org.protobee.examples.protos.Common.SourceAddress other) {
+        if (other == org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance()) return this;
+        if (other.hasAddress()) {
+          setAddress(other.getAddress());
+        }
+        if (other.hasPort()) {
+          setPort(other.getPort());
+        }
+        this.mergeUnknownFields(other.getUnknownFields());
+        return this;
+      }
+      
+      public final boolean isInitialized() {
+        if (!hasAddress()) {
+          
+          return false;
+        }
+        if (!hasPort()) {
+          
+          return false;
+        }
+        return true;
+      }
+      
+      public Builder mergeFrom(
+          com.google.protobuf.CodedInputStream input,
+          com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+          throws java.io.IOException {
+        com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder(
+            this.getUnknownFields());
+        while (true) {
+          int tag = input.readTag();
+          switch (tag) {
+            case 0:
+              this.setUnknownFields(unknownFields.build());
+              onChanged();
+              return this;
+            default: {
+              if (!parseUnknownField(input, unknownFields,
+                                     extensionRegistry, tag)) {
+                this.setUnknownFields(unknownFields.build());
+                onChanged();
+                return this;
+              }
+              break;
+            }
+            case 13: {
+              bitField0_ |= 0x00000001;
+              address_ = input.readFixed32();
+              break;
+            }
+            case 16: {
+              bitField0_ |= 0x00000002;
+              port_ = input.readInt32();
+              break;
+            }
+          }
+        }
+      }
+      
+      private int bitField0_;
+      
+      // required fixed32 address = 1;
+      private int address_ ;
+      public boolean hasAddress() {
+        return ((bitField0_ & 0x00000001) == 0x00000001);
+      }
+      public int getAddress() {
+        return address_;
+      }
+      public Builder setAddress(int value) {
+        bitField0_ |= 0x00000001;
+        address_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearAddress() {
+        bitField0_ = (bitField0_ & ~0x00000001);
+        address_ = 0;
+        onChanged();
+        return this;
+      }
+      
+      // required int32 port = 2;
+      private int port_ ;
+      public boolean hasPort() {
+        return ((bitField0_ & 0x00000002) == 0x00000002);
+      }
+      public int getPort() {
+        return port_;
+      }
+      public Builder setPort(int value) {
+        bitField0_ |= 0x00000002;
+        port_ = value;
+        onChanged();
+        return this;
+      }
+      public Builder clearPort() {
+        bitField0_ = (bitField0_ & ~0x00000002);
+        port_ = 0;
+        onChanged();
+        return this;
+      }
+      
+      // @@protoc_insertion_point(builder_scope:protobee.SourceAddress)
+    }
+    
+    static {
+      defaultInstance = new SourceAddress(true);
+      defaultInstance.initFields();
+    }
+    
+    // @@protoc_insertion_point(class_scope:protobee.SourceAddress)
+  }
+  
   private static com.google.protobuf.Descriptors.Descriptor
     internal_static_protobee_Header_descriptor;
   private static
     com.google.protobuf.GeneratedMessage.FieldAccessorTable
       internal_static_protobee_Header_fieldAccessorTable;
+  private static com.google.protobuf.Descriptors.Descriptor
+    internal_static_protobee_SourceAddress_descriptor;
+  private static
+    com.google.protobuf.GeneratedMessage.FieldAccessorTable
+      internal_static_protobee_SourceAddress_fieldAccessorTable;
   
   public static com.google.protobuf.Descriptors.FileDescriptor
       getDescriptor() {
@@ -502,8 +918,9 @@ public final class Common {
   static {
     java.lang.String[] descriptorData = {
       "\n\014common.proto\022\010protobee\"/\n\006Header\022\n\n\002id" +
-      "\030\001 \002(\014\022\013\n\003ttl\030\002 \002(\r\022\014\n\004hops\030\003 \002(\rB\036\n\034org" +
-      ".protobee.examples.protos"
+      "\030\001 \002(\014\022\013\n\003ttl\030\002 \002(\r\022\014\n\004hops\030\003 \002(\r\".\n\rSou" +
+      "rceAddress\022\017\n\007address\030\001 \002(\007\022\014\n\004port\030\002 \002(" +
+      "\005B\036\n\034org.protobee.examples.protos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -518,6 +935,14 @@ public final class Common {
               new java.lang.String[] { "Id", "Ttl", "Hops", },
               org.protobee.examples.protos.Common.Header.class,
               org.protobee.examples.protos.Common.Header.Builder.class);
+          internal_static_protobee_SourceAddress_descriptor =
+            getDescriptor().getMessageTypes().get(1);
+          internal_static_protobee_SourceAddress_fieldAccessorTable = new
+            com.google.protobuf.GeneratedMessage.FieldAccessorTable(
+              internal_static_protobee_SourceAddress_descriptor,
+              new java.lang.String[] { "Address", "Port", },
+              org.protobee.examples.protos.Common.SourceAddress.class,
+              org.protobee.examples.protos.Common.SourceAddress.Builder.class);
           return null;
         }
       };
