@@ -60,6 +60,7 @@
                   <arg value="--proto_path=src/main/resources/protos/" />
                   <arg value="src/main/resources/protos/common.proto" />
                   <arg value="src/main/resources/protos/broadcaster.proto" />
+                  <arg value="src/main/resources/protos/emotion.proto" />
                 </exec>
               </target>
             </configuration>

@@ -11,6 +11,7 @@ import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
 
+import com.google.common.collect.Sets;
 import com.google.common.net.InetAddresses;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -22,6 +23,7 @@ public class AbstractGnutellaTest extends AbstractTest {
 
   @Before
   public void setup() {
+    localTesters = Sets.newHashSet();
     injector = Guice.createInjector(new ProtobeeGuiceModule(), new GnutellaGuiceModule());
   }
 
