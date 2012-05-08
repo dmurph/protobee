@@ -4,7 +4,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.local.LocalAddress;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.junit.Test;
-import org.protobee.JnutellaServantBootstrapper;
+import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.ProtobeeGuiceModule;
 import org.protobee.netty.LocalNettyTester;
 import org.protobee.network.ConnectionCreator;
@@ -23,7 +23,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
     LocalNettyTester tester = createLocalNettyTester();
@@ -41,7 +41,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
 
@@ -71,7 +71,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
 
@@ -101,7 +101,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
     LocalNettyTester tester = createLocalNettyTester();

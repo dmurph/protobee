@@ -9,4 +9,7 @@ message BroadcastMessage {
   required Header header = 1;
   optional string message = 2;
   optional int64 sendTimeMillis = 3;
+  
+  optional fixed32 listeningAddress = 4;
+  optional int32 listeningPort = 5;
 }

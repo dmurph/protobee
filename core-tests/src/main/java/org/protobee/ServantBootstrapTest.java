@@ -31,8 +31,8 @@ public class ServantBootstrapTest {
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
-    JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channels);
+    ProtobeeServantBootstrapper bootstrapper =
+        new ProtobeeServantBootstrapper(ImmutableSet.of(model), binder, channels);
 
     bootstrapper.startup();
 
@@ -54,8 +54,8 @@ public class ServantBootstrapTest {
     ConnectionBinder binder = mock(ConnectionBinder.class);
     ProtobeeChannels channels = mock(ProtobeeChannels.class);
 
-    JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(models, binder, channels);
+    ProtobeeServantBootstrapper bootstrapper =
+        new ProtobeeServantBootstrapper(models, binder, channels);
 
     bootstrapper.startup();
 
@@ -76,8 +76,8 @@ public class ServantBootstrapTest {
     when(channelGroup.close()).thenReturn(closeFuture);
     when(model.getServerFactory()).thenReturn(channelFactory);
 
-    JnutellaServantBootstrapper bootstrapper =
-        new JnutellaServantBootstrapper(ImmutableSet.of(model), binder, channels);
+    ProtobeeServantBootstrapper bootstrapper =
+        new ProtobeeServantBootstrapper(ImmutableSet.of(model), binder, channels);
 
     bootstrapper.startup();
 
