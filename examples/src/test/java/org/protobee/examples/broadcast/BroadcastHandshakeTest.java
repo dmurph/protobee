@@ -13,11 +13,15 @@ import org.protobee.protocol.ProtocolModel;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.util.Modules;
 
 public class BroadcastHandshakeTest extends AbstractBroadcastTest {
   @Test
   public void testHandshake() throws Exception {
-    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+    Injector inj =
+        Guice.createInjector(Modules
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+                new LocalChannelsModule()));
 
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();
@@ -29,64 +33,73 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
 
     bootstrap.shutdown(1000);
   }
-  
+
   @Test
   public void testSendingHandshakeNoTimed() throws Exception {
-    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+    Injector inj =
+        Guice.createInjector(Modules
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+                new LocalChannelsModule()));
 
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();
-    
+
 
     LocalNettyTester tester = createLocalNettyTester();
     tester.bind(new LocalAddress("test"));
-    
+
 
     ProtocolConfig broadcastConfig = getConfig(inj, Broadcast.class);
     ProtocolModel model = fromConfig(inj, broadcastConfig);
-    
+
     ConnectionCreator creator = inj.getInstance(ConnectionCreator.class);
     creator.connect(model, new LocalAddress("test"), HttpMethod.valueOf("SAY"), "/");
-    
+
     tester.verifyReceived(ChannelBuffers.wrappedBuffer(timedHandshake0.getBytes()));
     tester.writeAndWait(ChannelBuffers.wrappedBuffer(handshake1.getBytes()), 1000);
     tester.verifyReceived(ChannelBuffers.wrappedBuffer(handshake2.getBytes()));
-    
+
     tester.verifyNotClosed();
 
     bootstrap.shutdown(1000);
   }
-  
+
   @Test
   public void testSendingHandshakeTimed() throws Exception {
-    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+    Injector inj =
+        Guice.createInjector(Modules
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+                new LocalChannelsModule()));
 
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();
-    
+
 
     LocalNettyTester tester = createLocalNettyTester();
     tester.bind(new LocalAddress("test"));
-    
+
 
     ProtocolConfig broadcastConfig = getConfig(inj, Broadcast.class);
     ProtocolModel model = fromConfig(inj, broadcastConfig);
-    
+
     ConnectionCreator creator = inj.getInstance(ConnectionCreator.class);
     creator.connect(model, new LocalAddress("test"), HttpMethod.valueOf("SAY"), "/");
-    
+
     tester.verifyReceived(ChannelBuffers.wrappedBuffer(timedHandshake0.getBytes()));
     tester.writeAndWait(ChannelBuffers.wrappedBuffer(timedHandshake1.getBytes()), 1000);
     tester.verifyReceived(ChannelBuffers.wrappedBuffer(timedHandshake2.getBytes()));
-    
+
     tester.verifyNotClosed();
 
     bootstrap.shutdown(1000);
   }
-  
+
   @Test
   public void testTimedHandshake() throws Exception {
-    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+    Injector inj =
+        Guice.createInjector(Modules
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+                new LocalChannelsModule()));
 
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();

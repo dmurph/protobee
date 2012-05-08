@@ -24,7 +24,7 @@ import com.google.inject.Inject;
 import com.google.protobuf.ByteString;
 
 @SessionScope
-@Headers(required = {}, silentExcluding={@CompatabilityHeader(name="Time-Support", minVersion="0.1", maxVersion="+")})
+@Headers(required = {}, silentExcluding = {@CompatabilityHeader(name = "Time-Support", minVersion = "0.1", maxVersion = "+")})
 public class BroadcastMessageModule extends ProtocolModule {
 
   @InjectLogger
@@ -54,6 +54,9 @@ public class BroadcastMessageModule extends ProtocolModule {
     Header header = message.getHeader();
     int hops = header.getHops();
     int ttl = header.getTtl();
+    if (ttl == 1) {
+      return;
+    }
     ByteString id = header.getId();
 
     log.info("Received message " + message);
@@ -63,7 +66,7 @@ public class BroadcastMessageModule extends ProtocolModule {
     session.exitScope();
     identity.exitScope();
     for (SessionModel sessionModel : sessions) {
-      if(sessionModel == session) {
+      if (sessionModel == session) {
         continue;
       }
       try {

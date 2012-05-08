@@ -1,8 +1,7 @@
 package org.protobee.examples.broadcast.constants;
 
+import java.net.InetSocketAddress;
 import java.net.SocketAddress;
-
-import org.jboss.netty.channel.local.LocalAddress;
 
 import com.google.inject.AbstractModule;
 
@@ -15,7 +14,7 @@ public class BroadcastConstantsGuiceModule extends AbstractModule {
     bindConstant().annotatedWith(IdSize.class).to(16);
 
     bind(SocketAddress.class).annotatedWith(BroadcastListeningAddress.class).toInstance(
-        new LocalAddress("broadcast-example"));
+        new InetSocketAddress(33325));
   }
 
 }
