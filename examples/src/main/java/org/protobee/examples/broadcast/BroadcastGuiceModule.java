@@ -14,6 +14,7 @@ import org.protobee.examples.broadcast.constants.BroadcastConstantsGuiceModule;
 import org.protobee.examples.broadcast.filters.InvalidMessageFilter;
 import org.protobee.examples.broadcast.modules.BroadcastMessageModule;
 import org.protobee.examples.broadcast.modules.TimeBroadcastMessageModule;
+import org.protobee.examples.broadcast.session.BroadcastPrefilterHandler;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.guice.netty.NioClientSocketChannelFactoryProvider;
 import org.protobee.guice.netty.NioServerSocketChannelFactoryProvider;
@@ -62,8 +63,8 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
 
   @Provides
   @Broadcast
-  public ChannelHandler[] getProtocolHandlers(EventBus eventBus, ProtobufEncoder encoder,
-      DownstreamMessagePosterHandler.Factory writerFactory,
+  public ChannelHandler[] getProtocolHandlers(EventBus eventBus, BroadcastPrefilterHandler filter,
+      ProtobufEncoder encoder, DownstreamMessagePosterHandler.Factory writerFactory,
       UpstreamMessagePosterHandler.Factory readerFactory, CleanupOnDisconnectHandler cleanup,
       CloseOnExceptionHandler closeOnException) {
     ChannelMessagePoster writerPoster =
@@ -91,7 +92,7 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
         encoder,
         new ProtobufDecoder(BroadcastMessage.getDefaultInstance()),
         new LoggingHandler("org.protobee.examples.broadcast.BroadcastLoggingHandler",
-            InternalLogLevel.DEBUG, false),
+            InternalLogLevel.DEBUG, false), filter,
         writerFactory.create(writerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE),
         readerFactory.create(readerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE), closeOnException,
         cleanup};
