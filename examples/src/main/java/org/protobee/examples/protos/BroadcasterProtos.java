@@ -24,13 +24,10 @@ public final class BroadcasterProtos {
     boolean hasSendTimeMillis();
     long getSendTimeMillis();
     
-    // optional fixed32 listeningAddress = 4;
-    boolean hasListeningAddress();
-    int getListeningAddress();
-    
-    // optional int32 listeningPort = 5;
-    boolean hasListeningPort();
-    int getListeningPort();
+    // optional .protobee.SourceAddress sourceAddress = 4;
+    boolean hasSourceAddress();
+    org.protobee.examples.protos.Common.SourceAddress getSourceAddress();
+    org.protobee.examples.protos.Common.SourceAddressOrBuilder getSourceAddressOrBuilder();
   }
   public static final class BroadcastMessage extends
       com.google.protobuf.GeneratedMessage
@@ -116,32 +113,24 @@ public final class BroadcasterProtos {
       return sendTimeMillis_;
     }
     
-    // optional fixed32 listeningAddress = 4;
-    public static final int LISTENINGADDRESS_FIELD_NUMBER = 4;
-    private int listeningAddress_;
-    public boolean hasListeningAddress() {
+    // optional .protobee.SourceAddress sourceAddress = 4;
+    public static final int SOURCEADDRESS_FIELD_NUMBER = 4;
+    private org.protobee.examples.protos.Common.SourceAddress sourceAddress_;
+    public boolean hasSourceAddress() {
       return ((bitField0_ & 0x00000008) == 0x00000008);
     }
-    public int getListeningAddress() {
-      return listeningAddress_;
+    public org.protobee.examples.protos.Common.SourceAddress getSourceAddress() {
+      return sourceAddress_;
     }
-    
-    // optional int32 listeningPort = 5;
-    public static final int LISTENINGPORT_FIELD_NUMBER = 5;
-    private int listeningPort_;
-    public boolean hasListeningPort() {
-      return ((bitField0_ & 0x00000010) == 0x00000010);
-    }
-    public int getListeningPort() {
-      return listeningPort_;
+    public org.protobee.examples.protos.Common.SourceAddressOrBuilder getSourceAddressOrBuilder() {
+      return sourceAddress_;
     }
     
     private void initFields() {
       header_ = org.protobee.examples.protos.Common.Header.getDefaultInstance();
       message_ = "";
       sendTimeMillis_ = 0L;
-      listeningAddress_ = 0;
-      listeningPort_ = 0;
+      sourceAddress_ = org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance();
     }
     private byte memoizedIsInitialized = -1;
     public final boolean isInitialized() {
@@ -155,6 +144,12 @@ public final class BroadcasterProtos {
       if (!getHeader().isInitialized()) {
         memoizedIsInitialized = 0;
         return false;
+      }
+      if (hasSourceAddress()) {
+        if (!getSourceAddress().isInitialized()) {
+          memoizedIsInitialized = 0;
+          return false;
+        }
       }
       memoizedIsInitialized = 1;
       return true;
@@ -173,10 +168,7 @@ public final class BroadcasterProtos {
         output.writeInt64(3, sendTimeMillis_);
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
-        output.writeFixed32(4, listeningAddress_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        output.writeInt32(5, listeningPort_);
+        output.writeMessage(4, sourceAddress_);
       }
       getUnknownFields().writeTo(output);
     }
@@ -201,11 +193,7 @@ public final class BroadcasterProtos {
       }
       if (((bitField0_ & 0x00000008) == 0x00000008)) {
         size += com.google.protobuf.CodedOutputStream
-          .computeFixed32Size(4, listeningAddress_);
-      }
-      if (((bitField0_ & 0x00000010) == 0x00000010)) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(5, listeningPort_);
+          .computeMessageSize(4, sourceAddress_);
       }
       size += getUnknownFields().getSerializedSize();
       memoizedSerializedSize = size;
@@ -324,6 +312,7 @@ public final class BroadcasterProtos {
       private void maybeForceBuilderInitialization() {
         if (com.google.protobuf.GeneratedMessage.alwaysUseFieldBuilders) {
           getHeaderFieldBuilder();
+          getSourceAddressFieldBuilder();
         }
       }
       private static Builder create() {
@@ -342,10 +331,12 @@ public final class BroadcasterProtos {
         bitField0_ = (bitField0_ & ~0x00000002);
         sendTimeMillis_ = 0L;
         bitField0_ = (bitField0_ & ~0x00000004);
-        listeningAddress_ = 0;
+        if (sourceAddressBuilder_ == null) {
+          sourceAddress_ = org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance();
+        } else {
+          sourceAddressBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000008);
-        listeningPort_ = 0;
-        bitField0_ = (bitField0_ & ~0x00000010);
         return this;
       }
       
@@ -403,11 +394,11 @@ public final class BroadcasterProtos {
         if (((from_bitField0_ & 0x00000008) == 0x00000008)) {
           to_bitField0_ |= 0x00000008;
         }
-        result.listeningAddress_ = listeningAddress_;
-        if (((from_bitField0_ & 0x00000010) == 0x00000010)) {
-          to_bitField0_ |= 0x00000010;
+        if (sourceAddressBuilder_ == null) {
+          result.sourceAddress_ = sourceAddress_;
+        } else {
+          result.sourceAddress_ = sourceAddressBuilder_.build();
         }
-        result.listeningPort_ = listeningPort_;
         result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
@@ -433,11 +424,8 @@ public final class BroadcasterProtos {
         if (other.hasSendTimeMillis()) {
           setSendTimeMillis(other.getSendTimeMillis());
         }
-        if (other.hasListeningAddress()) {
-          setListeningAddress(other.getListeningAddress());
-        }
-        if (other.hasListeningPort()) {
-          setListeningPort(other.getListeningPort());
+        if (other.hasSourceAddress()) {
+          mergeSourceAddress(other.getSourceAddress());
         }
         this.mergeUnknownFields(other.getUnknownFields());
         return this;
@@ -451,6 +439,12 @@ public final class BroadcasterProtos {
         if (!getHeader().isInitialized()) {
           
           return false;
+        }
+        if (hasSourceAddress()) {
+          if (!getSourceAddress().isInitialized()) {
+            
+            return false;
+          }
         }
         return true;
       }
@@ -497,14 +491,13 @@ public final class BroadcasterProtos {
               sendTimeMillis_ = input.readInt64();
               break;
             }
-            case 37: {
-              bitField0_ |= 0x00000008;
-              listeningAddress_ = input.readFixed32();
-              break;
-            }
-            case 40: {
-              bitField0_ |= 0x00000010;
-              listeningPort_ = input.readInt32();
+            case 34: {
+              org.protobee.examples.protos.Common.SourceAddress.Builder subBuilder = org.protobee.examples.protos.Common.SourceAddress.newBuilder();
+              if (hasSourceAddress()) {
+                subBuilder.mergeFrom(getSourceAddress());
+              }
+              input.readMessage(subBuilder, extensionRegistry);
+              setSourceAddress(subBuilder.buildPartial());
               break;
             }
           }
@@ -660,46 +653,94 @@ public final class BroadcasterProtos {
         return this;
       }
       
-      // optional fixed32 listeningAddress = 4;
-      private int listeningAddress_ ;
-      public boolean hasListeningAddress() {
+      // optional .protobee.SourceAddress sourceAddress = 4;
+      private org.protobee.examples.protos.Common.SourceAddress sourceAddress_ = org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance();
+      private com.google.protobuf.SingleFieldBuilder<
+          org.protobee.examples.protos.Common.SourceAddress, org.protobee.examples.protos.Common.SourceAddress.Builder, org.protobee.examples.protos.Common.SourceAddressOrBuilder> sourceAddressBuilder_;
+      public boolean hasSourceAddress() {
         return ((bitField0_ & 0x00000008) == 0x00000008);
       }
-      public int getListeningAddress() {
-        return listeningAddress_;
+      public org.protobee.examples.protos.Common.SourceAddress getSourceAddress() {
+        if (sourceAddressBuilder_ == null) {
+          return sourceAddress_;
+        } else {
+          return sourceAddressBuilder_.getMessage();
+        }
       }
-      public Builder setListeningAddress(int value) {
+      public Builder setSourceAddress(org.protobee.examples.protos.Common.SourceAddress value) {
+        if (sourceAddressBuilder_ == null) {
+          if (value == null) {
+            throw new NullPointerException();
+          }
+          sourceAddress_ = value;
+          onChanged();
+        } else {
+          sourceAddressBuilder_.setMessage(value);
+        }
         bitField0_ |= 0x00000008;
-        listeningAddress_ = value;
-        onChanged();
         return this;
       }
-      public Builder clearListeningAddress() {
+      public Builder setSourceAddress(
+          org.protobee.examples.protos.Common.SourceAddress.Builder builderForValue) {
+        if (sourceAddressBuilder_ == null) {
+          sourceAddress_ = builderForValue.build();
+          onChanged();
+        } else {
+          sourceAddressBuilder_.setMessage(builderForValue.build());
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      public Builder mergeSourceAddress(org.protobee.examples.protos.Common.SourceAddress value) {
+        if (sourceAddressBuilder_ == null) {
+          if (((bitField0_ & 0x00000008) == 0x00000008) &&
+              sourceAddress_ != org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance()) {
+            sourceAddress_ =
+              org.protobee.examples.protos.Common.SourceAddress.newBuilder(sourceAddress_).mergeFrom(value).buildPartial();
+          } else {
+            sourceAddress_ = value;
+          }
+          onChanged();
+        } else {
+          sourceAddressBuilder_.mergeFrom(value);
+        }
+        bitField0_ |= 0x00000008;
+        return this;
+      }
+      public Builder clearSourceAddress() {
+        if (sourceAddressBuilder_ == null) {
+          sourceAddress_ = org.protobee.examples.protos.Common.SourceAddress.getDefaultInstance();
+          onChanged();
+        } else {
+          sourceAddressBuilder_.clear();
+        }
         bitField0_ = (bitField0_ & ~0x00000008);
-        listeningAddress_ = 0;
-        onChanged();
         return this;
       }
-      
-      // optional int32 listeningPort = 5;
-      private int listeningPort_ ;
-      public boolean hasListeningPort() {
-        return ((bitField0_ & 0x00000010) == 0x00000010);
-      }
-      public int getListeningPort() {
-        return listeningPort_;
-      }
-      public Builder setListeningPort(int value) {
-        bitField0_ |= 0x00000010;
-        listeningPort_ = value;
+      public org.protobee.examples.protos.Common.SourceAddress.Builder getSourceAddressBuilder() {
+        bitField0_ |= 0x00000008;
         onChanged();
-        return this;
+        return getSourceAddressFieldBuilder().getBuilder();
       }
-      public Builder clearListeningPort() {
-        bitField0_ = (bitField0_ & ~0x00000010);
-        listeningPort_ = 0;
-        onChanged();
-        return this;
+      public org.protobee.examples.protos.Common.SourceAddressOrBuilder getSourceAddressOrBuilder() {
+        if (sourceAddressBuilder_ != null) {
+          return sourceAddressBuilder_.getMessageOrBuilder();
+        } else {
+          return sourceAddress_;
+        }
+      }
+      private com.google.protobuf.SingleFieldBuilder<
+          org.protobee.examples.protos.Common.SourceAddress, org.protobee.examples.protos.Common.SourceAddress.Builder, org.protobee.examples.protos.Common.SourceAddressOrBuilder> 
+          getSourceAddressFieldBuilder() {
+        if (sourceAddressBuilder_ == null) {
+          sourceAddressBuilder_ = new com.google.protobuf.SingleFieldBuilder<
+              org.protobee.examples.protos.Common.SourceAddress, org.protobee.examples.protos.Common.SourceAddress.Builder, org.protobee.examples.protos.Common.SourceAddressOrBuilder>(
+                  sourceAddress_,
+                  getParentForChildren(),
+                  isClean());
+          sourceAddress_ = null;
+        }
+        return sourceAddressBuilder_;
       }
       
       // @@protoc_insertion_point(builder_scope:protobee.BroadcastMessage)
@@ -728,11 +769,11 @@ public final class BroadcasterProtos {
   static {
     java.lang.String[] descriptorData = {
       "\n\021broadcaster.proto\022\010protobee\032\014common.pr" +
-      "oto\"\216\001\n\020BroadcastMessage\022 \n\006header\030\001 \002(\013" +
+      "oto\"\215\001\n\020BroadcastMessage\022 \n\006header\030\001 \002(\013" +
       "2\020.protobee.Header\022\017\n\007message\030\002 \001(\t\022\026\n\016s" +
-      "endTimeMillis\030\003 \001(\003\022\030\n\020listeningAddress\030" +
-      "\004 \001(\007\022\025\n\rlisteningPort\030\005 \001(\005B1\n\034org.prot" +
-      "obee.examples.protosB\021BroadcasterProtos"
+      "endTimeMillis\030\003 \001(\003\022.\n\rsourceAddress\030\004 \001" +
+      "(\0132\027.protobee.SourceAddressB1\n\034org.proto" +
+      "bee.examples.protosB\021BroadcasterProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {
@@ -744,7 +785,7 @@ public final class BroadcasterProtos {
           internal_static_protobee_BroadcastMessage_fieldAccessorTable = new
             com.google.protobuf.GeneratedMessage.FieldAccessorTable(
               internal_static_protobee_BroadcastMessage_descriptor,
-              new java.lang.String[] { "Header", "Message", "SendTimeMillis", "ListeningAddress", "ListeningPort", },
+              new java.lang.String[] { "Header", "Message", "SendTimeMillis", "SourceAddress", },
               org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage.class,
               org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage.Builder.class);
           return null;

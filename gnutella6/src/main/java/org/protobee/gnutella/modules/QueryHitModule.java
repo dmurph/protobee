@@ -80,7 +80,7 @@ public class QueryHitModule extends ProtocolModule {
     } 
 
     // for routing query hit
-    String filterOutput = filter.shouldRouteQueryHitMessage(qgrPair, header.getTtl());
+    String filterOutput = filter.shouldRouteQueryHitMessage(qgrPair);
     if (filterOutput != null) {
       dropLog.messageDropped(identity.getSendingAddress(gnutella), gnutella, event.getMessage(), filterOutput);
       return;
