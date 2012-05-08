@@ -50,7 +50,7 @@ public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
     install(new FactoryModuleBuilder().build(MessageHeader.Factory.class));
 
     bind(GnutellaServantModel.class).in(IdentityScope.class);
-
+    
     addProtocolConfig(GnutellaProtocolConfig.class, Gnutella.class);
 
     bind(Protocol.class).annotatedWith(Gnutella.class).toProvider(GnutellaProtocolConfig.class)

@@ -1,0 +1,21 @@
+package protobee;
+
+import "common.proto";
+
+option java_package = "org.protobee.examples.protos";
+option java_outer_classname = "EmotionProtos";
+
+message EmotionMessage {
+  required Header header = 1;
+  
+  enum Type {
+  	AFRAID = 0;
+  	ANGRY = 1;
+    HAPPY = 2;
+    DISGUSTED = 3;
+    SAD = 4;
+    SURPRISED = 5;
+  }
+  
+  required Type emotion = 2;
+}

@@ -159,10 +159,4 @@ public class NetworkIdentityManager {
     }
   }
   
-  public Set<NetworkIdentity> getPeers(){
-    Set<NetworkIdentity> ids = identities;
-    ids.remove(getMe());
-    return ids;
-  }
-  
 }
