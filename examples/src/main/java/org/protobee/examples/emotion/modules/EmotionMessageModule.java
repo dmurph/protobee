@@ -1,14 +1,17 @@
 package org.protobee.examples.emotion.modules;
 
-import java.util.Set;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.List;
+import java.util.Random;
 
 import org.protobee.annotation.InjectLogger;
 import org.protobee.compatability.CompatabilityHeader;
 import org.protobee.compatability.Headers;
 import org.protobee.events.BasicMessageReceivedEvent;
-import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.examples.protos.Common.Header;
 import org.protobee.examples.protos.EmotionProtos.EmotionMessage;
+import org.protobee.examples.protos.EmotionProtos.EmotionMessage.Type;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentity;
 import org.protobee.modules.ProtocolModule;
@@ -38,7 +41,7 @@ public class EmotionMessageModule extends ProtocolModule {
 
   @Inject
   public EmotionMessageModule(SessionManager sessionManager, SessionModel session,
-      NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer) {
+                              NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer) {
     this.sessionManager = sessionManager;
     this.session = session;
     this.identity = identity;
@@ -52,35 +55,46 @@ public class EmotionMessageModule extends ProtocolModule {
         "Not an emotion message");
 
     EmotionMessage message = (EmotionMessage) event.getMessage();
-    Header header = message.getHeader();
-    int hops = header.getHops();
-    int ttl = header.getTtl();
-    ByteString id = header.getId();
-
+    
     log.info("Received message " + message);
 
-    Set<SessionModel> sessions = sessionManager.getCurrentSessions(myProtocol);
+    SimpleThread thread = new SimpleThread();
+    thread.start();
 
+//    session.
+//    
+//    protocol.handler
+//    sessionclosingposter
+    
+    
+    
     session.exitScope();
     identity.exitScope();
-    for (SessionModel sessionModel : sessions) {
-      if(sessionModel == session) {
-        continue;
-      }
-      try {
-        sessionModel.getIdentity().enterScope();
-        BroadcastMessage sendingMessage =
-            BroadcastMessage.newBuilder()
-                .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
-                .setMessage(message.getMessage()).build();
-        log.info("Sending message " + sendingMessage + " to "
-            + sessionModel.getIdentity().getListeningAddress(myProtocol));
-        writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
-      } finally {
-        sessionModel.getIdentity().exitScope();
-      }
+  }
+  
+  class SimpleThread extends Thread {
+    protected final List<Type> values;
+    protected final Random random;
+    public SimpleThread() {
+      super();
+      values = Collections.unmodifiableList(Arrays.asList(Type.values()));
+      random = new Random();
     }
-    identity.enterScope();
-    session.enterScope();
+    public void run() {
+
+      //TODO
+      ByteString id = ByteString.copyFrom(new byte[4]);
+      
+      EmotionMessage sendingMessage =
+          EmotionMessage.newBuilder()
+          .setHeader(Header.newBuilder().setTtl(1).setHops(0).setId(id))
+          .setEmotion(values.get(random.nextInt(values.size()))).build();
+      log.info("Sending message " + sendingMessage + " to "
+          + session.getIdentity().getListeningAddress(myProtocol));
+      writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
+
+    }
   }
 }
+
+
