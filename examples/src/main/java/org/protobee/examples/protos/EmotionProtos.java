@@ -56,7 +56,6 @@ public final class EmotionProtos {
       DISGUSTED(3, 3),
       SAD(4, 4),
       SURPRISED(5, 5),
-      BLAH(6, 6),
       ;
       
       public static final int AFRAID_VALUE = 0;
@@ -65,7 +64,6 @@ public final class EmotionProtos {
       public static final int DISGUSTED_VALUE = 3;
       public static final int SAD_VALUE = 4;
       public static final int SURPRISED_VALUE = 5;
-      public static final int BLAH_VALUE = 6;
       
       
       public final int getNumber() { return value; }
@@ -78,7 +76,6 @@ public final class EmotionProtos {
           case 3: return DISGUSTED;
           case 4: return SAD;
           case 5: return SURPRISED;
-          case 6: return BLAH;
           default: return null;
         }
       }
@@ -109,7 +106,7 @@ public final class EmotionProtos {
       }
       
       private static final Type[] VALUES = {
-        AFRAID, ANGRY, HAPPY, DISGUSTED, SAD, SURPRISED, BLAH, 
+        AFRAID, ANGRY, HAPPY, DISGUSTED, SAD, SURPRISED, 
       };
       
       public static Type valueOf(
@@ -621,12 +618,12 @@ public final class EmotionProtos {
   static {
     java.lang.String[] descriptorData = {
       "\n\remotion.proto\022\010protobee\032\014common.proto\"" +
-      "\275\001\n\016EmotionMessage\022 \n\006header\030\001 \002(\0132\020.pro" +
+      "\263\001\n\016EmotionMessage\022 \n\006header\030\001 \002(\0132\020.pro" +
       "tobee.Header\022.\n\007emotion\030\002 \002(\0162\035.protobee" +
-      ".EmotionMessage.Type\"Y\n\004Type\022\n\n\006AFRAID\020\000" +
+      ".EmotionMessage.Type\"O\n\004Type\022\n\n\006AFRAID\020\000" +
       "\022\t\n\005ANGRY\020\001\022\t\n\005HAPPY\020\002\022\r\n\tDISGUSTED\020\003\022\007\n" +
-      "\003SAD\020\004\022\r\n\tSURPRISED\020\005\022\010\n\004BLAH\020\006B-\n\034org.p" +
-      "rotobee.examples.protosB\rEmotionProtos"
+      "\003SAD\020\004\022\r\n\tSURPRISED\020\005B-\n\034org.protobee.ex" +
+      "amples.protosB\rEmotionProtos"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
       new com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner() {

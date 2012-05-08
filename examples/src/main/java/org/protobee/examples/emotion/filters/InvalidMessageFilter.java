@@ -1,17 +1,17 @@
 package org.protobee.examples.emotion.filters;
 
-import org.protobee.examples.broadcast.constants.IdSize;
-import org.protobee.examples.broadcast.constants.MaxHops;
-import org.protobee.examples.broadcast.constants.MaxTtl;
+import org.protobee.examples.emotion.constants.IdSize;
+import org.protobee.examples.emotion.constants.MaxHops;
+import org.protobee.examples.emotion.constants.MaxTtl;
 import org.protobee.examples.protos.Common.Header;
-import org.protobee.examples.protos.EmotionReplyProtos.EmotionReplyMessage;
+import org.protobee.examples.protos.EmotionProtos.EmotionMessage;
 import org.protobee.util.PreFilter;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
 
 @Singleton
-public class InvalidMessageFilter implements PreFilter<EmotionReplyMessage> {
+public class InvalidMessageFilter implements PreFilter<EmotionMessage> {
 
   private final int maxHops;
   private final int maxTtl;
@@ -25,7 +25,7 @@ public class InvalidMessageFilter implements PreFilter<EmotionReplyMessage> {
   }
 
   @Override
-  public String shouldFilter(EmotionReplyMessage message) {
+  public String shouldFilter(EmotionMessage message) {
     Header header = message.getHeader();
     int hops = header.getHops();
     int ttl = header.getTtl();
