@@ -8,7 +8,7 @@ import org.protobee.compatability.Headers;
 import org.protobee.events.BasicMessageReceivedEvent;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.guice.scopes.SessionScope;
-import org.protobee.identity.NetworkIdentity;
+import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ConnectionCreator;
 import org.protobee.protocol.Protocol;
@@ -26,21 +26,21 @@ public class FeelingsInitiatorModule extends ProtocolModule {
 
   @InjectLogger
   private Logger log;
-  private final NetworkIdentity identity;
+  private final NetworkIdentityManager identityManager;
   private final Protocol feelingsProtocol;
   private final ConnectionCreator creator;
   private final ProtocolModel feelingsModel;
   private final SocketAddressUtils addressUtils;
 
   @Inject
-  public FeelingsInitiatorModule(NetworkIdentity identity, 
-      ConnectionCreator creator, Protocol feelings, ProtocolModel feelingsModel,
-      SocketAddressUtils addressUtils) {
-    this.identity = identity;
+  public FeelingsInitiatorModule(ConnectionCreator creator,
+      Protocol feelings, ProtocolModel feelingsModel, SocketAddressUtils addressUtils,
+      NetworkIdentityManager manager) {
     this.creator = creator;
     this.feelingsProtocol = feelings;
     this.feelingsModel = feelingsModel;
     this.addressUtils = addressUtils;
+    this.identityManager = manager;
   }
 
   @Subscribe
@@ -48,10 +48,11 @@ public class FeelingsInitiatorModule extends ProtocolModule {
     Preconditions.checkArgument(event.getMessage() instanceof BroadcastMessage,
         "Not a broadcast message");
     BroadcastMessage message = (BroadcastMessage) event.getMessage();
-
-    if (message.getMessage().equals("feelings!") && !identity.hasCurrentSession(feelingsProtocol)) {
-      SocketAddress address =
-          addressUtils.getAddress(message.getListeningAddress(), message.getListeningPort());
+    SocketAddress address =
+        addressUtils.getAddress(message.getListeningAddress(), message.getListeningPort());
+    if (message.getMessage().equals("feelings!")
+        && (!identityManager.hasNetworkIdentity(address) || !identityManager.getNewtorkIdentity(
+            address).hasCurrentSession(feelingsProtocol))) {
       log.info("Connecting to address " + address + " with feelings protocol");
       creator.connect(feelingsModel, address, HttpMethod.valueOf("SAY"), "/");
     }
