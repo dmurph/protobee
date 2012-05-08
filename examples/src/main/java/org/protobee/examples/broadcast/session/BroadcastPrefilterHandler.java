@@ -10,7 +10,11 @@ import org.protobee.protocol.handlers.FilterMode;
 import org.protobee.stats.DropLog;
 import org.protobee.util.PreFilter;
 
+import com.google.inject.Inject;
+
 public class BroadcastPrefilterHandler extends FilterChannelHandler<BroadcastMessage> {
+  
+  @Inject
   public BroadcastPrefilterHandler(@Broadcast Set<PreFilter<BroadcastMessage>> filters,
       DropLog dropLog, Protocol protocol) {
     super(filters, dropLog, protocol, BroadcastMessage.class, FilterMode.ERROR_ON_MISMATCHED_TYPE);
