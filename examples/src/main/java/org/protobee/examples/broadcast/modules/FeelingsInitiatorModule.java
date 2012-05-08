@@ -6,6 +6,7 @@ import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.protobee.annotation.InjectLogger;
 import org.protobee.compatability.Headers;
 import org.protobee.events.BasicMessageReceivedEvent;
+import org.protobee.examples.emotion.Emotion;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.identity.NetworkIdentityManager;
@@ -34,7 +35,7 @@ public class FeelingsInitiatorModule extends ProtocolModule {
 
   @Inject
   public FeelingsInitiatorModule(ConnectionCreator creator,
-      Protocol feelings, ProtocolModel feelingsModel, SocketAddressUtils addressUtils,
+      @Emotion Protocol feelings, @Emotion ProtocolModel feelingsModel, SocketAddressUtils addressUtils,
       NetworkIdentityManager manager) {
     this.creator = creator;
     this.feelingsProtocol = feelings;
