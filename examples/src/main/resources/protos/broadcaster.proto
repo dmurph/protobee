@@ -1,0 +1,12 @@
+package protobee;
+
+import "common.proto";
+
+option java_package = "org.protobee.examples.protos";
+option java_outer_classname = "BroadcasterProtos";
+
+message BroadcastMessage {
+  required Header header = 1;
+  optional string message = 2;
+  optional int64 sendTimeMillis = 3;
+}
