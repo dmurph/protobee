@@ -66,6 +66,7 @@ public class ProtobeeServantBootstrapper {
 
         for (SocketAddress address : portToProtocols.keySet()) {
           Set<ProtocolModel> models = portToProtocols.get(address);
+          Preconditions.checkState(models.size() != 0);
 
           if (models.size() == 1) {
             ProtocolModel model = Iterables.getOnlyElement(models);

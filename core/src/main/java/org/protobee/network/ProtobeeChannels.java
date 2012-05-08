@@ -55,7 +55,7 @@ public class ProtobeeChannels {
     for (Protocol protocol : protocols) {
       Preconditions.checkArgument(protocolChannels.containsKey(protocol),
           "Protocol not from configs");
-      ChannelGroup group = protocolChannels.get(protocols);
+      ChannelGroup group = protocolChannels.get(protocol);
       group.add(channel);
     }
     channels.add(channel);

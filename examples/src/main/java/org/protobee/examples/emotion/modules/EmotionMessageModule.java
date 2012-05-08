@@ -1,7 +1,6 @@
 package org.protobee.examples.emotion.modules;
 
 import org.protobee.annotation.InjectLogger;
-import org.protobee.compatability.CompatabilityHeader;
 import org.protobee.compatability.Headers;
 import org.protobee.events.BasicMessageReceivedEvent;
 import org.protobee.events.ProtocolHandlersLoadedEvent;
@@ -44,7 +43,6 @@ public class EmotionMessageModule extends ProtocolModule implements Runnable {
   public EmotionMessageModule(SessionModel session, @Emotion Protocol protocol,
       ProtobeeMessageWriter writer, NetworkIdentity identity, EmotionProvider emotionProvider,
       ProtocolModel protocolModel) {
-    System.out.println("INIT");
     this.session = session;
     this.myProtocol = protocol;
     this.writer = writer;
@@ -55,14 +53,12 @@ public class EmotionMessageModule extends ProtocolModule implements Runnable {
 
   @Subscribe
   public void protocolLoaded(ProtocolHandlersLoadedEvent event) {
-    log.info("loaded");
     thread = new Thread(this, "Demo Thread");
     thread.start();
   }
 
   @Subscribe
   public void channelDisconnected(SessionClosingEvent event) {
-    log.info("disconnected");
     stopThread();
   }
 
@@ -82,12 +78,12 @@ public class EmotionMessageModule extends ProtocolModule implements Runnable {
                     Header.newBuilder().setTtl(1).setHops(0)
                         .setId(emotionProvider.getNewEmotionId()))
                 .setEmotion(emotionProvider.getEmotion()).build();
-        log.info("Sending message " + sendingMessage + " to "
+        log.info("SENDING emotion message " + sendingMessage + " to "
             + session.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
         try {
           Thread.sleep(5000);
-        } catch (InterruptedException e) { }
+        } catch (InterruptedException e) {}
       }
 
     } finally {
@@ -103,11 +99,10 @@ public class EmotionMessageModule extends ProtocolModule implements Runnable {
 
   @Subscribe
   public void messageRecieved(BasicMessageReceivedEvent event) {
-    System.out.println("MRECEIVED");
     Preconditions.checkArgument(event.getMessage() instanceof EmotionMessage,
         "Not an emotion message");
     EmotionMessage message = (EmotionMessage) event.getMessage();
-    log.info("Received message " + message);
+    log.info("RECEIVED emotion message " + message);
   }
 
 }
