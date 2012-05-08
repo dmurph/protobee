@@ -93,7 +93,7 @@ public class EmotionMessageModule extends ProtocolModule implements Runnable {
   }
 
   public void stopThread() {
-    System.out.println("STOP");
+    log.info("Stoping emotion thread");
     running = false;
   }
 
