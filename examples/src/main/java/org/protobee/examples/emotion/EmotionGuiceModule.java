@@ -24,6 +24,7 @@ import org.protobee.protocol.handlers.ChannelMessagePoster;
 import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
 import org.protobee.protocol.handlers.FilterMode;
+import org.protobee.protocol.handlers.SessionClosingPoster;
 import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 import org.protobee.util.PreFilter;
 
@@ -63,7 +64,7 @@ public class EmotionGuiceModule extends PluginGuiceModule {
   @Provides
   @Emotion
   public ChannelHandler[] getProtocolHandlers(EventBus eventBus, ProtobufEncoder encoder,
-      DownstreamMessagePosterHandler.Factory writerFactory,
+      DownstreamMessagePosterHandler.Factory writerFactory, SessionClosingPoster closingPoster,
       UpstreamMessagePosterHandler.Factory readerFactory, CleanupOnDisconnectHandler cleanup,
       CloseOnExceptionHandler closeOnException) {
     ChannelMessagePoster writerPoster =
@@ -90,7 +91,7 @@ public class EmotionGuiceModule extends PluginGuiceModule {
         encoder,
         new ProtobufDecoder(EmotionMessage.getDefaultInstance()),
         new LoggingHandler("org.protobee.examples.emotions.EmotionLoggingHandler",
-            InternalLogLevel.DEBUG, false),
+            InternalLogLevel.DEBUG, false), closingPoster,
         writerFactory.create(writerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE),
         readerFactory.create(readerPoster, FilterMode.ERROR_ON_MISMATCHED_TYPE), closeOnException,
         cleanup};
