@@ -2,7 +2,6 @@ package org.protobee.examples.broadcast;
 
 import java.util.Set;
 
-import org.protobee.annotation.InjectLogger;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.ProtobeeMessageWriter;
@@ -10,7 +9,6 @@ import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
 import org.protobee.protocol.ProtocolModel;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
-import org.slf4j.Logger;
 
 import com.google.inject.Inject;
 import com.google.inject.Singleton;
@@ -18,8 +16,6 @@ import com.google.inject.Singleton;
 @Singleton
 public class BroadcastMessageWriter {
 
-  @InjectLogger
-  private Logger log;
   private final SessionManager sessionManager;
   private final NetworkIdentityManager identityManager;
   private final ProtocolModel broadcast;
@@ -35,7 +31,7 @@ public class BroadcastMessageWriter {
     this.writer = writer;
   }
 
-  public void broadcastMessage(BroadcastMessage message) {
+  public void broadcastMessage(BroadcastMessage.Builder message) {
     try {
       broadcast.enterScope();
       Set<SessionModel> sessions = sessionManager.getCurrentSessions(broadcast.getProtocol());
@@ -46,8 +42,6 @@ public class BroadcastMessageWriter {
         }
         try {
           sessionModel.getIdentity().enterScope();
-          log.info("Sending message " + message + " to "
-              + sessionModel.getIdentity().getListeningAddress(broadcast.getProtocol()));
           writer.write(message, HandshakeOptions.WAIT_FOR_HANDSHAKE);
         } finally {
           sessionModel.getIdentity().exitScope();

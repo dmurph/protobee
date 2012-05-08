@@ -68,10 +68,11 @@ public class BroadcastGuiceModule extends PluginGuiceModule {
       CloseOnExceptionHandler closeOnException) {
     ChannelMessagePoster writerPoster =
         new ChannelMessagePoster(
-            Sets.<PosterEventFactory<?>>newHashSet(new PosterEventFactory<BroadcastMessage>(
-                BroadcastMessage.class) {
+            Sets.<PosterEventFactory<?>>newHashSet(new PosterEventFactory<BroadcastMessage.Builder>(
+                BroadcastMessage.Builder.class) {
               @Override
-              public Object createEvent(BroadcastMessage message, ChannelHandlerContext context) {
+              public Object createEvent(BroadcastMessage.Builder message,
+                  ChannelHandlerContext context) {
                 return new BasicMessageSendingEvent(context, message);
               }
             }), eventBus);

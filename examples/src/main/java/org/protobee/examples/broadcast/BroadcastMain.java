@@ -7,62 +7,132 @@ import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.SocketAddress;
 import java.util.Random;
+import java.util.Set;
 
+import org.apache.commons.cli.CommandLine;
+import org.apache.commons.cli.CommandLineParser;
+import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.Options;
+import org.apache.commons.cli.ParseException;
+import org.apache.commons.cli.PosixParser;
 import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.ProtobeeGuiceModule;
+import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.examples.broadcast.constants.BroadcastListeningAddress;
+import org.protobee.examples.broadcast.modules.BroadcastMessageModule;
+import org.protobee.examples.broadcast.modules.FeelingsInitiatorModule;
+import org.protobee.examples.broadcast.modules.TimeBroadcastMessageModule;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.examples.protos.Common.Header;
+import org.protobee.guice.scopes.SessionScope;
+import org.protobee.modules.ProtocolModule;
 import org.protobee.network.ConnectionCreator;
 import org.protobee.protocol.ProtocolModel;
 
+import com.google.common.collect.Sets;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 import com.google.inject.Key;
+import com.google.inject.Provider;
+import com.google.inject.Provides;
+import com.google.inject.Singleton;
 import com.google.inject.util.Modules;
 import com.google.protobuf.ByteString;
 
 public class BroadcastMain {
 
-  private static void p(String s) {
-    System.out.println(s);
-  }
+  private static Options options = new Options();
 
   private static void usage() {
-    p("Arguments: <listening port>\n" + "<listening port> <connection address> ...");
+    HelpFormatter formatter = new HelpFormatter();
+    formatter.printHelp("BroadcastMain.class [options] [listen port] [remote address]...", options);
   }
 
   public static void main(String[] args) throws IOException {
+    options.addOption("no_time", false, "Flags the broadcaster to not use time");
+    options.addOption("feelings", false, "Adds the feelings module");
 
-    if (args.length < 1) {
+    CommandLineParser parser = new PosixParser();
+    final CommandLine line;
+    try {
+      line = parser.parse(options, args);
+    } catch (ParseException exp) {
+      System.err.println("Parsing failed.  Reason: " + exp.getMessage());
+      usage();
+      return;
+    }
+    String[] rest = line.getArgs();
+
+    if (rest.length == 0) {
       usage();
       return;
     }
 
-    final int localPort = Integer.parseInt(args[0]);
+    final int localPort = Integer.parseInt(rest[0]);
 
-    InetSocketAddress[] others = new InetSocketAddress[args.length - 1];
+    InetSocketAddress[] others = new InetSocketAddress[rest.length - 1];
 
-    for (int i = 1; i < args.length; i++) {
-      int col = args[i].indexOf(":");
-      String ip = args[i].substring(0, col);
-      int port = Integer.parseInt(args[i].substring(col + 1));
+    for (int i = 1; i < rest.length; i++) {
+      int col = rest[i].indexOf(":");
+      String ip = rest[i].substring(0, col);
+      int port = Integer.parseInt(rest[i].substring(col + 1));
       InetSocketAddress inetSocketAddress = new InetSocketAddress(InetAddress.getByName(ip), port);
       others[i - 1] = inetSocketAddress;
     }
 
+    AbstractModule optionModule = new AbstractModule() {
+      @Override
+      protected void configure() {}
+
+      @SuppressWarnings("unused")
+      @Provides
+      @Broadcast
+      @SessionScope
+      public Set<ProtocolModule> getModules(Provider<BroadcastMessageModule> messageModule,
+          Provider<TimeBroadcastMessageModule> timedModule, 
+          Provider<FeelingsInitiatorModule> feelings) {
+        Set<ProtocolModule> modules = Sets.newHashSet();
+        modules.add(messageModule.get());
+        if (!line.hasOption("no_time")) {
+          modules.add(timedModule.get());
+        }
+        if (line.hasOption("feelings")) {
+          modules.add(feelings.get());
+        }
+        return modules;
+      }
+
+      @SuppressWarnings("unused")
+      @Provides
+      @Broadcast
+      @Singleton
+      public Set<Class<? extends ProtocolModule>> getModuleClasses() {
+        Set<Class<? extends ProtocolModule>> modules = Sets.newHashSet();
+        modules.add(BroadcastMessageModule.class);
+        if (!line.hasOption("no_time")) {
+          modules.add(TimeBroadcastMessageModule.class);
+        }
+        if (line.hasOption("feelings")) {
+          modules.add(FeelingsInitiatorModule.class);
+        }
+        return modules;
+      }
+
+    };
+
+    Set<AbstractModule> overridingModules = Sets.newHashSet(optionModule, new AbstractModule() {
+      @Override
+      protected void configure() {
+        bind(SocketAddress.class).annotatedWith(BroadcastListeningAddress.class).toInstance(
+            new InetSocketAddress(localPort));
+      }
+    });
+
     Injector inj =
         Guice.createInjector(Modules
-            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
-                new AbstractModule() {
-                  @Override
-                  protected void configure() {
-                    bind(SocketAddress.class).annotatedWith(BroadcastListeningAddress.class)
-                        .toInstance(new InetSocketAddress(localPort));
-                  }
-                }));
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule())
+            .with(overridingModules));
 
     ProtobeeServantBootstrapper bootstrapper = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrapper.startup();
@@ -92,12 +162,12 @@ public class BroadcastMain {
       Random random = new Random();
       byte[] messageId = new byte[16];
       random.nextBytes(messageId);
-      BroadcastMessage message =
+      BroadcastMessage.Builder message =
           BroadcastMessage
               .newBuilder()
               .setHeader(
                   Header.newBuilder().setHops(0).setId(ByteString.copyFrom(messageId)).setTtl(2))
-              .setMessage(line).setSendTimeMillis(System.currentTimeMillis()).build();
+              .setMessage(line);
 
       writer.broadcastMessage(message);
 

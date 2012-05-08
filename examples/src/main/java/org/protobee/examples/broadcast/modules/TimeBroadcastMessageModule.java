@@ -6,6 +6,7 @@ import org.protobee.annotation.InjectLogger;
 import org.protobee.compatability.CompatabilityHeader;
 import org.protobee.compatability.Headers;
 import org.protobee.events.BasicMessageReceivedEvent;
+import org.protobee.events.BasicMessageSendingEvent;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.examples.protos.Common.Header;
 import org.protobee.guice.scopes.SessionScope;
@@ -16,6 +17,7 @@ import org.protobee.network.ProtobeeMessageWriter.HandshakeOptions;
 import org.protobee.protocol.Protocol;
 import org.protobee.session.SessionManager;
 import org.protobee.session.SessionModel;
+import org.protobee.util.Clock;
 import org.slf4j.Logger;
 
 import com.google.common.base.Preconditions;
@@ -34,15 +36,29 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
   private final NetworkIdentity identity;
   private final Protocol myProtocol;
   private final ProtobeeMessageWriter writer;
+  private final Clock clock;
 
   @Inject
   public TimeBroadcastMessageModule(SessionManager sessionManager, SessionModel session,
-      NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer) {
+      NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer,
+      Clock clock) {
     this.sessionManager = sessionManager;
     this.session = session;
     this.identity = identity;
     this.myProtocol = protocol;
     this.writer = writer;
+    this.clock = clock;
+  }
+  
+  @Subscribe
+  public void sendingMessage(BasicMessageSendingEvent event) {
+    Preconditions.checkArgument(event.getMessage() instanceof BroadcastMessage.Builder,
+    "Not a broadcast message builder");
+    BroadcastMessage.Builder message = (BroadcastMessage.Builder) event.getMessage();
+    
+    if(!message.hasSendTimeMillis()) {
+      message.setSendTimeMillis(clock.currentTimeMillis());
+    }
   }
 
   @Subscribe
@@ -64,12 +80,13 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
     session.exitScope();
     identity.exitScope();
 
-    BroadcastMessage sendingMessage =
+    BroadcastMessage.Builder sendingMessage =
         BroadcastMessage.newBuilder()
             .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
-            .setMessage(message.getMessage()).setSendTimeMillis(time)
+            .setMessage(message.getMessage())
+            .setSendTimeMillis(time)
             .setListeningAddress(message.getListeningAddress())
-            .setListeningPort(message.getListeningPort()).build();
+            .setListeningPort(message.getListeningPort());
 
     for (SessionModel sessionModel : sessions) {
       if (sessionModel == session) {
@@ -77,7 +94,7 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
       }
       try {
         sessionModel.getIdentity().enterScope();
-        log.info("Sending message " + sendingMessage + " to "
+        log.info("Sending message " + sendingMessage.clone().buildPartial() + " to "
             + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
       } finally {

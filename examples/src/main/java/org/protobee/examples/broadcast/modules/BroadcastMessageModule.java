@@ -66,18 +66,18 @@ public class BroadcastMessageModule extends ProtocolModule {
     session.exitScope();
     identity.exitScope();
 
-    BroadcastMessage sendingMessage =
+    BroadcastMessage.Builder sendingMessage =
         BroadcastMessage.newBuilder()
             .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
             .setMessage(message.getMessage()).setListeningAddress(message.getListeningAddress())
-            .setListeningPort(message.getListeningPort()).build();
+            .setListeningPort(message.getListeningPort());
     for (SessionModel sessionModel : sessions) {
       if (sessionModel == session) {
         continue;
       }
       try {
         sessionModel.getIdentity().enterScope();
-        log.info("Sending message " + sendingMessage + " to "
+        log.info("Sending message " + sendingMessage.clone().buildPartial() + " to "
             + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
       } finally {

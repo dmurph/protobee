@@ -18,6 +18,7 @@ import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.plugin.ConfigAnnotation;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
+import org.protobee.protocol.handlers.SessionClosingPoster;
 import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 import org.protobee.util.ProtocolConfigUtils;
 import org.slf4j.Logger;
@@ -40,6 +41,8 @@ public class ProtocolGuiceModule extends AbstractModule {
   protected void configure() {
     install(new FactoryModuleBuilder().build(UpstreamMessagePosterHandler.Factory.class));
     install(new FactoryModuleBuilder().build(DownstreamMessagePosterHandler.Factory.class));
+
+    bind(SessionClosingPoster.class).in(SessionScope.class);
 
     bind(ModuleCompatabilityVersionMerger.class).in(ProtocolScope.class);
 
