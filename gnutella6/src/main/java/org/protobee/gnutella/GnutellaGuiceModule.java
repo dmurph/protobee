@@ -36,7 +36,6 @@ import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
 
-
 public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
 
   @Override

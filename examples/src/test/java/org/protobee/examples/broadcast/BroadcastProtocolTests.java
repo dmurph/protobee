@@ -13,13 +13,17 @@ import org.protobee.netty.LocalNettyTester;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
+import com.google.inject.util.Modules;
 import com.google.protobuf.ByteString;
 
 public class BroadcastProtocolTests extends AbstractBroadcastTest {
 
   @Test
   public void testBroadcast() throws Exception {
-    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+    Injector inj =
+        Guice.createInjector(Modules
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+                new LocalChannelsModule()));
 
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();
@@ -63,7 +67,10 @@ public class BroadcastProtocolTests extends AbstractBroadcastTest {
   @Test
   public void testTimeBroadcast() {
 
-    Injector inj = Guice.createInjector(new ProtobeeGuiceModule(), new BroadcastGuiceModule());
+    Injector inj =
+        Guice.createInjector(Modules
+            .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
+                new LocalChannelsModule()));
 
     JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
     bootstrap.startup();

@@ -4,9 +4,9 @@ import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
 
+import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
-import org.jboss.netty.channel.local.LocalClientChannelFactory;
-import org.jboss.netty.channel.local.LocalServerChannelFactory;
+import org.jboss.netty.channel.ServerChannelFactory;
 import org.protobee.examples.broadcast.constants.BroadcastListeningAddress;
 import org.protobee.modules.ProtocolModule;
 import org.protobee.protocol.Protocol;
@@ -20,8 +20,8 @@ import com.google.inject.Provider;
 public class BroadcastProtocolConfig extends ProtocolConfig {
 
   @Inject
-  public BroadcastProtocolConfig(Provider<LocalServerChannelFactory> serverProvider,
-      Provider<LocalClientChannelFactory> clientProvider,
+  public BroadcastProtocolConfig(@Broadcast Provider<ServerChannelFactory> serverProvider,
+      @Broadcast Provider<ChannelFactory> clientProvider,
       @Broadcast Provider<ChannelHandler[]> protocolHandlers,
       @Broadcast Provider<Set<ProtocolModule>> modules,
       @Broadcast Set<Class<? extends ProtocolModule>> moduleClasses,
