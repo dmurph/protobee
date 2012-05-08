@@ -25,7 +25,7 @@ import com.google.inject.Singleton;
  * @author Daniel
  */
 @Singleton
-public class JnutellaServantBootstrapper {
+public class ProtobeeServantBootstrapper {
 
   private final Set<ProtocolModel> protocols;
 
@@ -37,7 +37,7 @@ public class JnutellaServantBootstrapper {
   private final Object lock = new Object();
 
   @Inject
-  public JnutellaServantBootstrapper(Set<ProtocolModel> protocols,
+  public ProtobeeServantBootstrapper(Set<ProtocolModel> protocols,
       ConnectionBinder connectionBinder, ProtobeeChannels channels) {
     this.protocols = protocols;
     this.connectionBinder = connectionBinder;

@@ -4,7 +4,7 @@ import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.local.LocalAddress;
 import org.jboss.netty.handler.codec.http.HttpMethod;
 import org.junit.Test;
-import org.protobee.JnutellaServantBootstrapper;
+import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.ProtobeeGuiceModule;
 import org.protobee.netty.LocalNettyTester;
 import org.protobee.network.ConnectionCreator;
@@ -23,11 +23,11 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
     LocalNettyTester tester = createLocalNettyTester();
-    tester.connect(new LocalAddress("broadcast-example"), new LocalAddress("test"));
+    tester.connect(new LocalAddress(LocalChannelsModule.LOCAL_ADDRESS), new LocalAddress("test"));
     basicHandshake(tester);
     tester.verifyNotClosed();
 
@@ -41,13 +41,12 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
 
     LocalNettyTester tester = createLocalNettyTester();
     tester.bind(new LocalAddress("test"));
-
 
     ProtocolConfig broadcastConfig = getConfig(inj, Broadcast.class);
     ProtocolModel model = fromConfig(inj, broadcastConfig);
@@ -71,7 +70,7 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
 
@@ -101,11 +100,11 @@ public class BroadcastHandshakeTest extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
     LocalNettyTester tester = createLocalNettyTester();
-    tester.connect(new LocalAddress("broadcast-example"), new LocalAddress("test"));
+    tester.connect(new LocalAddress(LocalChannelsModule.LOCAL_ADDRESS), new LocalAddress("test"));
     timedHandshake(tester);
     tester.verifyNotClosed();
 

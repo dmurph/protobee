@@ -13,6 +13,7 @@ import com.google.inject.AbstractModule;
 
 public class LocalChannelsModule extends AbstractModule {
 
+  public static final String LOCAL_ADDRESS = "127.0.0.1:453";
   @Override
   protected void configure() {
     bind(ChannelFactory.class).annotatedWith(Broadcast.class).to(
@@ -21,6 +22,6 @@ public class LocalChannelsModule extends AbstractModule {
         DefaultLocalServerChannelFactory.class);
 
     bind(SocketAddress.class).annotatedWith(BroadcastListeningAddress.class).toInstance(
-        new LocalAddress("broadcast-example"));
+        new LocalAddress(LOCAL_ADDRESS));
   }
 }

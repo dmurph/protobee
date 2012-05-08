@@ -1,5 +1,6 @@
 package org.protobee;
 
+import java.lang.annotation.Annotation;
 import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 
@@ -11,6 +12,7 @@ import org.protobee.guice.LogModule;
 import org.protobee.guice.netty.ExecutorModule;
 import org.protobee.guice.netty.NettyGuiceModule;
 import org.protobee.guice.scopes.ScopesGuiceModule;
+import org.protobee.identity.IdentityGuiceModule;
 import org.protobee.identity.NetworkIdentityManager;
 import org.protobee.network.NetworkGuiceModule;
 import org.protobee.protocol.ProtocolConfig;
@@ -22,6 +24,8 @@ import org.protobee.util.UtilGuiceModule;
 import com.google.inject.AbstractModule;
 import com.google.inject.Provider;
 import com.google.inject.Singleton;
+import com.google.inject.TypeLiteral;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 
 public class ProtobeeGuiceModule extends AbstractModule {
@@ -38,6 +42,7 @@ public class ProtobeeGuiceModule extends AbstractModule {
     install(new StatsGuiceModule());
     install(new SessionGuiceModule());
     install(new NettyGuiceModule());
+    install(new IdentityGuiceModule());
 
     install(new ExecutorModule(new Provider<Executor>() {
       @Override
@@ -53,11 +58,17 @@ public class ProtobeeGuiceModule extends AbstractModule {
 
     Multibinder.newSetBinder(binder(), ProtocolConfig.class);
 
+    TypeLiteral<Class<? extends ProtocolConfig>> keyType =
+        new TypeLiteral<Class<? extends ProtocolConfig>>() {};
+    TypeLiteral<Class<? extends Annotation>> valueType =
+        new TypeLiteral<Class<? extends Annotation>>() {};
+    MapBinder.newMapBinder(binder(), keyType, valueType);
+
     InternalLoggerFactory.setDefaultFactory(new Slf4JLoggerFactory());
 
     bind(NetworkIdentityManager.class).in(Singleton.class);
 
-    bind(JnutellaServantBootstrapper.class).in(Singleton.class);
+    bind(ProtobeeServantBootstrapper.class).in(Singleton.class);
 
     bindConstant().annotatedWith(UserAgent.class).to("Jnutella/0.1");
   }

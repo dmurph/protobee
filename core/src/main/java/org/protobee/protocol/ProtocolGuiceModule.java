@@ -1,5 +1,6 @@
 package org.protobee.protocol;
 
+import java.lang.annotation.Annotation;
 import java.net.SocketAddress;
 import java.util.Map;
 import java.util.Set;
@@ -15,6 +16,7 @@ import org.protobee.guice.scopes.PrescopedProvider;
 import org.protobee.guice.scopes.ProtocolScope;
 import org.protobee.guice.scopes.SessionScope;
 import org.protobee.modules.ProtocolModule;
+import org.protobee.plugin.ConfigAnnotation;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
 import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 import org.protobee.util.ProtocolConfigUtils;
@@ -33,6 +35,7 @@ public class ProtocolGuiceModule extends AbstractModule {
 
   private final Logger log = LoggerFactory.getLogger(ProtocolGuiceModule.class);
 
+
   @Override
   protected void configure() {
     install(new FactoryModuleBuilder().build(UpstreamMessagePosterHandler.Factory.class));
@@ -48,6 +51,16 @@ public class ProtocolGuiceModule extends AbstractModule {
     TypeLiteral<Set<ProtocolModel>> protocolScopes = new TypeLiteral<Set<ProtocolModel>>() {};
     bind(protocolScopes).toProvider(ProtocolModelsProvider.class).in(Singleton.class);
   }
+
+  @Provides
+  @ProtocolScope
+  @ConfigAnnotation
+  public Class<? extends Annotation> getConfigAnnotation(ProtocolConfig config,
+      Map<Class<? extends ProtocolConfig>, Class<? extends Annotation>> configToAnnotationMap) {
+    return configToAnnotationMap.get(config.getClass());
+  }
+
+
 
   @Provides
   @HandshakeFuture
@@ -87,8 +100,8 @@ public class ProtocolGuiceModule extends AbstractModule {
     return ProtocolConfigUtils.getProtocolSetFromModels(configs);
   }
 
-  // protocol model providers
 
+  // protocol model providers
   @Provides
   @ProtocolScope
   public Protocol getProtocol(ProtocolModel model) {
