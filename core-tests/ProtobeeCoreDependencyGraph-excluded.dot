@@ -1,0 +1,371 @@
+digraph injector {
+graph [rankdir=TB];
+k_c7e3bcfa [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@NewSessionScopeHolder<br align="left"/></font><font color="#000000">Map&lt;Key&lt;?&gt;, Object&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_778e2e49 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@NewIdentityScopeHolder<br align="left"/></font><font color="#000000">Map&lt;Key&lt;?&gt;, Object&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_c7b7788c [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@NewProtocolScopeHolder<br align="left"/></font><font color="#000000">Map&lt;Key&lt;?&gt;, Object&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_d8320821 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@SessionScopeHolder<br align="left"/></font><font color="#000000">ScopeHolder<br align="left"/></font></td></tr></table>>, shape=box]
+i_d8320821 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ScopesGuiceModule.java:28<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_7326baa2 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@IdentityScopeHolder<br align="left"/></font><font color="#000000">ScopeHolder<br align="left"/></font></td></tr></table>>, shape=box]
+i_7326baa2 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ScopesGuiceModule.java:30<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_b054d459 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ProtocolScopeHolder<br align="left"/></font><font color="#000000">ScopeHolder<br align="left"/></font></td></tr></table>>, shape=box]
+i_b054d459 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ScopesGuiceModule.java:32<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_b81ee242 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@NewSessionScopeHolder<br align="left"/></font><font color="#000000">ScopeHolder<br align="left"/></font></td></tr></table>>, shape=box]
+i_b81ee242 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ScopesGuiceModule.java:39<br align="left"/></font><font color="#ffffff">#createSessionHolder(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_67c95391 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@NewIdentityScopeHolder<br align="left"/></font><font color="#000000">ScopeHolder<br align="left"/></font></td></tr></table>>, shape=box]
+i_67c95391 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ScopesGuiceModule.java:45<br align="left"/></font><font color="#ffffff">#createIdentityHolder(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_b7f29dd4 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@NewProtocolScopeHolder<br align="left"/></font><font color="#000000">ScopeHolder<br align="left"/></font></td></tr></table>>, shape=box]
+i_b7f29dd4 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ScopesGuiceModule.java:51<br align="left"/></font><font color="#ffffff">#createProtocolHolder(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_18fba087 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">MultipleRequestReceiver$Factory<br align="left"/></font></td></tr></table>>, shape=box]
+i_18fba087 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">FactoryModuleBuilder.java:335<br align="left"/></font><font color="#ffffff">$Factory<br align="left"/></font></td></tr><tr><td align="left" port="m_65f6d5d3">&lt;init&gt;</td></tr></table>>, shape=box]
+k_6c4d614b [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ClientFactory<br align="left"/></font><font color="#000000">ChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+i_6c4d614b [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">NetworkGuiceModule.java:28<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_b7fe0168 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ServerFactory<br align="left"/></font><font color="#000000">ChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+i_b7fe0168 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">NetworkGuiceModule.java:31<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_e84bf7e1 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">ProtobeeMessageWriter<br align="left"/></font></td></tr></table>>, shape=box]
+k_ce008a85 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">ConnectionCreator<br align="left"/></font></td></tr></table>>, shape=box]
+k_73527111 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">ConnectionBinder<br align="left"/></font></td></tr></table>>, shape=box]
+k_69c40be6 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">ServerBootstrap<br align="left"/></font></td></tr></table>>, shape=box]
+i_69c40be6 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">NetworkGuiceModule.java:46<br align="left"/></font><font color="#ffffff">#getServerBootstrap(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_667c1ee4 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Clock<br align="left"/></font></td></tr></table>>, shape=box]
+k_f516b381 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">UpstreamMessagePosterHandler$Factory<br align="left"/></font></td></tr></table>>, shape=box]
+i_f516b381 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">FactoryModuleBuilder.java:335<br align="left"/></font><font color="#ffffff">$Factory<br align="left"/></font></td></tr><tr><td align="left" port="m_4555f6a">&lt;init&gt;</td></tr></table>>, shape=box]
+k_8be2e809 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">DownstreamMessagePosterHandler$Factory<br align="left"/></font></td></tr></table>>, shape=box]
+i_8be2e809 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">FactoryModuleBuilder.java:335<br align="left"/></font><font color="#ffffff">$Factory<br align="left"/></font></td></tr><tr><td align="left" port="m_5d653071">&lt;init&gt;</td></tr></table>>, shape=box]
+i_7f345688 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:49<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_70098656 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Set&lt;ProtocolModel&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_1cd1fcab [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Protocol<br align="left"/></font></td></tr></table>>, shape=box]
+i_1cd1fcab [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:111<br align="left"/></font><font color="#ffffff">#getProtocol(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_66c0cc40 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ConnectionOptionsMap<br align="left"/></font><font color="#000000">Map&lt;String, Object&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_66c0cc40 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:131<br align="left"/></font><font color="#ffffff">#getConnectionOptions(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_3df5ad5e [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Set&lt;Class&lt;? extends ProtocolModule&gt;&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_3df5ad5e [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:117<br align="left"/></font><font color="#ffffff">#getModuleClasses(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_156e9679 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ServerOptionsMap<br align="left"/></font><font color="#000000">Map&lt;String, Object&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_156e9679 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:124<br align="left"/></font><font color="#ffffff">#getServerOptions(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_ed5d92e [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@LocalListeningAddress<br align="left"/></font><font color="#000000">SocketAddress<br align="left"/></font></td></tr></table>>, shape=box]
+i_ed5d92e [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:138<br align="left"/></font><font color="#ffffff">#getLocalAddress(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_66393c3c [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ConfigAnnotation<br align="left"/></font><font color="#000000">Class&lt;? extends Annotation&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_66393c3c [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:63<br align="left"/></font><font color="#ffffff">#getConfigAnnotation(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_def2eecb [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@HandshakeFuture<br align="left"/></font><font color="#000000">ChannelFuture<br align="left"/></font></td></tr></table>>, shape=box]
+i_def2eecb [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:72<br align="left"/></font><font color="#ffffff">#getHandshakeFuture(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_942b1269 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Map&lt;Protocol, ProtocolConfig&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_942b1269 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:79<br align="left"/></font><font color="#ffffff">#getConfigMap(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_d4c1de0 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Map&lt;Protocol, ProtocolModel&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_d4c1de0 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:91<br align="left"/></font><font color="#ffffff">#getModelMap(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_77cf4c2a [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Set&lt;Protocol&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_77cf4c2a [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:103<br align="left"/></font><font color="#ffffff">#getProtocols(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_4706d09 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ProtocolChannelHandlers<br align="left"/></font><font color="#000000">ChannelHandler[]<br align="left"/></font></td></tr></table>>, shape=box]
+i_4706d09 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:147<br align="left"/></font><font color="#ffffff">#createProtocolHandlers(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_974cbe60 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@RequestEncoding<br align="left"/></font><font color="#000000">HttpMessageEncoder<br align="left"/></font></td></tr></table>>, shape=box]
+i_974cbe60 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:154<br align="left"/></font><font color="#ffffff">#createEncoder(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_3510721b [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@RequestEncoding<br align="left"/></font><font color="#000000">HttpMessageDecoder<br align="left"/></font></td></tr></table>>, shape=box]
+i_3510721b [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:161<br align="left"/></font><font color="#ffffff">#createDecoder(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_901eb34b [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Set&lt;ProtocolModule&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_901eb34b [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtocolGuiceModule.java:167<br align="left"/></font><font color="#ffffff">#createModules(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_3c6c68c3 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">DropLog<br align="left"/></font></td></tr></table>>, shape=box]
+k_b81ef3be [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">HandshakeInterruptor<br align="left"/></font></td></tr></table>>, shape=box]
+k_38d9d3aa [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">SessionManager<br align="left"/></font></td></tr></table>>, shape=box]
+k_ebec33b0 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@HandshakeHandlers<br align="left"/></font><font color="#000000">Set&lt;ChannelHandler&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_cf872c21 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">EventBus<br align="left"/></font></td></tr></table>>, shape=box]
+i_cf872c21 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">SessionGuiceModule.java:42<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_419ca0c7 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Channel<br align="left"/></font></td></tr></table>>, shape=box]
+i_419ca0c7 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">SessionGuiceModule.java:44<br align="left"/></font><font color="#ffffff">PrescopedProvider<br align="left"/></font></td></tr></table>>, shape=box]
+k_8b15bdfe [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">NioClientSocketChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+k_942902e3 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">NioServerSocketChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+k_dc76a51f [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">OioClientSocketChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+k_3fcd9d63 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">OioServerSocketChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+k_de144e77 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">LocalClientChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+i_de144e77 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">NettyGuiceModule.java:32<br align="left"/></font><font color="#ffffff">#getLocalClientChannelFactory()<br align="left"/></font></td></tr></table>>, shape=box]
+k_7764c14 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">LocalServerChannelFactory<br align="left"/></font></td></tr></table>>, shape=box]
+i_7764c14 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">NettyGuiceModule.java:38<br align="left"/></font><font color="#ffffff">#getLocalServerChannelFactory()<br align="left"/></font></td></tr></table>>, shape=box]
+k_51e7dd57 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@Me<br align="left"/></font><font color="#000000">NetworkIdentity<br align="left"/></font></td></tr></table>>, shape=box]
+i_51e7dd57 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">IdentityGuiceModule.java:23<br align="left"/></font><font color="#ffffff">#getMe(...)<br align="left"/></font></td></tr></table>>, shape=box]
+k_4d06d0a8 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ChannelFactoryBoss<br align="left"/></font><font color="#000000">Executor<br align="left"/></font></td></tr></table>>, shape=box]
+i_4d06d0a8 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ExecutorModule.java:22<br align="left"/></font><font color="#ffffff">ProtobeeGuiceModule$1<br align="left"/></font></td></tr></table>>, shape=box]
+k_444c81d3 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@ChannelFactoryWorker<br align="left"/></font><font color="#000000">Executor<br align="left"/></font></td></tr></table>>, shape=box]
+i_444c81d3 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ExecutorModule.java:24<br align="left"/></font><font color="#ffffff">ProtobeeGuiceModule$2<br align="left"/></font></td></tr></table>>, shape=box]
+k_43e9120f [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Set&lt;ProtocolConfig&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_43e9120f [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtobeeGuiceModule.java:59<br align="left"/></font><font color="#ffffff">Multibinder&lt;&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_c530178d [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Set&lt;Map$Entry&lt;Class&lt;? extends ProtocolConfig&gt;, Provider&lt;Class&lt;? extends Annotation&gt;&gt;&gt;&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_c530178d [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtobeeGuiceModule.java:65<br align="left"/></font><font color="#ffffff">Multibinder&lt;$Entry&lt;&lt;? extends &gt;, &lt;&lt;? extends &gt;&gt;&gt;&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+k_af9475d [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Map&lt;Class&lt;? extends ProtocolConfig&gt;, Provider&lt;Class&lt;? extends Annotation&gt;&gt;&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_af9475d [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtobeeGuiceModule.java:65<br align="left"/></font><font color="#ffffff">MapBinder$RealMapBinder$1<br align="left"/></font></td></tr></table>>, shape=box]
+k_8673cd3d [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000">Map&lt;Class&lt;? extends ProtocolConfig&gt;, Class&lt;? extends Annotation&gt;&gt;<br align="left"/></font></td></tr></table>>, shape=box]
+i_8673cd3d [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtobeeGuiceModule.java:65<br align="left"/></font><font color="#ffffff">MapBinder$RealMapBinder$2<br align="left"/></font></td></tr></table>>, shape=box]
+k_739cd5b3 [style=dashed, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="0" border="0"><tr><td align="left" port="header" bgcolor="#ffffff"><font color="#000000" point-size="10">@UserAgent<br align="left"/></font><font color="#000000">String<br align="left"/></font></td></tr></table>>, shape=box]
+i_739cd5b3 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#aaaaaa"><font color="#ffffff" point-size="10">ProtobeeGuiceModule.java:73<br align="left"/></font><font color="#ffffff">"Jnutella/0.1"<br align="left"/></font></td></tr></table>>, shape=box]
+k_ef771c1a [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SingleRequestReceiver<br align="left"/></font></td></tr><tr><td align="left" port="m_24cf95db">&lt;init&gt;</td></tr></table>>, shape=box]
+k_838b9553 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">CleanupOnDisconnectHandler<br align="left"/></font></td></tr><tr><td align="left" port="m_7b13c726">&lt;init&gt;</td></tr></table>>, shape=box]
+k_c4c8016d [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">CloseOnExceptionHandler<br align="left"/></font></td></tr><tr><td align="left" port="m_c8271c77">&lt;init&gt;</td></tr></table>>, shape=box]
+k_aa956f67 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtocolConfigUtils<br align="left"/></font></td></tr><tr><td align="left" port="m_2e1daa15">&lt;init&gt;</td></tr></table>>, shape=box]
+k_1387dba0 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SessionClosingPoster<br align="left"/></font></td></tr><tr><td align="left" port="m_8cc28e5">&lt;init&gt;</td></tr></table>>, shape=box]
+k_5878873 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ModuleCompatabilityVersionMerger<br align="left"/></font></td></tr><tr><td align="left" port="m_34f9e6e6">&lt;init&gt;</td></tr></table>>, shape=box]
+k_df64f45c [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SessionUpstreamHandshaker<br align="left"/></font></td></tr><tr><td align="left" port="m_a87cc893">&lt;init&gt;</td></tr></table>>, shape=box]
+k_bf82a538 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SessionDownstreamHandshaker<br align="left"/></font></td></tr><tr><td align="left" port="m_2b48a55a">&lt;init&gt;</td></tr></table>>, shape=box]
+k_2aeacb4c [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HandshakeHttpMessageDecoder<br align="left"/></font></td></tr><tr><td align="left" port="m_ccf53343">&lt;init&gt;</td></tr></table>>, shape=box]
+k_1e6a92d5 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HandshakeHttpMessageEncoder<br align="left"/></font></td></tr><tr><td align="left" port="m_11370c1b">&lt;init&gt;</td></tr></table>>, shape=box]
+k_442d2fb1 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtocolSessionBootstrapper<br align="left"/></font></td></tr><tr><td align="left" port="m_818bb8eb">&lt;init&gt;</td></tr></table>>, shape=box]
+k_9a9a6f65 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HandshakeStateBootstrapper<br align="left"/></font></td></tr><tr><td align="left" port="m_dc4e3902">&lt;init&gt;</td></tr></table>>, shape=box]
+k_fa754e66 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SessionProtocolModules<br align="left"/></font></td></tr><tr><td align="left" port="m_af6f389b">&lt;init&gt;</td></tr></table>>, shape=box]
+k_12c0cb66 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">IdentityTagManager<br align="left"/></font></td></tr><tr><td align="left" port="m_919b57d7">&lt;init&gt;</td></tr></table>>, shape=box]
+k_91541fe3 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">NetworkIdentityManager<br align="left"/></font></td></tr><tr><td align="left" port="m_3d487c7">&lt;init&gt;</td></tr></table>>, shape=box]
+k_d0cdc9b3 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">NetworkIdentityFactory<br align="left"/></font></td></tr><tr><td align="left" port="m_90f6a924">&lt;init&gt;</td></tr></table>>, shape=box]
+k_82875dac [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtobeeServantBootstrapper<br align="left"/></font></td></tr><tr><td align="left" port="m_ad426efc">&lt;init&gt;</td></tr></table>>, shape=box]
+k_fd3a7c24 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">DefaultScopeMapProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_4b5ce3e6">&lt;init&gt;</td></tr></table>>, shape=box]
+k_aa4534b5 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtobeeChannels<br align="left"/></font></td></tr><tr><td align="left" port="m_90b28b4">&lt;init&gt;</td></tr></table>>, shape=box]
+k_a5da175f [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtobeeMessageWriterImpl<br align="left"/></font></td></tr><tr><td align="left" port="m_e2b20436">&lt;init&gt;</td></tr></table>>, shape=box]
+k_77558e7a [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ConnectionCreatorImpl<br align="left"/></font></td></tr><tr><td align="left" port="m_793b0bc4">&lt;init&gt;</td></tr></table>>, shape=box]
+k_f319525a [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ConnectionBinderImpl<br align="left"/></font></td></tr><tr><td align="left" port="m_89759092">&lt;init&gt;</td></tr></table>>, shape=box]
+k_e6641bd4 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SystemClock<br align="left"/></font></td></tr><tr><td align="left" port="m_8680665d">&lt;init&gt;</td></tr></table>>, shape=box]
+k_f21cf752 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtocolModelsProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_90f0aedf">&lt;init&gt;</td></tr></table>>, shape=box]
+k_9ef9cce4 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">LoggingDropLog<br align="left"/></font></td></tr><tr><td align="left" port="m_e81a390f">&lt;init&gt;</td></tr></table>>, shape=box]
+k_3de0dd80 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HandshakeInterruptorImpl<br align="left"/></font></td></tr><tr><td align="left" port="m_338f3128">&lt;init&gt;</td></tr></table>>, shape=box]
+k_8ecab59c [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SessionManagerImpl<br align="left"/></font></td></tr><tr><td align="left" port="m_5d4cb039">&lt;init&gt;</td></tr></table>>, shape=box]
+k_8210c590 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">DefaultHandshakeHandlersProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_6f3ee0a9">&lt;init&gt;</td></tr></table>>, shape=box]
+k_ddac0138 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">NioClientSocketChannelFactoryProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_99ef3bc3">&lt;init&gt;</td></tr></table>>, shape=box]
+k_7d4e1d95 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">NioServerSocketChannelFactoryProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_cf7b133b">&lt;init&gt;</td></tr></table>>, shape=box]
+k_2e7c9d54 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">OioClientSocketChannelFactoryProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_ad970f44">&lt;init&gt;</td></tr></table>>, shape=box]
+k_ec950485 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">OioServerSocketChannelFactoryProvider<br align="left"/></font></td></tr><tr><td align="left" port="m_e322e6bc">&lt;init&gt;</td></tr></table>>, shape=box]
+k_db7040a [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">VersionComparator<br align="left"/></font></td></tr><tr><td align="left" port="m_1ffa188c">&lt;init&gt;</td></tr></table>>, shape=box]
+k_eab08cae [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">VersionRangeMerger<br align="left"/></font></td></tr><tr><td align="left" port="m_1df14a8f">&lt;init&gt;</td></tr></table>>, shape=box]
+k_356b6a59 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">ProtocolModuleFilter<br align="left"/></font></td></tr><tr><td align="left" port="m_bc689f95">&lt;init&gt;</td></tr></table>>, shape=box]
+k_856d852d [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HttpResponseDecoder<br align="left"/></font></td></tr><tr><td align="left" port="m_f4876e1e">&lt;init&gt;</td></tr></table>>, shape=box]
+k_1ea68203 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HttpResponseEncoder<br align="left"/></font></td></tr><tr><td align="left" port="m_38c946f6">&lt;init&gt;</td></tr></table>>, shape=box]
+k_75b1e5ea [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">VersionRange$MinVersionBuilderComparator<br align="left"/></font></td></tr><tr><td align="left" port="m_81ff5bfc">&lt;init&gt;</td></tr></table>>, shape=box]
+k_72b99f7e [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">VersionRange$MinVersionComparator<br align="left"/></font></td></tr><tr><td align="left" port="m_6a5dae0b">&lt;init&gt;</td></tr></table>>, shape=box]
+k_45fb60d [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">SessionModelFactory<br align="left"/></font></td></tr><tr><td align="left" port="m_baf24e55">&lt;init&gt;</td></tr></table>>, shape=box]
+k_1f572c8c [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">Descoper<br align="left"/></font></td></tr><tr><td align="left" port="m_238605e1">&lt;init&gt;</td></tr></table>>, shape=box]
+k_46e20916 [style=solid, margin=0.02,0, label=<<table cellspacing="0" cellpadding="5" cellborder="1" border="0"><tr><td align="left" port="header" bgcolor="#000000"><font color="#ffffff">HandshakeCreator<br align="left"/></font></td></tr><tr><td align="left" port="m_2f4e608e">&lt;init&gt;</td></tr></table>>, shape=box]
+k_c7e3bcfa -> k_fd3a7c24 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_778e2e49 -> k_fd3a7c24 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_c7b7788c -> k_fd3a7c24 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_d8320821 -> i_d8320821 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_7326baa2 -> i_7326baa2 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_b054d459 -> i_b054d459 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_b81ee242 -> i_b81ee242 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_b81ee242:header:e -> k_c7e3bcfa [style=solid, arrowtail=none, arrowhead=normal]
+k_67c95391 -> i_67c95391 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_67c95391:header:e -> k_778e2e49 [style=solid, arrowtail=none, arrowhead=normal]
+k_b7f29dd4 -> i_b7f29dd4 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_b7f29dd4:header:e -> k_c7b7788c [style=solid, arrowtail=none, arrowhead=normal]
+k_18fba087 -> i_18fba087 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_18fba087:m_65f6d5d3:e -> k_9a9a6f65 [style=solid, arrowtail=none, arrowhead=normal]
+i_18fba087:m_65f6d5d3:e -> k_91541fe3 [style=solid, arrowtail=none, arrowhead=normal]
+i_18fba087:m_65f6d5d3:e -> k_aa4534b5 [style=solid, arrowtail=none, arrowhead=normal]
+k_6c4d614b -> i_6c4d614b [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_b7fe0168 -> i_b7fe0168 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_e84bf7e1 -> k_a5da175f [style=dashed, arrowtail=none, arrowhead=onormal]
+k_ce008a85 -> k_77558e7a [style=dashed, arrowtail=none, arrowhead=onormal]
+k_73527111 -> k_f319525a [style=dashed, arrowtail=none, arrowhead=onormal]
+k_69c40be6 -> i_69c40be6 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_69c40be6:header:e -> k_b7fe0168 [style=solid, arrowtail=none, arrowhead=normal]
+k_667c1ee4 -> k_e6641bd4 [style=dashed, arrowtail=none, arrowhead=onormal]
+k_f516b381 -> i_f516b381 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+
+
+
+
+k_8be2e809 -> i_8be2e809 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+
+
+
+
+
+
+k_70098656 -> k_f21cf752 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_1cd1fcab -> i_1cd1fcab [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_66c0cc40 -> i_66c0cc40 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_3df5ad5e -> i_3df5ad5e [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_156e9679 -> i_156e9679 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_ed5d92e -> i_ed5d92e [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_66393c3c -> i_66393c3c [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+i_66393c3c:header:e -> k_8673cd3d [style=solid, arrowtail=none, arrowhead=normal]
+k_def2eecb -> i_def2eecb [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_def2eecb:header:e -> k_419ca0c7 [style=solid, arrowtail=none, arrowhead=normal]
+k_942b1269 -> i_942b1269 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_942b1269:header:e -> k_43e9120f [style=solid, arrowtail=none, arrowhead=normal]
+k_d4c1de0 -> i_d4c1de0 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_d4c1de0:header:e -> k_70098656 [style=solid, arrowtail=none, arrowhead=normal]
+k_77cf4c2a -> i_77cf4c2a [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_77cf4c2a:header:e -> k_70098656 [style=solid, arrowtail=none, arrowhead=normal]
+k_4706d09 -> i_4706d09 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_974cbe60 -> i_974cbe60 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_3510721b -> i_3510721b [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_901eb34b -> i_901eb34b [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+
+
+k_3c6c68c3 -> k_9ef9cce4 [style=dashed, arrowtail=none, arrowhead=onormal]
+k_b81ef3be -> k_3de0dd80 [style=dashed, arrowtail=none, arrowhead=onormal]
+k_38d9d3aa -> k_8ecab59c [style=dashed, arrowtail=none, arrowhead=onormal]
+k_ebec33b0 -> k_8210c590 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_cf872c21 -> i_cf872c21 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_419ca0c7 -> i_419ca0c7 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_8b15bdfe -> k_ddac0138 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_942902e3 -> k_7d4e1d95 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_dc76a51f -> k_2e7c9d54 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_3fcd9d63 -> k_ec950485 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_de144e77 -> i_de144e77 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_7764c14 -> i_7764c14 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_51e7dd57 -> i_51e7dd57 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_51e7dd57:header:e -> k_91541fe3 [style=solid, arrowtail=none, arrowhead=normal]
+k_4d06d0a8 -> i_4d06d0a8 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_444c81d3 -> i_444c81d3 [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_43e9120f -> i_43e9120f [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_c530178d -> i_c530178d [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+k_af9475d -> i_af9475d [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_af9475d:header:e -> k_c530178d [style=solid, arrowtail=none, arrowhead=normal]
+k_8673cd3d -> i_8673cd3d [style=dashed, arrowtail=none, arrowhead=onormalonormal]
+i_8673cd3d:header:e -> k_c530178d [style=solid, arrowtail=none, arrowhead=normal]
+k_739cd5b3 -> i_739cd5b3 [style=dashed, arrowtail=none, arrowhead=onormal]
+
+
+k_ef771c1a:m_24cf95db:e -> k_9a9a6f65 [style=solid, arrowtail=none, arrowhead=normal]
+k_ef771c1a:m_24cf95db:e -> k_91541fe3 [style=solid, arrowtail=none, arrowhead=normal]
+k_ef771c1a:m_24cf95db:e -> k_aa4534b5 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+k_838b9553:m_7b13c726:e -> k_1cd1fcab [style=solid, arrowtail=none, arrowhead=normal]
+k_838b9553:m_7b13c726:e -> k_3c6c68c3 [style=solid, arrowtail=none, arrowhead=normal]
+k_1387dba0:m_8cc28e5:e -> k_cf872c21 [style=solid, arrowtail=none, arrowhead=normal]
+k_5878873:m_34f9e6e6:e -> k_db7040a [style=solid, arrowtail=none, arrowhead=normal]
+k_5878873:m_34f9e6e6:e -> k_3df5ad5e [style=solid, arrowtail=none, arrowhead=normal]
+k_5878873:m_34f9e6e6:e -> k_eab08cae [style=solid, arrowtail=none, arrowhead=normal]
+k_5878873:m_34f9e6e6:e -> k_fa754e66 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+
+
+k_df64f45c:m_a87cc893:e -> k_5878873 [style=solid, arrowtail=none, arrowhead=normal]
+k_df64f45c:m_a87cc893:e -> k_b81ef3be [style=solid, arrowtail=none, arrowhead=normal]
+k_df64f45c:m_a87cc893:e -> k_356b6a59 [style=solid, arrowtail=none, arrowhead=normal]
+k_df64f45c:m_a87cc893:e -> k_cf872c21 [style=solid, arrowtail=none, arrowhead=normal]
+k_df64f45c:m_a87cc893:e -> k_442d2fb1 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+
+
+k_bf82a538:m_2b48a55a:e -> k_cf872c21 [style=solid, arrowtail=none, arrowhead=normal]
+k_bf82a538:m_2b48a55a:e -> k_442d2fb1 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+k_2aeacb4c:m_ccf53343:e -> k_3510721b [style=solid, arrowtail=none, arrowhead=normal]
+k_2aeacb4c:m_ccf53343:e -> k_856d852d [style=solid, arrowtail=none, arrowhead=normal]
+
+
+k_1e6a92d5:m_11370c1b:e -> k_974cbe60 [style=solid, arrowtail=none, arrowhead=normal]
+k_1e6a92d5:m_11370c1b:e -> k_1ea68203 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+k_442d2fb1:m_818bb8eb:e -> k_ebec33b0 [style=solid, arrowtail=none, arrowhead=normal]
+k_442d2fb1:m_818bb8eb:e -> k_4706d09 [style=solid, arrowtail=none, arrowhead=normal]
+k_442d2fb1:m_818bb8eb:e -> k_def2eecb [style=solid, arrowtail=none, arrowhead=normal]
+k_9a9a6f65:m_dc4e3902:e -> k_442d2fb1 [style=solid, arrowtail=none, arrowhead=normal]
+k_9a9a6f65:m_dc4e3902:e -> k_cf872c21 [style=solid, arrowtail=none, arrowhead=normal]
+k_9a9a6f65:m_dc4e3902:e -> k_45fb60d [style=solid, arrowtail=none, arrowhead=normal]
+k_9a9a6f65:m_dc4e3902:e -> k_fa754e66 [style=solid, arrowtail=none, arrowhead=normal]
+k_9a9a6f65:m_dc4e3902:e -> k_ebec33b0 [style=solid, arrowtail=none, arrowhead=normal]
+k_9a9a6f65:m_dc4e3902:e -> k_1cd1fcab [style=solid, arrowtail=none, arrowhead=normal]
+k_fa754e66:m_af6f389b:e -> k_901eb34b [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+
+
+k_91541fe3:m_3d487c7:e -> k_d0cdc9b3 [style=solid, arrowtail=none, arrowhead=normal]
+k_d0cdc9b3:m_90f6a924:e -> k_67c95391 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+
+
+
+
+k_82875dac:m_ad426efc:e -> k_70098656 [style=solid, arrowtail=none, arrowhead=normal]
+k_82875dac:m_ad426efc:e -> k_73527111 [style=solid, arrowtail=none, arrowhead=normal]
+k_82875dac:m_ad426efc:e -> k_aa4534b5 [style=solid, arrowtail=none, arrowhead=normal]
+k_aa4534b5:m_90b28b4:e -> k_77cf4c2a [style=solid, arrowtail=none, arrowhead=normal]
+k_a5da175f:m_e2b20436:e -> k_419ca0c7 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+
+
+k_a5da175f:m_e2b20436:e -> k_ce008a85 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+k_a5da175f:m_e2b20436:e -> k_def2eecb [style=solid, arrowtail=none, arrowhead=normal]
+k_a5da175f:m_e2b20436:e -> k_1f572c8c [style=solid, arrowtail=none, arrowhead=normal]
+k_77558e7a:m_793b0bc4:e -> k_46e20916 [style=solid, arrowtail=none, arrowhead=normal]
+k_77558e7a:m_793b0bc4:e -> k_91541fe3 [style=solid, arrowtail=none, arrowhead=normal]
+k_77558e7a:m_793b0bc4:e -> k_9a9a6f65 [style=solid, arrowtail=none, arrowhead=normal]
+k_77558e7a:m_793b0bc4:e -> k_419ca0c7 [style=solid, arrowtail=none, arrowhead=normal]
+k_77558e7a:m_793b0bc4:e -> k_aa4534b5 [style=solid, arrowtail=none, arrowhead=normal]
+k_f319525a:m_89759092:e -> k_91541fe3 [style=solid, arrowtail=none, arrowhead=normal]
+k_f319525a:m_89759092:e -> k_18fba087 [style=solid, arrowtail=none, arrowhead=normal]
+k_f319525a:m_89759092:e -> k_ef771c1a [style=solid, arrowtail=none, arrowhead=normal]
+k_f319525a:m_89759092:e -> k_aa4534b5 [style=solid, arrowtail=none, arrowhead=normal]
+k_f319525a:m_89759092:e -> k_69c40be6 [style=solid, arrowtail=none, arrowhead=normal]
+k_f21cf752:m_90f0aedf:e -> k_43e9120f [style=solid, arrowtail=none, arrowhead=normal]
+k_f21cf752:m_90f0aedf:e -> k_b7f29dd4 [style=solid, arrowtail=none, arrowhead=normal]
+
+
+k_8ecab59c:m_5d4cb039:e -> k_77cf4c2a [style=solid, arrowtail=none, arrowhead=normal]
+k_8210c590:m_6f3ee0a9:e -> k_2aeacb4c [style=solid, arrowtail=none, arrowhead=normal]
+k_8210c590:m_6f3ee0a9:e -> k_1e6a92d5 [style=solid, arrowtail=none, arrowhead=normal]
+k_8210c590:m_6f3ee0a9:e -> k_df64f45c [style=solid, arrowtail=none, arrowhead=normal]
+k_8210c590:m_6f3ee0a9:e -> k_bf82a538 [style=solid, arrowtail=none, arrowhead=normal]
+k_8210c590:m_6f3ee0a9:e -> k_838b9553 [style=solid, arrowtail=none, arrowhead=normal]
+k_8210c590:m_6f3ee0a9:e -> k_c4c8016d [style=solid, arrowtail=none, arrowhead=normal]
+k_ddac0138:m_99ef3bc3:e -> k_444c81d3 [style=solid, arrowtail=none, arrowhead=normal]
+k_ddac0138:m_99ef3bc3:e -> k_4d06d0a8 [style=solid, arrowtail=none, arrowhead=normal]
+k_7d4e1d95:m_cf7b133b:e -> k_444c81d3 [style=solid, arrowtail=none, arrowhead=normal]
+k_7d4e1d95:m_cf7b133b:e -> k_4d06d0a8 [style=solid, arrowtail=none, arrowhead=normal]
+k_2e7c9d54:m_ad970f44:e -> k_444c81d3 [style=solid, arrowtail=none, arrowhead=normal]
+k_ec950485:m_e322e6bc:e -> k_444c81d3 [style=solid, arrowtail=none, arrowhead=normal]
+k_ec950485:m_e322e6bc:e -> k_4d06d0a8 [style=solid, arrowtail=none, arrowhead=normal]
+k_eab08cae:m_1df14a8f:e -> k_db7040a [style=solid, arrowtail=none, arrowhead=normal]
+k_eab08cae:m_1df14a8f:e -> k_75b1e5ea [style=solid, arrowtail=none, arrowhead=normal]
+k_eab08cae:m_1df14a8f:e -> k_72b99f7e [style=solid, arrowtail=none, arrowhead=normal]
+k_356b6a59:m_bc689f95:e -> k_db7040a [style=solid, arrowtail=none, arrowhead=normal]
+k_356b6a59:m_bc689f95:e -> k_fa754e66 [style=solid, arrowtail=none, arrowhead=normal]
+k_356b6a59:m_bc689f95:e -> k_cf872c21 [style=solid, arrowtail=none, arrowhead=normal]
+k_75b1e5ea:m_81ff5bfc:e -> k_db7040a [style=solid, arrowtail=none, arrowhead=normal]
+k_72b99f7e:m_6a5dae0b:e -> k_db7040a [style=solid, arrowtail=none, arrowhead=normal]
+
+
+k_45fb60d:m_baf24e55:e -> k_b81ee242 [style=solid, arrowtail=none, arrowhead=normal]
+k_1f572c8c:m_238605e1:e -> k_7326baa2 [style=solid, arrowtail=none, arrowhead=normal]
+k_1f572c8c:m_238605e1:e -> k_d8320821 [style=solid, arrowtail=none, arrowhead=normal]
+k_1f572c8c:m_238605e1:e -> k_b054d459 [style=solid, arrowtail=none, arrowhead=normal]
+k_46e20916:m_2f4e608e:e -> k_5878873 [style=solid, arrowtail=none, arrowhead=normal]
+}

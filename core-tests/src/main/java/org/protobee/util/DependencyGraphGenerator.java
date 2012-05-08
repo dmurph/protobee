@@ -6,7 +6,6 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
-import java.util.Date;
 import java.util.Set;
 
 import com.google.inject.Guice;
@@ -34,7 +33,7 @@ public class DependencyGraphGenerator {
 
       injector.getInstance(InjectorGrapher.class).of(inj).graph();
 
-      out = new PrintWriter(new File(filename + new Date().getTime() + "-unexluded.dot"), "UTF-8");
+      out = new PrintWriter(new File(filename + "-unexluded.dot"), "UTF-8");
       String original = baos.toString("UTF-8");
       String s = fixGrapherBug(original);
       s = hideClassPaths(s);
@@ -43,7 +42,7 @@ public class DependencyGraphGenerator {
       out.close();
 
       if (exclusionClasses != null && exclusionClasses.size() != 0) {
-        out = new PrintWriter(new File(filename + new Date().getTime() + "-excluded.dot"), "UTF-8");
+        out = new PrintWriter(new File(filename + "-excluded.dot"), "UTF-8");
         s = fixGrapherBug(original);
         s = hideClassPaths(s);
         s = removeArguments(s);
@@ -65,9 +64,14 @@ public class DependencyGraphGenerator {
   }
 
   public static String removeClass(String s, String klass) {
-    int index = s.indexOf(">" + klass + "<");
+    int index = s.lastIndexOf(">" + klass + "<");
     int lineStart = s.lastIndexOf("\n", index);
     int lineEnd = s.indexOf("\n", index);
+//    if(s.indexOf(">@Me<", lineStart) < lineEnd) {
+//      index = s.indexOf(">" + klass + "<", lineEnd);
+//      lineStart = s.lastIndexOf("\n", index);
+//      lineEnd = s.indexOf("\n", index);
+//    }
     String key = s.substring(lineStart + 1, s.indexOf(' ', lineStart));
     s = s.substring(0, lineStart) + s.substring(lineEnd);
     s = s.replaceAll(".*" + key + ".*", "\n");
