@@ -1,0 +1,14 @@
+package protobee;
+
+option java_package = "org.protobee.examples.protos";
+
+message Header {
+  required bytes id = 1;
+  required uint32 ttl = 2;
+  required uint32 hops = 3;
+}
+
+message SourceAddress{
+  required fixed32 address = 1;
+  required int32 port = 2;
+}
