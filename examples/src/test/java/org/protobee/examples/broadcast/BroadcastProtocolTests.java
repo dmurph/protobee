@@ -5,7 +5,7 @@ import java.util.Random;
 import org.jboss.netty.buffer.ChannelBuffers;
 import org.jboss.netty.channel.local.LocalAddress;
 import org.junit.Test;
-import org.protobee.JnutellaServantBootstrapper;
+import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.ProtobeeGuiceModule;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
 import org.protobee.examples.protos.Common.Header;
@@ -25,7 +25,7 @@ public class BroadcastProtocolTests extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
     LocalNettyTester tester1 = createLocalNettyTester();
@@ -72,7 +72,7 @@ public class BroadcastProtocolTests extends AbstractBroadcastTest {
             .override(new ProtobeeGuiceModule(), new BroadcastGuiceModule()).with(
                 new LocalChannelsModule()));
 
-    JnutellaServantBootstrapper bootstrap = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrap = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrap.startup();
 
     LocalNettyTester tester1 = createLocalNettyTester();

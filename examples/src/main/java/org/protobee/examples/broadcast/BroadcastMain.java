@@ -9,7 +9,7 @@ import java.net.SocketAddress;
 import java.util.Random;
 
 import org.jboss.netty.handler.codec.http.HttpMethod;
-import org.protobee.JnutellaServantBootstrapper;
+import org.protobee.ProtobeeServantBootstrapper;
 import org.protobee.ProtobeeGuiceModule;
 import org.protobee.examples.broadcast.constants.BroadcastListeningAddress;
 import org.protobee.examples.protos.BroadcasterProtos.BroadcastMessage;
@@ -64,7 +64,7 @@ public class BroadcastMain {
                   }
                 }));
 
-    JnutellaServantBootstrapper bootstrapper = inj.getInstance(JnutellaServantBootstrapper.class);
+    ProtobeeServantBootstrapper bootstrapper = inj.getInstance(ProtobeeServantBootstrapper.class);
     bootstrapper.startup();
 
     ProtocolModel broadcastProtocol =

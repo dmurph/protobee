@@ -4,15 +4,19 @@ import java.lang.annotation.Annotation;
 import java.util.Map;
 
 import org.protobee.modules.ProtocolModule;
+import org.protobee.protocol.Protocol;
 import org.protobee.protocol.ProtocolConfig;
+import org.protobee.protocol.ProtocolModel;
 
 import com.google.common.annotations.VisibleForTesting;
 import com.google.common.collect.Maps;
 import com.google.inject.AbstractModule;
 import com.google.inject.Key;
+import com.google.inject.Provider;
 import com.google.inject.Singleton;
 import com.google.inject.TypeLiteral;
 import com.google.inject.binder.ScopedBindingBuilder;
+import com.google.inject.multibindings.MapBinder;
 import com.google.inject.multibindings.Multibinder;
 
 /**
@@ -30,6 +34,32 @@ public abstract class PluginGuiceModule extends AbstractModule {
 
   private final Map<Class<? extends Annotation>, Multibinder<Class<? extends ProtocolModule>>> moduleClassBinders =
       Maps.newHashMap();
+
+
+  private MapBinder<Class<? extends ProtocolConfig>, Class<? extends Annotation>> annotation = null;
+
+  // private MapBinder<Class<? extends ProtocolConfig>, Set<ProtocolModule>> modules = null;
+  // private MapBinder<Class<? extends ProtocolConfig>, Set<Class<? extends ProtocolModule>>>
+  // moduleClasses =
+  // null;
+  // private MapBinder<Class<? extends ProtocolConfig>, Map<String, Object>> serverOptions = null;
+  // private MapBinder<Class<? extends ProtocolConfig>, Map<String, Object>> connectionOptions =
+  // null;
+  // private MapBinder<Class<? extends ProtocolConfig>, SocketAddress> localAddress = null;
+  // private MapBinder<Class<? extends ProtocolConfig>, ChannelHandler[]> channelHandlers = null;
+  // private MapBinder<Class<? extends ProtocolConfig>, HttpMessageEncoder> requestEncoder = null;
+  // private MapBinder<Class<? extends ProtocolConfig>, HttpMessageDecoder> requestDecoder = null;
+
+  private MapBinder<Class<? extends ProtocolConfig>, Class<? extends Annotation>> getAnnotation() {
+    if (annotation == null) {
+      TypeLiteral<Class<? extends ProtocolConfig>> keyType =
+          new TypeLiteral<Class<? extends ProtocolConfig>>() {};
+      TypeLiteral<Class<? extends Annotation>> valueType =
+          new TypeLiteral<Class<? extends Annotation>>() {};
+      annotation = MapBinder.newMapBinder(binder(), keyType, valueType);
+    }
+    return annotation;
+  }
 
   public Multibinder<ProtocolConfig> getConfigBinder() {
     if (configBinder == null) {
@@ -59,9 +89,40 @@ public abstract class PluginGuiceModule extends AbstractModule {
   }
 
   public void addProtocolConfig(Class<? extends ProtocolConfig> klass,
-      Class<? extends Annotation> configAnnotation) {
+      final Class<? extends Annotation> configAnnotation) {
+
+    // bind config
     bind(ProtocolConfig.class).annotatedWith(configAnnotation).to(klass).in(Singleton.class);
-    getConfigBinder().addBinding().to(Key.get(ProtocolConfig.class, configAnnotation)).in(Singleton.class);
+    // add to config set
+    getConfigBinder().addBinding().to(Key.get(ProtocolConfig.class, configAnnotation))
+        .in(Singleton.class);
+    // bind protocol
+    bind(Protocol.class).annotatedWith(configAnnotation)
+        .toProvider(Key.get(ProtocolConfig.class, configAnnotation)).in(Singleton.class);
+
+    // bind our config annotation
+    getAnnotation().addBinding(klass).toInstance(configAnnotation);
+
+    // protocol model
+    TypeLiteral<Map<Protocol, ProtocolModel>> mapType =
+        new TypeLiteral<Map<Protocol, ProtocolModel>>() {};
+    final Provider<Map<Protocol, ProtocolModel>> mapProvider =
+        binder().getProvider(Key.get(mapType));
+    final Provider<Protocol> protocolProvider =
+        binder().getProvider(Key.get(Protocol.class, configAnnotation));
+    bind(ProtocolModel.class).annotatedWith(configAnnotation)
+        .toProvider(new Provider<ProtocolModel>() {
+          @Override
+          public ProtocolModel get() {
+            return mapProvider.get().get(protocolProvider.get());
+          }
+
+          @Override
+          public String toString() {
+            return configAnnotation + "-ProtocolModelProvider";
+          }
+        }).in(Singleton.class);
+
   }
 
   public ScopedBindingBuilder addModuleBinding(Class<? extends ProtocolModule> moduleClass,

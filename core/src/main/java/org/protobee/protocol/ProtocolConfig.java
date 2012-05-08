@@ -2,8 +2,8 @@ package org.protobee.protocol;
 
 import java.net.SocketAddress;
 import java.util.Map;
-import java.util.Set;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import org.jboss.netty.channel.ChannelFactory;
 import org.jboss.netty.channel.ChannelHandler;
@@ -36,8 +36,7 @@ public abstract class ProtocolConfig implements Provider<Protocol> {
       Provider<? extends ChannelFactory> serverChannelFactory,
       Provider<Set<ProtocolModule>> modulesProvider,
       Set<Class<? extends ProtocolModule>> moduleClasses,
-      Provider<ChannelHandler[]> handlersProvider,
-      SocketAddress localListeningAddress) {
+      Provider<ChannelHandler[]> handlersProvider, SocketAddress localListeningAddress) {
     this.clientChannelFactory = clientChannelFactory;
     this.serverChannelFactory = serverChannelFactory;
     this.modulesProvider = modulesProvider;
