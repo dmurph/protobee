@@ -12,6 +12,7 @@ import java.util.Set;
 import org.apache.commons.cli.CommandLine;
 import org.apache.commons.cli.CommandLineParser;
 import org.apache.commons.cli.HelpFormatter;
+import org.apache.commons.cli.OptionBuilder;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
 import org.apache.commons.cli.PosixParser;
@@ -52,6 +53,8 @@ public class BroadcastMain {
   public static void main(String[] args) throws IOException {
     options.addOption("no_time", false, "Flags the broadcaster to not use time");
     options.addOption("feelings", false, "Adds the feelings module");
+    options.addOption(OptionBuilder.withArgName("ttl").hasArg()
+        .withDescription("the ttl of sent messages").create("ttl"));
 
     CommandLineParser parser = new PosixParser();
     final CommandLine line;
@@ -90,7 +93,7 @@ public class BroadcastMain {
       @Broadcast
       @SessionScope
       public Set<ProtocolModule> getModules(Provider<BroadcastMessageModule> messageModule,
-          Provider<TimeBroadcastMessageModule> timedModule, 
+          Provider<TimeBroadcastMessageModule> timedModule,
           Provider<FeelingsInitiatorModule> feelings) {
         Set<ProtocolModule> modules = Sets.newHashSet();
         modules.add(messageModule.get());
@@ -144,14 +147,15 @@ public class BroadcastMain {
       creator.connect(broadcastProtocol, inetSocketAddress, HttpMethod.valueOf("SAY"), "/");
     }
 
-    sendMessages(inj.getInstance(BroadcastMessageWriter.class));
+    sendMessages(inj.getInstance(BroadcastMessageWriter.class), line.getOptionValue("ttl", "2"));
 
     bootstrapper.shutdown(1000);
   }
 
-  private static void sendMessages(BroadcastMessageWriter writer) throws IOException {
+  private static void sendMessages(BroadcastMessageWriter writer, String ttlStr) throws IOException {
     String line = ""; // Line read from standard in
 
+    int ttl = Integer.parseInt(ttlStr);
     System.out.println("Enter a line of text (type 'quit' to exit): ");
     InputStreamReader converter = new InputStreamReader(System.in);
     BufferedReader in = new BufferedReader(converter);
@@ -166,7 +170,7 @@ public class BroadcastMain {
           BroadcastMessage
               .newBuilder()
               .setHeader(
-                  Header.newBuilder().setHops(0).setId(ByteString.copyFrom(messageId)).setTtl(2))
+                  Header.newBuilder().setHops(0).setId(ByteString.copyFrom(messageId)).setTtl(ttl))
               .setMessage(line);
 
       writer.broadcastMessage(message);

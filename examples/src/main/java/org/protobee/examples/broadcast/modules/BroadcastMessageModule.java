@@ -54,12 +54,13 @@ public class BroadcastMessageModule extends ProtocolModule {
     Header header = message.getHeader();
     int hops = header.getHops();
     int ttl = header.getTtl();
-    if (ttl == 1) {
-      return;
-    }
     ByteString id = header.getId();
 
     log.info("Received message " + message);
+
+    if (ttl == 1) {
+      return;
+    }
 
     Set<SessionModel> sessions = sessionManager.getCurrentSessions(myProtocol);
 
@@ -75,10 +76,10 @@ public class BroadcastMessageModule extends ProtocolModule {
       if (sessionModel == session) {
         continue;
       }
+      log.info("Sending message " + sendingMessage.clone().buildPartial() + " to "
+        + sessionModel.getIdentity().getListeningAddress(myProtocol));
       try {
         sessionModel.getIdentity().enterScope();
-        log.info("Sending message " + sendingMessage.clone().buildPartial() + " to "
-            + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
       } finally {
         sessionModel.getIdentity().exitScope();

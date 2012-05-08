@@ -40,8 +40,7 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
 
   @Inject
   public TimeBroadcastMessageModule(SessionManager sessionManager, SessionModel session,
-      NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer,
-      Clock clock) {
+      NetworkIdentity identity, Protocol protocol, ProtobeeMessageWriter writer, Clock clock) {
     this.sessionManager = sessionManager;
     this.session = session;
     this.identity = identity;
@@ -49,14 +48,14 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
     this.writer = writer;
     this.clock = clock;
   }
-  
+
   @Subscribe
   public void sendingMessage(BasicMessageSendingEvent event) {
     Preconditions.checkArgument(event.getMessage() instanceof BroadcastMessage.Builder,
-    "Not a broadcast message builder");
+        "Not a broadcast message builder");
     BroadcastMessage.Builder message = (BroadcastMessage.Builder) event.getMessage();
-    
-    if(!message.hasSendTimeMillis()) {
+
+    if (!message.hasSendTimeMillis()) {
       message.setSendTimeMillis(clock.currentTimeMillis());
     }
   }
@@ -75,6 +74,10 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
 
     log.info("Received message " + message);
 
+    if (ttl == 1) {
+      return;
+    }
+
     Set<SessionModel> sessions = sessionManager.getCurrentSessions(myProtocol);
 
     session.exitScope();
@@ -83,8 +86,7 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
     BroadcastMessage.Builder sendingMessage =
         BroadcastMessage.newBuilder()
             .setHeader(Header.newBuilder().setTtl(ttl - 1).setHops(hops + 1).setId(id))
-            .setMessage(message.getMessage())
-            .setSendTimeMillis(time)
+            .setMessage(message.getMessage()).setSendTimeMillis(time)
             .setListeningAddress(message.getListeningAddress())
             .setListeningPort(message.getListeningPort());
 
@@ -92,10 +94,10 @@ public class TimeBroadcastMessageModule extends ProtocolModule {
       if (sessionModel == session) {
         continue;
       }
+      log.info("Sending message " + sendingMessage.clone().buildPartial() + " to "
+          + sessionModel.getIdentity().getListeningAddress(myProtocol));
       try {
         sessionModel.getIdentity().enterScope();
-        log.info("Sending message " + sendingMessage.clone().buildPartial() + " to "
-            + sessionModel.getIdentity().getListeningAddress(myProtocol));
         writer.write(sendingMessage, HandshakeOptions.WAIT_FOR_HANDSHAKE);
       } finally {
         sessionModel.getIdentity().exitScope();
