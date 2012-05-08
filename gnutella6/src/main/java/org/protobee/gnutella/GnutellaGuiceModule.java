@@ -29,18 +29,12 @@ import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
 import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
 import org.protobee.protocol.handlers.FilterMode;
 import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
-import org.protobee.protocol.handlers.ChannelMessagePoster;
-import org.protobee.protocol.handlers.ChannelMessagePoster.PosterEventFactory;
-import org.protobee.protocol.handlers.DownstreamMessagePosterHandler;
-import org.protobee.protocol.handlers.FilterMode;
-import org.protobee.protocol.handlers.UpstreamMessagePosterHandler;
 
 import com.google.common.collect.Sets;
 import com.google.common.eventbus.EventBus;
 import com.google.inject.Provides;
 import com.google.inject.Singleton;
 import com.google.inject.assistedinject.FactoryModuleBuilder;
-
 
 public class GnutellaGuiceModule extends GnutellaPluginGuiceModule {
 
